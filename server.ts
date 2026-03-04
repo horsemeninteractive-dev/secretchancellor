@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import axios from "axios";
 import { supabase, isSupabaseConfigured } from "./src/lib/supabase";
-import { GameState, Player, Policy, Role, ExecutiveAction, User, UserStats, RoomInfo, AIPersonality } from "./src/types";
+import { GameState, Player, Policy, Role, ExecutiveAction, User, UserStats, RoomInfo, AIPersonality } from "./src/types.js";
 
 // Look for process.env.PORT, otherwise default to 8080 for Cloud Run
 const PORT = process.env.PORT || 8080;
