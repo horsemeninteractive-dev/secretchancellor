@@ -6,17 +6,19 @@ import { cn } from '../lib/utils';
 
 interface LobbyProps {
   user: User;
-  onJoinRoom: (roomId: string, maxPlayers?: number, actionTimer?: number) => void;
+  onJoinRoom: (roomId: string, maxPlayers?: number, actionTimer?: number, mode?: 'Casual' | 'Ranked', isSpectator?: boolean) => void;
   onLogout: () => void;
   onOpenProfile: () => void;
 }
 
 export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpenProfile }) => {
   const [rooms, setRooms] = useState<RoomInfo[]>([]);
+  const [rejoinInfo, setRejoinInfo] = useState<{ canRejoin: boolean; roomId?: string; roomName?: string; mode?: string } | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
   const [maxPlayers, setMaxPlayers] = useState(5);
   const [actionTimer, setActionTimer] = useState(60);
+  const [mode, setMode] = useState<'Casual' | 'Ranked'>('Ranked');
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchRooms = async () => {
@@ -24,6 +26,11 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
       const response = await fetch('/api/rooms');
       const data = await response.json();
       setRooms(data);
+      
+      // Check for rejoin info
+      const rejoinResponse = await fetch(`/api/rejoin-info?userId=${user.id}`);
+      const rejoinData = await rejoinResponse.json();
+      setRejoinInfo(rejoinData);
     } catch (err) {
       console.error('Failed to fetch rooms', err);
     } finally {
@@ -40,7 +47,7 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
   const handleCreateRoom = (e: React.FormEvent) => {
     e.preventDefault();
     if (newRoomName.trim()) {
-      onJoinRoom(newRoomName.trim(), maxPlayers, actionTimer);
+      onJoinRoom(newRoomName.trim(), maxPlayers, actionTimer, mode);
     }
   };
 
@@ -116,6 +123,34 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
           </button>
         </div>
 
+        {/* Rejoin Banner */}
+        <AnimatePresence>
+          {rejoinInfo?.canRejoin && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-red-900/20 border border-red-900/50 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-red-900/20 rounded-2xl flex items-center justify-center border border-red-500/30">
+                  <LogOut className="w-6 h-6 text-red-500 rotate-180" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-serif italic text-white">Active Assembly Found</h3>
+                  <p className="text-xs text-red-500/70 font-mono uppercase tracking-widest">You disconnected from: {rejoinInfo.roomName}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => onJoinRoom(rejoinInfo.roomId!)}
+                className="w-full sm:w-auto bg-red-600 text-white px-8 py-3 rounded-xl font-thematic text-lg hover:bg-red-500 transition-all shadow-lg shadow-red-900/20"
+              >
+                Rejoin Game
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Room Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {isLoading ? (
@@ -147,11 +182,19 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
                   <div className="w-12 h-12 bg-[#141414] border border-[#222] rounded-2xl flex items-center justify-center group-hover:bg-red-900/10 group-hover:border-red-900/30 transition-colors">
                     <Users className="w-6 h-6 text-[#444] group-hover:text-red-500 transition-colors" />
                   </div>
-                  <div className={cn(
-                    "px-3 py-1 rounded-full text-[9px] font-mono uppercase tracking-widest border",
-                    room.phase === 'Lobby' ? "bg-emerald-900/10 border-emerald-900/30 text-emerald-500" : "bg-red-900/10 border-red-900/30 text-red-500"
-                  )}>
-                    {room.phase === 'Lobby' ? 'Recruiting' : 'In Progress'}
+                  <div className="flex flex-col items-end gap-1">
+                    <div className={cn(
+                      "px-3 py-1 rounded-full text-[9px] font-mono uppercase tracking-widest border",
+                      room.phase === 'Lobby' ? "bg-emerald-900/10 border-emerald-900/30 text-emerald-500" : "bg-red-900/10 border-red-900/30 text-red-500"
+                    )}>
+                      {room.phase === 'Lobby' ? 'Recruiting' : 'In Progress'}
+                    </div>
+                    <div className={cn(
+                      "px-2 py-0.5 rounded-full text-[7px] font-mono uppercase tracking-widest border",
+                      room.mode === 'Ranked' ? "bg-yellow-900/10 border-yellow-900/30 text-yellow-500" : "bg-blue-900/10 border-blue-900/30 text-blue-400"
+                    )}>
+                      {room.mode}
+                    </div>
                   </div>
                 </div>
 
@@ -180,10 +223,25 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
                   <div>{room.phase.replace('_', ' ')}</div>
                 </div>
 
-                <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="text-[10px] font-mono uppercase tracking-widest text-red-500 flex items-center gap-1">
-                    Join Room <Plus className="w-3 h-3" />
-                  </div>
+                <div className="mt-4 flex gap-2 transition-opacity">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onJoinRoom(room.id);
+                    }}
+                    className="flex-1 py-1.5 bg-white text-black text-[9px] font-mono uppercase tracking-widest rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    Join
+                  </button>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onJoinRoom(room.id, undefined, undefined, undefined, true);
+                    }}
+                    className="flex-1 py-1.5 bg-[#222] text-white text-[9px] font-mono uppercase tracking-widest rounded-lg border border-[#333] hover:bg-[#333] transition-colors"
+                  >
+                    Spectate
+                  </button>
                 </div>
               </motion.button>
             ))
@@ -258,6 +316,34 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
                     <span>OFF</span>
                     <span>120s</span>
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest text-[#444] font-mono ml-1">Game Mode</label>
+                  <div className="flex gap-2">
+                    <button 
+                      type="button"
+                      onClick={() => setMode('Ranked')}
+                      className={cn(
+                        "flex-1 py-2 rounded-xl border text-[10px] font-mono uppercase tracking-widest transition-all",
+                        mode === 'Ranked' ? "bg-yellow-900/20 border-yellow-500 text-yellow-500" : "bg-[#141414] border-[#222] text-[#444]"
+                      )}
+                    >
+                      Ranked
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setMode('Casual')}
+                      className={cn(
+                        "flex-1 py-2 rounded-xl border text-[10px] font-mono uppercase tracking-widest transition-all",
+                        mode === 'Casual' ? "bg-blue-900/20 border-blue-500 text-blue-400" : "bg-[#141414] border-[#222] text-[#444]"
+                      )}
+                    >
+                      Casual
+                    </button>
+                  </div>
+                  <p className="text-[8px] text-[#444] italic ml-1">
+                    {mode === 'Ranked' ? 'ELO and full points awarded.' : 'No ELO changes, reduced points.'}
+                  </p>
                 </div>
                 <div className="flex gap-3">
                   <button 

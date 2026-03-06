@@ -1,15 +1,26 @@
 import express from "express";
+import path from "path";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { createServer as createViteServer } from "vite";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import axios from "axios";
-import { supabase, isSupabaseConfigured } from "./src/lib/supabase";
-import { GameState, Player, Policy, Role, ExecutiveAction, User, UserStats, RoomInfo, AIPersonality } from "./src/types.js";
+import { supabase, isSupabaseConfigured } from "./src/lib/supabase.ts";
+import { 
+  GameState, 
+  Player, 
+  User, 
+  UserStats, 
+  RoomInfo, 
+  Role, 
+  Policy, 
+  GamePhase, 
+  ExecutiveAction, 
+  AIPersonality 
+} from "./src/types.ts";
 
-// Look for process.env.PORT, otherwise default to 8080 for Cloud Run
-const PORT = process.env.PORT || 8080;
+const PORT = 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "secret-hitler-secret-key";
 
 const AI_BOTS: { name: string; avatarUrl: string; personality: AIPersonality }[] = [
@@ -42,6 +53,7 @@ const AI_BOTS: { name: string; avatarUrl: string; personality: AIPersonality }[]
 
 async function startServer() {
   const app = express();
+  app.set('trust proxy', 1);
   app.use(express.json());
   const httpServer = createServer(app);
   const io = new Server(httpServer, {
@@ -52,6 +64,7 @@ async function startServer() {
 
   const rooms: Map<string, GameState> = new Map();
   const lobbyTimers: Map<string, NodeJS.Timeout> = new Map();
+  const pauseTimers: Map<string, NodeJS.Timeout> = new Map();
   const actionTimers: Map<string, any> = new Map();
   const users: Map<string, any> = new Map(); // username -> user data (including hashed password)
 
@@ -63,8 +76,8 @@ async function startServer() {
       avatarUrl: data.avatar_url,
       ownedCosmetics: data.owned_cosmetics,
       activeFrame: data.active_frame,
-      activePolicyStyle: data.active_policy_style,
-      activeVotingStyle: data.active_voting_style,
+      activePolicyStyle: data.active_policy,
+      activeVotingStyle: data.active_vote,
       googleId: data.google_id,
       discordId: data.discord_id
     };
@@ -143,8 +156,8 @@ async function startServer() {
         avatar_url: userData.avatarUrl,
         owned_cosmetics: userData.ownedCosmetics,
         active_frame: userData.activeFrame,
-        active_policy_style: userData.activePolicyStyle,
-        active_voting_style: userData.activeVotingStyle,
+        active_policy: userData.activePolicyStyle,
+        active_vote: userData.activeVotingStyle,
         google_id: userData.googleId,
         discord_id: userData.discordId,
         stats: userData.stats
@@ -206,13 +219,29 @@ async function startServer() {
 
   // --- OAuth Routes ---
 
-  const getAppUrl = () => {
+  const getAppUrl = (req?: any) => {
+    // Try to get origin from query param first (passed from client)
+    if (req?.query?.origin) return req.query.origin as string;
+    
+    // Try to get origin from state parameter (passed back from OAuth)
+    if (req?.query?.state) {
+      try {
+        const stateData = JSON.parse(decodeURIComponent(req.query.state as string));
+        if (stateData.origin) return stateData.origin;
+      } catch (e) {}
+    }
+
+    if (!process.env.APP_URL) {
+      console.warn("WARNING: APP_URL environment variable is not set. OAuth redirects may fail in production.");
+    }
     return process.env.APP_URL || "http://localhost:3000";
   };
 
   // Google OAuth
   app.get("/api/auth/google/url", (req, res) => {
-    const redirectUri = `${getAppUrl()}/auth/google/callback`;
+    const origin = getAppUrl(req);
+    const redirectUri = `${origin}/auth/google/callback`;
+    const state = encodeURIComponent(JSON.stringify({ origin }));
     const params = new URLSearchParams({
       client_id: process.env.GOOGLE_CLIENT_ID || "GOOGLE_CLIENT_ID",
       redirect_uri: redirectUri,
@@ -220,16 +249,18 @@ async function startServer() {
       scope: "openid profile email",
       access_type: "offline",
       prompt: "consent",
+      state: state
     });
     res.json({ url: `https://accounts.google.com/o/oauth2/v2/auth?${params}` });
   });
 
-  app.get("/auth/google/callback", async (req, res) => {
+  app.get(["/auth/google/callback", "/auth/google/callback/"], async (req, res) => {
     const { code } = req.query;
     if (!code) return res.status(400).send("No code provided");
 
     try {
-      const redirectUri = `${getAppUrl()}/auth/google/callback`;
+      const origin = getAppUrl(req);
+      const redirectUri = `${origin}/auth/google/callback`;
       const tokenResponse = await axios.post("https://oauth2.googleapis.com/token", {
         code,
         client_id: process.env.GOOGLE_CLIENT_ID,
@@ -297,10 +328,11 @@ async function startServer() {
                 }, '*');
                 window.close();
               } else {
-                window.location.href = '/';
+                const userEncoded = encodeURIComponent(JSON.stringify(${JSON.stringify(user)}));
+                window.location.href = '/?token=${token}&user=' + userEncoded;
               }
             </script>
-            <p>Authentication successful. This window should close automatically.</p>
+            <p>Authentication successful. Redirecting...</p>
           </body>
         </html>
       `);
@@ -312,22 +344,26 @@ async function startServer() {
 
   // Discord OAuth
   app.get("/api/auth/discord/url", (req, res) => {
-    const redirectUri = `${getAppUrl()}/auth/discord/callback`;
+    const origin = getAppUrl(req);
+    const redirectUri = `${origin}/auth/discord/callback`;
+    const state = encodeURIComponent(JSON.stringify({ origin }));
     const params = new URLSearchParams({
       client_id: process.env.DISCORD_CLIENT_ID || "DISCORD_CLIENT_ID",
       redirect_uri: redirectUri,
       response_type: "code",
       scope: "identify email",
+      state: state
     });
     res.json({ url: `https://discord.com/api/oauth2/authorize?${params}` });
   });
 
-  app.get("/auth/discord/callback", async (req, res) => {
+  app.get(["/auth/discord/callback", "/auth/discord/callback/"], async (req, res) => {
     const { code } = req.query;
     if (!code) return res.status(400).send("No code provided");
 
     try {
-      const redirectUri = `${getAppUrl()}/auth/discord/callback`;
+      const origin = getAppUrl(req);
+      const redirectUri = `${origin}/auth/discord/callback`;
       const params = new URLSearchParams({
         client_id: process.env.DISCORD_CLIENT_ID!,
         client_secret: process.env.DISCORD_CLIENT_SECRET!,
@@ -400,10 +436,11 @@ async function startServer() {
                 }, '*');
                 window.close();
               } else {
-                window.location.href = '/';
+                const userEncoded = encodeURIComponent(JSON.stringify(${JSON.stringify(user)}));
+                window.location.href = '/?token=${token}&user=' + userEncoded;
               }
             </script>
-            <p>Authentication successful. This window should close automatically.</p>
+            <p>Authentication successful. Redirecting...</p>
           </body>
         </html>
       `);
@@ -435,9 +472,28 @@ async function startServer() {
       maxPlayers: state.maxPlayers,
       phase: state.phase,
       actionTimer: state.actionTimer,
-      playerAvatars: state.players.map(p => p.avatarUrl || '').filter(Boolean)
+      playerAvatars: state.players.map(p => p.avatarUrl || '').filter(Boolean),
+      mode: state.mode
     }));
     res.json(roomList);
+  });
+
+  app.get("/api/rejoin-info", (req, res) => {
+    const userId = req.query.userId as string;
+    if (!userId) return res.json({ canRejoin: false });
+
+    for (const state of rooms.values()) {
+      const player = state.players.find(p => p.userId === userId && p.isDisconnected);
+      if (player) {
+        return res.json({ 
+          canRejoin: true, 
+          roomId: state.roomId, 
+          roomName: state.roomId,
+          mode: state.mode
+        });
+      }
+    }
+    res.json({ canRejoin: false });
   });
 
   app.post("/api/shop/buy", async (req, res) => {
@@ -493,6 +549,8 @@ async function startServer() {
         for (const p of room.players) {
           if (p.userId === user.id) {
             if (frameId !== undefined) p.activeFrame = frameId;
+            if (policyStyle !== undefined) p.activePolicyStyle = policyStyle;
+            if (votingStyle !== undefined) p.activeVotingStyle = votingStyle;
             changed = true;
           }
         }
@@ -585,9 +643,11 @@ async function startServer() {
           s.chancellorSaw = [...s.chancellorPolicies];
           s.drawnPolicies = [];
           s.phase = "Legislative_Chancellor";
+          s.presidentTimedOut = true;
           s.log.push(`[Timer] ${president.name} was too slow. A random policy was discarded.`);
           broadcastState(roomId);
           processAITurns(roomId);
+          triggerAIDeclarations(s, roomId); // Normal trigger, will handle President if timed out
         }
       } else if (s.phase === 'Legislative_Chancellor') {
         const chancellor = s.players.find(p => p.isChancellor);
@@ -596,8 +656,9 @@ async function startServer() {
           const discarded = s.chancellorPolicies[0];
           s.discard.push(discarded);
           s.chancellorPolicies = [];
+          s.chancellorTimedOut = true;
           s.log.push(`[Timer] ${chancellor.name} was too slow. A random policy was played.`);
-          triggerPolicyEnactment(s, roomId, played);
+          triggerPolicyEnactment(s, roomId, played, false, chancellor.id);
         }
       } else if (s.phase === 'Executive_Action') {
         const president = s.players.find(p => p.isPresident);
@@ -619,7 +680,7 @@ async function startServer() {
     const state = rooms.get(roomId);
     if (state) {
       // Start action timer if phase changed or just started
-      if (state.actionTimer > 0 && !state.actionTimerEnd && state.phase !== 'Lobby' && state.phase !== 'GameOver') {
+      if (state.actionTimer > 0 && !state.actionTimerEnd && state.phase !== 'Lobby' && state.phase !== 'GameOver' && !state.isPaused) {
         startActionTimer(roomId);
       }
       // Create a public version of the state that hides roles unless the game is over
@@ -656,11 +717,11 @@ async function startServer() {
 
   function processAITurns(roomId: string) {
     const state = rooms.get(roomId);
-    if (!state || state.phase === "Lobby" || state.phase === "GameOver") return;
+    if (!state || state.phase === "Lobby" || state.phase === "GameOver" || state.isPaused) return;
 
     setTimeout(async () => {
       const s = rooms.get(roomId);
-      if (!s) return;
+      if (!s || s.isPaused) return;
 
       if (s.phase === "Election") {
         const president = s.players[s.presidentIdx];
@@ -687,20 +748,38 @@ async function startServer() {
           aiVoters.forEach(ai => {
             let vote: 'Ja' | 'Nein' = 'Ja';
             const chancellor = s.players.find(p => p.isChancellorCandidate);
+            const president = s.players[s.presidentIdx];
             
-            // Personality based voting
-            if (ai.personality === 'Aggressive') {
-              if (ai.role !== 'Liberal' && chancellor && (chancellor.role !== 'Liberal')) {
+            // Meta-aware voting
+            if (s.round === 1 && s.electionTracker === 0) {
+              // First round, first government is almost always Ja in meta
+              vote = 'Ja';
+            } else if (s.fascistPolicies >= 3 && chancellor?.role === 'Hitler') {
+              // Fascists vote Ja to win if Hitler is Chancellor
+              if (ai.role === 'Fascist' || ai.role === 'Hitler') {
                 vote = 'Ja';
               } else {
-                vote = Math.random() > 0.5 ? 'Ja' : 'Nein';
+                // Liberals should be suspicious if 3 policies are down
+                vote = Math.random() > 0.7 ? 'Ja' : 'Nein';
               }
-            } else if (ai.personality === 'Honest') {
-              vote = Math.random() > 0.3 ? 'Ja' : 'Nein';
-            } else if (ai.personality === 'Chaotic') {
-              vote = Math.random() > 0.5 ? 'Ja' : 'Nein';
             } else {
-              vote = Math.random() > 0.2 ? 'Ja' : 'Nein';
+              // Personality based voting with more logic
+              if (ai.role === 'Liberal') {
+                // Liberals vote Ja unless they have reason to doubt
+                vote = Math.random() > 0.2 ? 'Ja' : 'Nein';
+                // If president or chancellor was investigated as fascist, vote Nein
+                if (s.investigationResult && (s.investigationResult.targetName === president.name || s.investigationResult.targetName === chancellor?.name) && s.investigationResult.role !== 'Liberal') {
+                  vote = 'Nein';
+                }
+              } else {
+                // Fascists vote strategically
+                if (chancellor?.role !== 'Liberal' || president.role !== 'Liberal') {
+                  vote = 'Ja'; // Support fascist-leaning governments
+                } else {
+                  // Sometimes vote Nein to advance tracker or look liberal
+                  vote = Math.random() > 0.4 ? 'Ja' : 'Nein';
+                }
+              }
             }
             ai.vote = vote;
           });
@@ -767,7 +846,7 @@ async function startServer() {
           const discarded = s.chancellorPolicies[0];
           s.discard.push(discarded);
           s.chancellorPolicies = [];
-          triggerPolicyEnactment(s, roomId, played);
+          triggerPolicyEnactment(s, roomId, played, false, chancellor.id);
         }
       }
       else if (s.phase === "Executive_Action") {
@@ -826,12 +905,17 @@ async function startServer() {
   }
 
   function triggerAIDeclarations(state: GameState, roomId: string) {
+    if (state.isPaused) return;
     const president = state.players.find(p => p.isPresident);
     const chancellor = state.players.find(p => p.isChancellor);
     
     if (!president || !chancellor) return;
 
     const declareForAI = (player: Player, type: 'President' | 'Chancellor') => {
+      // Prevent duplicate declarations
+      const alreadyDeclared = state.declarations.some(d => d.playerId === player.id && d.type === type);
+      if (alreadyDeclared) return;
+
       let libs = 0;
       let fas = 0;
       const saw = type === 'President' ? (state.presidentSaw || []) : (state.chancellorSaw || []);
@@ -852,9 +936,6 @@ async function startServer() {
           if (libs > 0) {
             libs--;
             fas++;
-          } else if (fas > 0) {
-            // Already 3 Fascists, can't lie much more unless they claim Liberals? 
-            // Usually fascists claim fewer liberals.
           }
         } else {
           // Chancellor lies about what they received
@@ -890,17 +971,19 @@ async function startServer() {
     // President declares first
     const presidentDelay = 1500;
     setTimeout(() => {
+      if (state.isPaused) return;
       const presidentDeclared = state.declarations.some(d => d.type === 'President');
-      if (!presidentDeclared && president.isAI) {
+      if (!presidentDeclared && (president.isAI || state.presidentTimedOut)) {
         declareForAI(president, 'President');
       }
       
       // Chancellor declares second
       const checkAndDeclareChancellor = () => {
+        if (state.isPaused) return;
         const chancellorDeclared = state.declarations.some(d => d.type === 'Chancellor');
         if (chancellorDeclared) return;
 
-        if (chancellor.isAI) {
+        if (chancellor.isAI || state.chancellorTimedOut) {
           const presidentDeclared = state.declarations.some(d => d.type === 'President');
           if (!presidentDeclared) {
              setTimeout(checkAndDeclareChancellor, 2000);
@@ -914,11 +997,12 @@ async function startServer() {
     }, presidentDelay);
   }
 
-  function triggerPolicyEnactment(state: GameState, roomId: string, played: Policy) {
-    state.lastEnactedPolicy = { type: played, timestamp: Date.now() };
+  function triggerPolicyEnactment(state: GameState, roomId: string, played: Policy, isChaos: boolean = false, playerId?: string) {
+    state.lastEnactedPolicy = { type: played, timestamp: Date.now(), playerId };
     
-    // Wait for animation (3 seconds)
+    // Wait for animation (6 seconds to ensure it finishes before Game Over or next round)
     setTimeout(async () => {
+      if (state.isPaused) return;
       if (played === "Liberal") {
         state.liberalPolicies++;
         state.log.push("A Liberal policy was enacted.");
@@ -930,13 +1014,22 @@ async function startServer() {
         }
       }
 
-      triggerAIDeclarations(state, roomId);
       await checkVictory(state, roomId);
+      if (state.phase !== "GameOver") {
+        if (isChaos) {
+          nextPresident(state, roomId);
+        } else {
+          triggerAIDeclarations(state, roomId);
+        }
+      }
       broadcastState(roomId);
-    }, 3000);
+    }, 6000);
   }
 
   function handleVoteResult(state: GameState, roomId: string, jaVotes: number, neinVotes: number) {
+    if (state.phase !== "Voting") return;
+    state.phase = "Voting_Reveal";
+
     // Store previous votes before clearing
     state.previousVotes = {};
     state.players.forEach(p => {
@@ -952,10 +1045,10 @@ async function startServer() {
     state.actionTimerEnd = Date.now() + 4000;
     broadcastState(roomId);
 
-    // Delay 4 seconds to let players see the votes
+    // Delay 6 seconds to let players see the votes
     setTimeout(async () => {
       const state = rooms.get(roomId);
-      if (!state) return;
+      if (!state || state.phase !== "Voting_Reveal") return;
 
       // Clear the reveal countdown
       state.actionTimerEnd = undefined;
@@ -969,6 +1062,7 @@ async function startServer() {
           state.phase = "GameOver";
           startActionTimer(roomId);
           state.winner = "Fascists";
+          state.winReason = "Hitler was elected Chancellor!";
           state.log.push("Hitler was elected Chancellor! Fascists win!");
           await updateUserStats(state, "Fascists");
         } else {
@@ -1006,24 +1100,22 @@ async function startServer() {
             state.discard = [];
           }
           const chaosPolicy = state.deck.shift()!;
-          if (chaosPolicy === "Liberal") state.liberalPolicies++;
-          else state.fascistPolicies++;
-          state.lastEnactedPolicy = { type: chaosPolicy, timestamp: Date.now() };
           state.electionTracker = 0;
           state.players.forEach(p => {
             p.wasPresident = false;
             p.wasChancellor = false;
           });
-          await checkVictory(state, roomId);
+          triggerPolicyEnactment(state, roomId, chaosPolicy, true);
+        } else {
+          if ((state.phase as string) !== "GameOver") nextPresident(state, roomId);
         }
-        if ((state.phase as string) !== "GameOver") nextPresident(state, roomId);
       }
       
       // Clear previous votes after reveal delay
       state.previousVotes = undefined;
       broadcastState(roomId);
       processAITurns(roomId);
-    }, 4000);
+    }, 6000);
   }
 
   async function handleExecutiveAction(state: GameState, roomId: string, targetId: string) {
@@ -1037,30 +1129,14 @@ async function startServer() {
       // Update kill/death stats
       const president = state.players.find(p => p.id === state.presidentId);
       if (president && president.userId) {
-        let u: any = null;
-        if (isSupabaseConfigured) {
-          const { data } = await supabase.from('users').select('*').eq('id', president.userId).single();
-          u = data;
-        } else {
-          for (const udata of users.values()) {
-            if (udata.id === president.userId) { u = udata; break; }
-          }
-        }
+        const u = await getUserById(president.userId);
         if (u) {
           u.stats.kills++;
           await saveUser(u);
         }
       }
       if (target.userId) {
-        let u: any = null;
-        if (isSupabaseConfigured) {
-          const { data } = await supabase.from('users').select('*').eq('id', target.userId).single();
-          u = data;
-        } else {
-          for (const udata of users.values()) {
-            if (udata.id === target.userId) { u = udata; break; }
-          }
-        }
+        const u = await getUserById(target.userId);
         if (u) {
           u.stats.deaths++;
           await saveUser(u);
@@ -1070,6 +1146,7 @@ async function startServer() {
       if (target.role === "Hitler") {
         state.phase = "GameOver";
         state.winner = "Liberals";
+        state.winReason = "Hitler was executed!";
         state.log.push("Hitler was executed! Liberals win!");
         await updateUserStats(state, "Liberals");
       } else {
@@ -1100,12 +1177,14 @@ async function startServer() {
   }
 
   io.on("connection", (socket) => {
-    socket.on("joinRoom", async ({ roomId, name, userId, activeFrame, maxPlayers, actionTimer }) => {
+    socket.on("joinRoom", async ({ roomId, name, userId, activeFrame, activePolicyStyle, activeVotingStyle, maxPlayers, actionTimer, mode, isSpectator }) => {
       let state = rooms.get(roomId);
       if (!state) {
         state = {
           roomId,
           players: [],
+          spectators: [],
+          mode: mode || "Ranked",
           phase: "Lobby",
           liberalPolicies: 0,
           fascistPolicies: 0,
@@ -1115,7 +1194,7 @@ async function startServer() {
           drawnPolicies: [],
           chancellorPolicies: [],
           currentExecutiveAction: "None",
-          log: [`Room ${roomId} created.`],
+          log: [`Room ${roomId} created in ${mode || "Ranked"} mode.`],
           presidentIdx: 0,
           lastPresidentIdx: -1,
           maxPlayers: maxPlayers || 5,
@@ -1129,7 +1208,44 @@ async function startServer() {
         rooms.set(roomId, state);
       }
 
+      if (isSpectator) {
+        // Find user to get avatar
+        let avatarUrl = undefined;
+        if (userId) {
+          const user = await getUserById(userId);
+          if (user) {
+            avatarUrl = user.avatarUrl;
+          }
+        }
+        state.spectators.push({ id: socket.id, name, avatarUrl });
+        socket.join(roomId);
+        broadcastState(roomId);
+        return;
+      }
+
       if (state.phase !== "Lobby") {
+        // Handle reconnection
+        const disconnectedPlayer = state.players.find(p => p.userId === userId && p.isDisconnected);
+        if (disconnectedPlayer) {
+          const oldId = disconnectedPlayer.id;
+          disconnectedPlayer.id = socket.id;
+          disconnectedPlayer.isDisconnected = false;
+          if (state.presidentId === oldId) state.presidentId = socket.id;
+          if (state.chancellorId === oldId) state.chancellorId = socket.id;
+          state.isPaused = false;
+          state.disconnectedPlayerId = undefined;
+          state.pauseReason = undefined;
+          state.pauseTimer = undefined;
+          state.log.push(`${disconnectedPlayer.name} reconnected.`);
+          socket.join(roomId);
+          
+          // If there was an action timer, we might need to restart it
+          // For now, we'll just let the game continue
+          
+          broadcastState(roomId);
+          return;
+        }
+        
         socket.emit("error", "Game already in progress.");
         return;
       }
@@ -1154,6 +1270,8 @@ async function startServer() {
         userId,
         avatarUrl,
         activeFrame,
+        activePolicyStyle,
+        activeVotingStyle,
         isAlive: true,
         isPresidentialCandidate: false,
         isChancellorCandidate: false,
@@ -1161,56 +1279,47 @@ async function startServer() {
         isChancellor: false,
         wasPresident: false,
         wasChancellor: false,
+        isReady: false,
       };
 
       state.players.push(player);
       socket.join(roomId);
       state.log.push(`${name} joined the lobby.`);
       
-      // Auto-start timer if it's the first player
-      if (state.players.length === 1 && !state.isTimerActive) {
-        startTimer(roomId);
-      }
+      // Notify others to initiate WebRTC connection
+      socket.to(roomId).emit("peerJoined", socket.id);
       
       broadcastState(roomId);
     });
 
-    socket.on("startLobbyTimer", () => {
+    socket.on("toggleReady", () => {
       const roomId = Array.from(socket.rooms).find((r) => r !== socket.id);
       if (!roomId) return;
-      startTimer(roomId);
+      const state = rooms.get(roomId);
+      if (!state || state.phase !== "Lobby") return;
+
+      const player = state.players.find(p => p.id === socket.id);
+      if (!player) return;
+
+      player.isReady = !player.isReady;
+      state.log.push(`${player.name} is ${player.isReady ? 'Ready' : 'Not Ready'}.`);
+
+      // Check if all human players are ready
+      const humanPlayers = state.players.filter(p => !p.isAI);
+      const allReady = humanPlayers.every(p => p.isReady);
+
+      if (allReady && humanPlayers.length >= 1) {
+        state.log.push("All human players ready! Starting game...");
+        fillWithAI(roomId);
+      }
+
+      broadcastState(roomId);
     });
 
-    function startTimer(roomId: string) {
-      const state = rooms.get(roomId);
-      if (!state || state.isTimerActive || state.phase !== "Lobby") return;
-
-      state.isTimerActive = true;
-      state.lobbyTimer = 15; // 15 seconds countdown
-      
-      const timer = setInterval(() => {
-        const s = rooms.get(roomId);
-        if (!s || s.phase !== "Lobby") {
-          clearInterval(timer);
-          lobbyTimers.delete(roomId);
-          return;
-        }
-
-        if (s.lobbyTimer! > 0) {
-          s.lobbyTimer!--;
-          broadcastState(roomId);
-        } else {
-          clearInterval(timer);
-          lobbyTimers.delete(roomId);
-          s.isTimerActive = false;
-          s.log.push("Timer expired. Filling with AI players...");
-          fillWithAI(roomId);
-          broadcastState(roomId);
-        }
-      }, 1000);
-      
-      lobbyTimers.set(roomId, timer);
-    }
+    socket.on("signal", (data) => {
+      const { to, signal, from } = data;
+      io.to(to).emit("signal", { from, signal });
+    });
 
     function fillWithAI(roomId: string) {
       const state = rooms.get(roomId);
@@ -1370,7 +1479,7 @@ async function startServer() {
       const discarded = state.chancellorPolicies[0];
       state.discard.push(discarded);
       state.chancellorPolicies = [];
-      triggerPolicyEnactment(state, roomId, played);
+      triggerPolicyEnactment(state, roomId, played, false, state.chancellorId);
       startActionTimer(roomId);
       broadcastState(roomId);
     });
@@ -1423,6 +1532,7 @@ async function startServer() {
         p.wasPresident = false;
         p.wasChancellor = false;
         p.vote = undefined;
+        p.isReady = false;
       });
 
       broadcastState(roomId);
@@ -1457,6 +1567,10 @@ async function startServer() {
       if (!player) return;
 
       if (data) {
+        // Prevent duplicate declarations
+        const alreadyDeclared = state.declarations.some(d => d.playerId === player.id && d.type === data.type);
+        if (alreadyDeclared) return;
+
         state.declarations.push({
           playerId: player.id,
           playerName: player.name,
@@ -1507,13 +1621,6 @@ async function startServer() {
       handleVetoResponse(state, roomId, player, agree);
     });
 
-    socket.on("voiceData", (data) => {
-      const roomId = Array.from(socket.rooms).find((r) => r !== socket.id);
-      if (roomId) {
-        socket.to(roomId).emit("voiceData", { sender: socket.id, data });
-      }
-    });
-
     socket.on("leaveRoom", () => {
       const roomId = Array.from(socket.rooms).find((r) => r !== socket.id);
       if (!roomId) return;
@@ -1552,19 +1659,16 @@ async function startServer() {
           state.discard = [];
         }
         const chaosPolicy = state.deck.shift()!;
-        if (chaosPolicy === "Liberal") state.liberalPolicies++;
-        else state.fascistPolicies++;
-        state.lastEnactedPolicy = { type: chaosPolicy, timestamp: Date.now() };
         state.electionTracker = 0;
         state.players.forEach(p => {
           p.wasPresident = false;
           p.wasChancellor = false;
         });
-        await checkVictory(state, roomId);
-      }
-      
-      if ((state.phase as string) !== "GameOver") {
-        nextPresident(state, roomId, false); // Term limits only apply after a successfully enacted policy
+        triggerPolicyEnactment(state, roomId, chaosPolicy, true);
+      } else {
+        if ((state.phase as string) !== "GameOver") {
+          nextPresident(state, roomId, false); // Term limits only apply after a successfully enacted policy
+        }
       }
       triggerAIDeclarations(state, roomId);
       broadcastState(roomId);
@@ -1575,17 +1679,111 @@ async function startServer() {
     broadcastState(roomId);
   }
 
+  function handlePauseTimeout(roomId: string) {
+    const state = rooms.get(roomId);
+    if (!state || !state.isPaused) return;
+
+    const player = state.players.find(p => p.id === state.disconnectedPlayerId);
+    if (!player) {
+      state.isPaused = false;
+      broadcastState(roomId);
+      return;
+    }
+
+    if (state.mode === "Ranked") {
+      state.phase = "GameOver";
+      state.winner = undefined; // Inconclusive
+      state.log.push(`Game ended as inconclusive because ${player.name} failed to reconnect.`);
+      state.messages.push({
+        sender: "System",
+        text: `Game ended as inconclusive because ${player.name} failed to reconnect.`,
+        timestamp: Date.now(),
+        type: 'text'
+      });
+    } else {
+      // Casual mode: Replace with a fresh AI personality
+      const availableBots = AI_BOTS.filter(bot => !state.players.some(p => p.name === bot.name));
+      const bot = availableBots.length > 0 
+        ? availableBots[Math.floor(Math.random() * availableBots.length)] 
+        : AI_BOTS[Math.floor(Math.random() * AI_BOTS.length)];
+
+      player.isAI = true;
+      player.isDisconnected = false;
+      player.id = `ai-${Math.random().toString(36).substr(2, 9)}`; // Change ID so original player can't rejoin this slot
+      player.userId = undefined; // Clear association
+      player.name = bot.name;
+      player.avatarUrl = bot.avatarUrl;
+      player.personality = bot.personality;
+      
+      state.log.push(`${player.name} (AI) has taken over the seat.`);
+      state.isPaused = false;
+      processAITurns(roomId);
+    }
+    
+    state.disconnectedPlayerId = undefined;
+    state.pauseReason = undefined;
+    state.pauseTimer = undefined;
+    broadcastState(roomId);
+  }
+
   function handleLeave(socket: any, roomId: string) {
     const state = rooms.get(roomId);
     if (!state) return;
 
     const player = state.players.find(p => p.id === socket.id);
-    state.players = state.players.filter(p => p.id !== socket.id);
+    if (player) {
+      if (state.phase === "Lobby") {
+        state.players = state.players.filter(p => p.id !== socket.id);
+        state.log.push(`${player.name} left the room.`);
+      } else if (!player.isAI && !player.isDisconnected) {
+        player.isDisconnected = true;
+        state.isPaused = true;
+        state.pauseReason = `${player.name} disconnected. Waiting 60s for reconnection...`;
+        state.pauseTimer = 60;
+        state.disconnectedPlayerId = player.id;
+        state.log.push(`${player.name} disconnected. Game paused.`);
+        
+        // Clear any active action timers
+        if (actionTimers.has(roomId)) {
+          clearTimeout(actionTimers.get(roomId));
+          actionTimers.delete(roomId);
+        }
+        state.actionTimerEnd = undefined;
+
+        if (pauseTimers.has(roomId)) {
+          clearInterval(pauseTimers.get(roomId));
+        }
+
+        const pauseInterval = setInterval(() => {
+          const s = rooms.get(roomId);
+          if (!s || !s.isPaused) {
+            clearInterval(pauseInterval);
+            pauseTimers.delete(roomId);
+            return;
+          }
+
+          s.pauseTimer!--;
+          if (s.pauseTimer! <= 0) {
+            clearInterval(pauseInterval);
+            pauseTimers.delete(roomId);
+            handlePauseTimeout(roomId);
+          }
+          broadcastState(roomId);
+        }, 1000);
+        pauseTimers.set(roomId, pauseInterval);
+      }
+    }
+
+    const spectator = state.spectators.find(s => s.id === socket.id);
+    if (spectator) {
+      state.spectators = state.spectators.filter(s => s.id !== socket.id);
+      state.log.push(`${spectator.name} (Spectator) left the room.`);
+    }
+
     socket.leave(roomId);
-    if (player) state.log.push(`${player.name} left the room.`);
 
     const humanPlayers = state.players.filter(p => !p.isAI);
-    if (humanPlayers.length === 0) {
+    if (humanPlayers.length === 0 && state.spectators.length === 0) {
       rooms.delete(roomId);
       if (lobbyTimers.has(roomId)) {
         clearInterval(lobbyTimers.get(roomId)!);
@@ -1647,6 +1845,8 @@ async function startServer() {
     startActionTimer(roomId);
     state.previousVotes = undefined; // Clear previous votes for the new round
     state.declarations = []; // Reset declarations for the new round so players can declare again
+    state.presidentTimedOut = false;
+    state.chancellorTimedOut = false;
     state.players.forEach(p => {
       p.isPresidentialCandidate = false;
       p.isChancellorCandidate = false;
@@ -1662,11 +1862,13 @@ async function startServer() {
     if (state.liberalPolicies >= 5) {
       state.phase = "GameOver";
       state.winner = "Liberals";
+      state.winReason = "5 Liberal policies enacted!";
       state.log.push("5 Liberal policies enacted! Liberals win!");
       await updateUserStats(state, "Liberals");
     } else if (state.fascistPolicies >= 6) {
       state.phase = "GameOver";
       state.winner = "Fascists";
+      state.winReason = "6 Fascist policies enacted!";
       state.log.push("6 Fascist policies enacted! Fascists win!");
       await updateUserStats(state, "Fascists");
     }
@@ -1676,24 +1878,7 @@ async function startServer() {
     for (const p of state.players) {
       if (p.isAI || !p.userId) continue;
       
-      // Find user by ID
-      let user: any = null;
-      if (isSupabaseConfigured) {
-        const { data, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', p.userId)
-          .single();
-        if (!error && data) user = data;
-      } else {
-        for (const udata of users.values()) {
-          if (udata.id === p.userId) {
-            user = udata;
-            break;
-          }
-        }
-      }
-      
+      const user = await getUserById(p.userId);
       if (!user) continue;
 
       user.stats.gamesPlayed++;
@@ -1706,12 +1891,20 @@ async function startServer() {
       
       if (isWinner) {
         user.stats.wins++;
-        user.stats.elo += 25;
-        user.stats.points += 100;
+        if (state.mode === 'Ranked') {
+          user.stats.elo += 25;
+          user.stats.points += 100;
+        } else {
+          user.stats.points += 40; // Casual win points
+        }
       } else {
         user.stats.losses++;
-        user.stats.elo = Math.max(0, user.stats.elo - 15);
-        user.stats.points += 25; // Participation points
+        if (state.mode === 'Ranked') {
+          user.stats.elo = Math.max(0, user.stats.elo - 15);
+          user.stats.points += 25;
+        } else {
+          user.stats.points += 10; // Casual participation points
+        }
       }
 
       await saveUser(user);
@@ -1753,10 +1946,13 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     app.use(express.static("dist"));
+    app.get("*", (req, res) => {
+      res.sendFile(path.resolve("dist", "index.html"));
+    });
   }
 
   httpServer.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server successfully running on port ${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
   });
 }
 

@@ -8,6 +8,7 @@ import { twMerge } from 'tailwind-merge';
 import { Auth } from './components/Auth';
 import { Lobby } from './components/Lobby';
 import { Profile } from './components/Profile';
+import { getFrameStyles, getPolicyStyles, getVoteStyles } from './lib/cosmetics';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -33,53 +34,6 @@ export default function App() {
     const interval = setInterval(() => setTick(t => t + 1), 1000);
     return () => clearInterval(interval);
   }, []);
-
-  const getFrameStyles = (id: string) => {
-    switch(id) {
-      case 'frame-red': return "border-red-500 shadow-[inset_0_0_10px_rgba(239,68,68,0.5)]";
-      case 'frame-gold': return "border-yellow-500 shadow-[inset_0_0_10px_rgba(234,179,8,0.5)]";
-      case 'frame-blue': return "border-blue-500 shadow-[inset_0_0_10px_rgba(59,130,246,0.5)]";
-      case 'frame-rainbow': return "border-purple-500 shadow-[inset_0_0_10px_rgba(168,85,247,0.5)] animate-pulse";
-      case 'frame-neon': return "border-emerald-500 shadow-[inset_0_0_10px_rgba(16,185,129,0.5)]";
-      case 'frame-shadow': return "border-gray-500 shadow-[inset_0_0_10px_rgba(107,114,128,0.5)]";
-      case 'frame-thorns': return "border-red-900 shadow-[0_0_15px_rgba(127,29,29,0.4)] after:content-[''] after:absolute after:inset-[-4px] after:border-2 after:border-red-900/30 after:rounded-3xl after:rotate-45";
-      case 'frame-cyber': return "border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.4)] before:content-[''] before:absolute before:top-0 before:left-0 before:w-2 before:h-2 before:bg-cyan-400 before:rounded-full";
-      case 'frame-inferno': return "border-orange-600 shadow-[0_0_20px_rgba(234,88,12,0.6)] animate-pulse";
-      case 'frame-glitch': return "border-pink-500 shadow-[2px_2px_0_rgba(236,72,153,0.5),-2px_-2px_0_rgba(6,182,212,0.5)]";
-      case 'frame-royal': return "border-indigo-400 shadow-[0_0_15px_rgba(129,140,248,0.4)] before:content-[''] before:absolute before:top-[-8px] before:left-1/2 before:-translate-x-1/2 before:w-4 before:h-4 before:bg-indigo-400 before:rotate-45";
-      default: return "border-gray-500";
-    }
-  };
-
-  const getPolicyStyles = (styleId: string | undefined, type: Policy) => {
-    const isLiberal = type === 'Liberal';
-    switch(styleId) {
-      case 'policy-vintage':
-        return isLiberal ? "bg-[#f5e6d3] border-[#8b4513] text-[#8b4513] shadow-md" : "bg-[#f5e6d3] border-[#4a0404] text-[#4a0404] shadow-md";
-      case 'policy-modern':
-        return isLiberal ? "bg-white border-blue-600 text-blue-600" : "bg-white border-red-600 text-red-600";
-      case 'policy-blueprint':
-        return isLiberal ? "bg-blue-800 border-white/50 text-white font-mono" : "bg-blue-900 border-white/30 text-white/80 font-mono";
-      case 'policy-blood':
-        return isLiberal ? "bg-gray-800 border-red-900 text-red-500" : "bg-black border-red-600 text-red-600 shadow-[0_0_10px_rgba(220,38,38,0.3)]";
-      default:
-        return isLiberal ? "bg-blue-900/20 border-blue-500/50 text-blue-400" : "bg-red-900/20 border-red-500/50 text-red-500";
-    }
-  };
-
-  const getVoteStyles = (styleId: string | undefined, type: 'Ja' | 'Nein') => {
-    const isJa = type === 'Ja';
-    switch(styleId) {
-      case 'vote-wax':
-        return isJa ? "bg-[#8b0000] border-[#5a0000] text-white shadow-[0_4px_0_#5a0000]" : "bg-[#1a1a1a] border-[#333] text-[#666]";
-      case 'vote-digital':
-        return isJa ? "bg-cyan-900/20 border-cyan-500 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]" : "bg-pink-900/20 border-pink-500 text-pink-400 shadow-[0_0_15px_rgba(236,72,153,0.4)]";
-      case 'vote-ancient':
-        return isJa ? "bg-[#d2b48c] border-[#8b4513] text-[#4a2c1d] font-serif" : "bg-[#c0c0c0] border-[#696969] text-[#2f4f4f] font-serif";
-      default:
-        return isJa ? "bg-white border-white text-black" : "bg-black border-[#333] text-white";
-    }
-  };
 
   const HitlerIcon = ({ className }: { className?: string }) => (
     <div className={cn("relative", className)}>
@@ -120,7 +74,10 @@ export default function App() {
     const me = gameState.players.find(p => p.id === socket.id);
     if (me) {
       const alreadyDeclared = gameState.declarations.some(d => d.playerId === socket.id);
-      if (!alreadyDeclared) {
+      const willWin = (gameState.lastEnactedPolicy?.type === 'Liberal' && gameState.liberalPolicies === 4) ||
+                      (gameState.lastEnactedPolicy?.type === 'Fascist' && gameState.fascistPolicies === 5);
+
+      if (!alreadyDeclared && !willWin && gameState.phase !== 'GameOver') {
         // Both President and Chancellor declare after policy is enacted
         const policyJustEnacted = gameState.lastEnactedPolicy && 
                                  gameState.lastEnactedPolicy.timestamp > prevLastEnactedTimestamp.current;
@@ -140,6 +97,8 @@ export default function App() {
           setDeclLibs(0);
           setDeclFas(0);
         }
+      } else {
+        setShowDeclarationUI(false);
       }
     }
 
@@ -226,6 +185,9 @@ export default function App() {
 
   const hasNewMessages = gameState && !isChatOpen && gameState.messages.slice(lastSeenMessageCount).some(m => m.type !== 'round_separator');
   const [isVoiceActive, setIsVoiceActive] = useState(false);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const peersRef = useRef<Record<string, RTCPeerConnection>>({});
+  const audioContextRef = useRef<AudioContext | null>(null);
   const [chatText, setChatText] = useState('');
   const [investigationResult, setInvestigationResult] = useState<{ targetName: string; role: Role } | null>(null);
   const [lastSeenPolicyTime, setLastSeenPolicyTime] = useState(0);
@@ -234,7 +196,6 @@ export default function App() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const speakingTimers = useRef<Record<string, NodeJS.Timeout>>({});
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
 
   useEffect(() => {
@@ -252,6 +213,20 @@ export default function App() {
   }, [token]);
 
   useEffect(() => {
+    const handleInteraction = () => {
+      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume();
+      }
+    };
+    window.addEventListener('click', handleInteraction);
+    window.addEventListener('keydown', handleInteraction);
+    return () => {
+      window.removeEventListener('click', handleInteraction);
+      window.removeEventListener('keydown', handleInteraction);
+    };
+  }, []);
+
+  useEffect(() => {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
@@ -267,6 +242,15 @@ export default function App() {
     socket.on('gameStateUpdate', (state) => {
       setGameState(state);
       setJoined(true);
+
+      // Cleanup peers that are no longer in the room
+      const currentPeerIds = state.players.map(p => p.id);
+      Object.keys(peersRef.current).forEach(id => {
+        if (!currentPeerIds.includes(id)) {
+          peersRef.current[id].close();
+          delete peersRef.current[id];
+        }
+      });
     });
 
     socket.on('privateInfo', (info) => {
@@ -277,35 +261,30 @@ export default function App() {
       setInvestigationResult(result);
     });
 
-    socket.on('voiceData', async ({ sender, data }) => {
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
-      }
-      if (audioContextRef.current.state === 'suspended') {
-        await audioContextRef.current.resume();
+    socket.on('signal', async ({ from, signal }) => {
+      let pc = peersRef.current[from];
+      if (!pc) {
+        pc = createPeer(from, false);
       }
 
-      // Track speaking status
-      if (sender) {
-        setSpeakingPlayers(prev => ({ ...prev, [sender]: true }));
-        if (speakingTimers.current[sender]) clearTimeout(speakingTimers.current[sender]);
-        speakingTimers.current[sender] = setTimeout(() => {
-          setSpeakingPlayers(prev => ({ ...prev, [sender]: false }));
-        }, 1000);
+      if (signal.sdp) {
+        await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+        if (signal.sdp.type === 'offer') {
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          socket.emit('signal', { to: from, from: socket.id!, signal: { sdp: answer } });
+        }
+      } else if (signal.candidate) {
+        try {
+          await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
+        } catch (e) {
+          console.error("Error adding ice candidate", e);
+        }
       }
+    });
 
-      try {
-        const floatData = new Float32Array(data);
-        const buffer = audioContextRef.current.createBuffer(1, floatData.length, 16000);
-        buffer.getChannelData(0).set(floatData);
-        
-        const source = audioContextRef.current.createBufferSource();
-        source.buffer = buffer;
-        source.connect(audioContextRef.current.destination);
-        source.start();
-      } catch (e) {
-        console.error("Voice playback error:", e);
-      }
+    socket.on('peerJoined', (peerId) => {
+      createPeer(peerId, true);
     });
 
     socket.on('error', (msg) => {
@@ -321,10 +300,122 @@ export default function App() {
       socket.off('gameStateUpdate');
       socket.off('privateInfo');
       socket.off('investigationResult');
-      socket.off('voiceData');
+      socket.off('signal');
+      socket.off('peerJoined');
       socket.off('error');
     };
   }, []);
+
+  const createPeer = (peerId: string, initiator: boolean) => {
+    if (peersRef.current[peerId]) return peersRef.current[peerId];
+
+    const pc = new RTCPeerConnection({
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    });
+
+    peersRef.current[peerId] = pc;
+
+    if (localStream) {
+      localStream.getTracks().forEach(track => {
+        pc.addTrack(track, localStream);
+      });
+    }
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit('signal', { to: peerId, from: socket.id!, signal: { candidate: event.candidate } });
+      }
+    };
+
+    pc.ontrack = (event) => {
+      const remoteStream = event.streams[0];
+      const audio = new Audio();
+      audio.srcObject = remoteStream;
+      audio.play().catch(e => console.error("Remote audio play error", e));
+      
+      setupSpeakingDetection(remoteStream, peerId);
+    };
+
+    pc.onnegotiationneeded = async () => {
+      try {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        socket.emit('signal', { to: peerId, from: socket.id!, signal: { sdp: offer } });
+      } catch (err) {
+        console.error("Negotiation error", err);
+      }
+    };
+
+    if (initiator) {
+      // Negotiation needed will trigger the offer
+    }
+
+    return pc;
+  };
+
+  const setupSpeakingDetection = async (stream: MediaStream, playerId: string) => {
+    if (!playerId) {
+      console.warn("setupSpeakingDetection: No playerId provided");
+      return;
+    }
+    
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      
+      const context = audioContextRef.current;
+      if (context.state === 'suspended') {
+        await context.resume();
+      }
+
+      const source = context.createMediaStreamSource(stream);
+      const analyser = context.createAnalyser();
+      analyser.fftSize = 512;
+      analyser.smoothingTimeConstant = 0.8;
+      source.connect(analyser);
+
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+
+      let isRunning = true;
+      const check = () => {
+        if (!isRunning) return;
+
+        // Check if peer still exists or it's us
+        const isLocal = playerId === socket.id;
+        const peerExists = !!peersRef.current[playerId];
+        
+        if (!isLocal && !peerExists) {
+          isRunning = false;
+          source.disconnect();
+          analyser.disconnect();
+          return;
+        }
+        
+        analyser.getByteFrequencyData(dataArray);
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          sum += dataArray[i];
+        }
+        const average = sum / bufferLength;
+        
+        // Use average volume for more stable detection on mobile
+        if (average > 10) { 
+          setSpeakingPlayers(prev => ({ ...prev, [playerId]: true }));
+          if (speakingTimers.current[playerId]) clearTimeout(speakingTimers.current[playerId]);
+          speakingTimers.current[playerId] = setTimeout(() => {
+            setSpeakingPlayers(prev => ({ ...prev, [playerId]: false }));
+          }, 400);
+        }
+        requestAnimationFrame(check);
+      };
+      console.log(`Voice detection started for ${playerId === socket.id ? 'local player' : 'remote player ' + playerId}`);
+      check();
+    } catch (err) {
+      console.error("Error setting up voice detection:", err);
+    }
+  };
 
   useEffect(() => {
     if (isLogOpen) {
@@ -362,72 +453,43 @@ export default function App() {
   }, [showPolicyAnim]);
 
   useEffect(() => {
-    let stream: MediaStream | null = null;
-    let processor: ScriptProcessorNode | null = null;
-    let source: MediaStreamAudioSourceNode | null = null;
+    if (isVoiceActive && socket.id && localStream) {
+      setupSpeakingDetection(localStream, socket.id);
+    }
+  }, [isVoiceActive, socket.id, localStream]);
 
+  useEffect(() => {
     if (isVoiceActive) {
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
-      }
-      if (audioContextRef.current.state === 'suspended') {
-        audioContextRef.current.resume();
-      }
-
       navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(s => {
-          stream = s;
-          const context = audioContextRef.current!;
-          source = context.createMediaStreamSource(s);
-          
-          // Use ScriptProcessor for raw PCM (16kHz, mono)
-          processor = context.createScriptProcessor(4096, 1, 1);
-          
-          const analyser = context.createAnalyser();
-          analyser.fftSize = 256;
-          source.connect(analyser);
-          analyserRef.current = analyser;
+        .then(async stream => {
+          setLocalStream(stream);
 
-          const bufferLength = analyser.frequencyBinCount;
-          const dataArray = new Uint8Array(bufferLength);
-
-          processor.onaudioprocess = (e) => {
-            const inputData = e.inputBuffer.getChannelData(0);
-            
-            // Voice detection
-            analyser.getByteFrequencyData(dataArray);
-            let max = 0;
-            for (let i = 0; i < bufferLength; i++) if (dataArray[i] > max) max = dataArray[i];
-            
-            if (max > 20) { // Peak detection
-              const myId = socket.id;
-              if (myId) {
-                setSpeakingPlayers(prev => ({ ...prev, [myId]: true }));
-                if (speakingTimers.current[myId]) clearTimeout(speakingTimers.current[myId]);
-                speakingTimers.current[myId] = setTimeout(() => {
-                  setSpeakingPlayers(prev => ({ ...prev, [myId]: false }));
-                }, 400);
-              }
-              
-              // Send raw PCM data
-              socket.emit('voiceData', inputData.buffer);
-            }
-          };
-
-          source.connect(processor);
-          processor.connect(context.destination);
+          // Add tracks to all existing peer connections
+          Object.keys(peersRef.current).forEach(peerId => {
+            const pc = peersRef.current[peerId];
+            stream.getTracks().forEach(track => pc.addTrack(track, stream));
+          });
         })
         .catch(err => {
           console.error('Error accessing microphone:', err);
           setIsVoiceActive(false);
         });
+    } else {
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        setLocalStream(null);
+        
+        // Remove tracks from all peers
+        Object.keys(peersRef.current).forEach(peerId => {
+          const pc = peersRef.current[peerId];
+          pc.getSenders().forEach(sender => pc.removeTrack(sender));
+        });
+      }
     }
 
     return () => {
-      if (processor) processor.disconnect();
-      if (source) source.disconnect();
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
       }
     };
   }, [isVoiceActive]);
@@ -454,6 +516,22 @@ export default function App() {
     }
   };
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get('token');
+    const urlUser = params.get('user');
+    if (urlToken && urlUser) {
+      try {
+        const userData = JSON.parse(decodeURIComponent(urlUser));
+        handleAuthSuccess(userData, urlToken);
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } catch (e) {
+        console.error("Failed to parse user from URL", e);
+      }
+    }
+  }, []);
+
   const handleEnterAssembly = () => {
     setIsInteracted(true);
     try {
@@ -476,15 +554,19 @@ export default function App() {
     setGameState(null);
   };
 
-  const handleJoinRoom = (roomId: string, maxPlayers?: number, actionTimer?: number) => {
+  const handleJoinRoom = (roomId: string, maxPlayers?: number, actionTimer?: number, mode?: 'Casual' | 'Ranked', isSpectator?: boolean) => {
     if (user) {
       socket.emit('joinRoom', { 
         roomId, 
         name: user.username, 
         userId: user.id,
         activeFrame: user.activeFrame,
+        activePolicyStyle: user.activePolicyStyle,
+        activeVotingStyle: user.activeVotingStyle,
         maxPlayers,
-        actionTimer
+        actionTimer,
+        mode,
+        isSpectator
       });
       setJoined(true);
     }
@@ -775,6 +857,30 @@ export default function App() {
           </div>
         </div>
 
+        {/* Spectators List (Compact) */}
+        {gameState.spectators.length > 0 && (
+          <div className="h-6 px-4 bg-[#141414] border-b border-[#222] flex items-center gap-3 overflow-x-auto no-scrollbar shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Eye className="w-2.5 h-2.5 text-[#444]" />
+              <span className="text-[7px] font-mono uppercase tracking-widest text-[#444]">Spectators ({gameState.spectators.length})</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {gameState.spectators.map(s => (
+                <div key={s.id} className="flex items-center gap-1 shrink-0">
+                  <div className="w-3 h-3 rounded-full bg-[#222] overflow-hidden border border-[#333]">
+                    {s.avatarUrl ? (
+                      <img src={s.avatarUrl} alt={s.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <UserIcon className="w-1.5 h-1.5 text-[#444] m-auto" />
+                    )}
+                  </div>
+                  <span className="text-[8px] text-[#666]">{s.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Election Tracker (Mini) */}
         <div className="h-8 flex items-center justify-center gap-3 bg-[#141414] shrink-0">
           <span className="text-[8px] uppercase tracking-[0.2em] text-[#444] font-mono">Election Tracker</span>
@@ -814,10 +920,12 @@ export default function App() {
                     p.isPresidentialCandidate && "border-yellow-500/50 ring-1 ring-yellow-500/20",
                     p.isChancellorCandidate && "border-blue-500/50 ring-1 ring-blue-500/20",
                     p.isPresident && "bg-yellow-900/20 border-yellow-500 shadow-lg shadow-yellow-500/10",
-                    p.isChancellor && "bg-blue-900/20 border-blue-500 shadow-lg shadow-blue-500/10",
-                    speakingPlayers[p.id] && "ring-2 ring-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                    p.isChancellor && "bg-blue-900/20 border-blue-500 shadow-lg shadow-blue-500/10"
                   )}
                 >
+                  {speakingPlayers[p.id] && (
+                    <div className="absolute inset-0 pointer-events-none rounded-xl shadow-[inset_0_0_20px_rgba(16,185,129,0.4)] border border-emerald-500/50 z-20" />
+                  )}
                   <motion.div 
                     animate={{ rotateY: prevVote ? 180 : 0 }}
                     transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
@@ -852,7 +960,7 @@ export default function App() {
                             )}
                             
                             {/* Mobile Voting Overlay (Inside for clipping) */}
-                            {gameState.phase === 'Voting' && p.vote && (
+                            {(gameState.phase === 'Voting' || gameState.phase === 'Voting_Reveal') && p.vote && (
                               <div className="sm:hidden absolute inset-0 flex items-center justify-center bg-green-500/40 backdrop-blur-[1px]">
                                 <Check className="w-4 h-4 text-white opacity-100 drop-shadow-[0_0_3px_rgba(0,0,0,0.5)]" />
                               </div>
@@ -906,8 +1014,13 @@ export default function App() {
                             </span>
                           )}
                           {!p.isAlive && <span className="px-2 py-0.5 bg-red-900/20 text-red-500 font-mono uppercase rounded text-[9px]">Dead</span>}
+                          {gameState.phase === 'Lobby' && p.isReady && (
+                            <span className="px-2 py-0.5 bg-emerald-900/40 text-emerald-500 font-mono uppercase rounded border border-emerald-900/50 text-[9px]">
+                              Ready
+                            </span>
+                          )}
                         </div>
-                        {gameState.phase === 'Voting' && p.vote && (
+                        {(gameState.phase === 'Voting' || gameState.phase === 'Voting_Reveal') && p.vote && (
                           <div className="hidden sm:flex font-mono text-green-500 items-center gap-0.5 shrink-0 text-[10px]">
                             <Check className="w-3 h-3" /> Voted
                           </div>
@@ -923,7 +1036,7 @@ export default function App() {
                     {/* Back: Vote Reveal */}
                     <div className={cn(
                       "absolute inset-0 flex flex-col items-center justify-center backface-hidden rotate-y-180 rounded-xl border-2",
-                      prevVote === 'Ja' ? "bg-white border-white text-black" : "bg-black border-[#333] text-white"
+                      getVoteStyles(p.activeVotingStyle, prevVote)
                     )}>
                       <div className="text-2xl font-thematic uppercase tracking-widest leading-none">{prevVote}</div>
                       <div className="text-[8px] font-mono uppercase mt-1">({prevVote === 'Ja' ? 'YES' : 'NO'})</div>
@@ -968,7 +1081,7 @@ export default function App() {
             <div className="text-xs font-serif italic text-white">
               {gameState.phase === 'Lobby' && `Waiting for players (${gameState.players.length}/${gameState.maxPlayers})...`}
               {gameState.phase === 'Election' && `${gameState.players[gameState.presidentIdx].name} is nominating a Chancellor.`}
-              {gameState.phase === 'Voting' && "The Assembly is voting."}
+              {(gameState.phase === 'Voting' || gameState.phase === 'Voting_Reveal') && "The Assembly is voting."}
               {gameState.phase === 'Legislative_President' && "President is reviewing policies."}
               {gameState.phase === 'Legislative_Chancellor' && "Chancellor is enacting a policy."}
               {gameState.phase === 'Executive_Action' && `Executive Action: ${gameState.currentExecutiveAction}`}
@@ -1062,25 +1175,22 @@ export default function App() {
 
             {gameState.phase === 'Lobby' && (
               <div className="flex flex-col gap-2 w-full max-w-xs h-full justify-center">
-                {gameState.isTimerActive ? (
-                  <div className="text-center">
-                    <span className="text-xl font-mono text-red-500">{gameState.lobbyTimer}s</span>
-                    <span className="text-[9px] uppercase tracking-widest text-[#666] ml-2">to AI Fill</span>
-                  </div>
-                ) : (
-                  <button 
-                    onClick={() => socket.emit('startLobbyTimer')}
-                    className="py-2 bg-[#222] text-white text-[10px] font-mono uppercase tracking-widest rounded-lg border border-[#333]"
-                  >
-                    Start Countdown
-                  </button>
-                )}
                 <button 
-                  onClick={() => socket.emit('startGame')}
-                  className="py-3 bg-white text-black font-thematic text-xl rounded-lg shadow-xl shadow-white/5"
+                  onClick={() => socket.emit('toggleReady')}
+                  className={cn(
+                    "py-3 font-thematic text-xl rounded-lg shadow-xl transition-all active:scale-95",
+                    me?.isReady 
+                      ? "bg-emerald-500 text-white shadow-emerald-500/10" 
+                      : "bg-white text-black shadow-white/5"
+                  )}
                 >
-                  Start Assembly
+                  {me?.isReady ? 'Ready!' : 'Ready Up'}
                 </button>
+                <div className="text-center">
+                  <span className="text-[9px] uppercase tracking-widest text-[#666]">
+                    {gameState.players.filter(p => !p.isAI && p.isReady).length} / {gameState.players.filter(p => !p.isAI).length} Players Ready
+                  </span>
+                </div>
               </div>
             )}
           </div>
@@ -1117,19 +1227,30 @@ export default function App() {
                   )}>
                     {gameState.winner === 'Liberals' ? (
                       <Bird className="w-12 h-12 mx-auto text-blue-400" />
-                    ) : (
+                    ) : gameState.winner === 'Fascists' ? (
                       <HitlerIcon className="w-12 h-12 mx-auto text-red-500" />
+                    ) : (
+                      <AlertTriangle className="w-12 h-12 mx-auto text-gray-500" />
                     )}
                     <div className={cn(
                       "text-3xl font-thematic tracking-wide uppercase",
-                      gameState.winner === 'Liberals' ? "text-blue-400" : "text-red-500"
+                      gameState.winner === 'Liberals' ? "text-blue-400" : gameState.winner === 'Fascists' ? "text-red-500" : "text-gray-500"
                     )}>
-                      {gameState.winner} Win!
+                      {gameState.winner ? `${gameState.winner} Win!` : 'Inconclusive'}
                     </div>
-                    <p className="text-[10px] text-[#666] font-mono uppercase tracking-[0.2em]">The Assembly has reached its verdict.</p>
+                    <p className="text-[10px] text-[#666] font-mono uppercase tracking-[0.2em]">
+                      {gameState.winReason || (gameState.winner ? 'The Assembly has reached its verdict.' : 'The Assembly has collapsed due to a disconnection.')}
+                    </p>
                   </div>
 
                   <div className="p-6 space-y-4 overflow-hidden flex flex-col">
+                    <button 
+                      onClick={() => setIsLogOpen(true)}
+                      className="w-full py-2 bg-[#222] text-[#888] border border-[#333] rounded-xl hover:bg-[#2a2a2a] hover:text-white transition-all font-mono text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shrink-0"
+                    >
+                      <Scroll className="w-3 h-3" />
+                      View Assembly Log
+                    </button>
                     <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
                       <div className="text-[10px] uppercase tracking-[0.2em] text-[#444] font-mono border-b border-[#222] pb-2 flex justify-between shrink-0">
                         <span>Final Role Reveal</span>
@@ -1176,6 +1297,46 @@ export default function App() {
                     </div>
                   </div>
                 </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Pause Overlay */}
+          <AnimatePresence>
+            {gameState.isPaused && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-[100] bg-black/80 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center"
+              >
+                <div className="w-20 h-20 bg-yellow-900/20 rounded-3xl flex items-center justify-center border border-yellow-500/30 mb-6 animate-pulse">
+                  <AlertTriangle className="w-10 h-10 text-yellow-500" />
+                </div>
+                <h2 className="text-3xl font-thematic text-white tracking-widest uppercase mb-2">Assembly Paused</h2>
+                <p className="text-sm font-mono text-yellow-500/70 uppercase tracking-widest mb-8 max-w-md">
+                  {gameState.pauseReason || 'A player has disconnected. Waiting for reconnection...'}
+                </p>
+                
+                <div className="flex flex-col items-center gap-4">
+                  <div className="text-6xl font-thematic text-white tabular-nums">
+                    {gameState.pauseTimer}s
+                  </div>
+                  <div className="w-48 h-1 bg-[#222] rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: "100%" }}
+                      animate={{ width: `${(gameState.pauseTimer || 0) / 60 * 100}%` }}
+                      transition={{ duration: 1, ease: "linear" }}
+                      className="h-full bg-yellow-500"
+                    />
+                  </div>
+                </div>
+
+                <p className="mt-12 text-[10px] text-[#444] font-mono uppercase tracking-widest max-w-xs">
+                  {gameState.mode === 'Ranked' 
+                    ? 'If the player fails to reconnect, the game will end as inconclusive.' 
+                    : 'If the player fails to reconnect, they will be replaced by an AI bot.'}
+                </p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -1511,7 +1672,7 @@ export default function App() {
                 {/* Front of card (Revealed after flip) */}
                 <div className={cn(
                   "absolute inset-0 rounded-xl border-4 flex flex-col items-center justify-center gap-3 backface-hidden rotate-y-180",
-                  gameState.lastEnactedPolicy.type === 'Liberal' ? "bg-blue-900 border-blue-400 text-blue-100" : "bg-red-900 border-red-500 text-red-100"
+                  getPolicyStyles(gameState.players.find(p => p.id === gameState.lastEnactedPolicy?.playerId)?.activePolicyStyle, gameState.lastEnactedPolicy.type)
                 )}>
                   {gameState.lastEnactedPolicy.type === 'Liberal' ? <Bird className="w-12 h-12" /> : <Skull className="w-12 h-12" />}
                   <span className="text-xs font-mono uppercase tracking-[0.2em] font-bold">

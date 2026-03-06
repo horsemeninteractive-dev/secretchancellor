@@ -40,12 +40,25 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
   }, [onAuthSuccess]);
 
   const handleSocialLogin = async (provider: 'google' | 'discord') => {
+    // Request fullscreen on user click to avoid permission error later
     try {
-      const response = await fetch(`/api/auth/${provider}/url`);
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    } catch (e) {}
+
+    try {
+      const origin = window.location.origin;
+      const response = await fetch(`/api/auth/${provider}/url?origin=${encodeURIComponent(origin)}`);
       if (!response.ok) throw new Error('Failed to get auth URL');
       const { url } = await response.json();
       
-      window.open(url, 'oauth_popup', 'width=600,height=700');
+      const isIframe = window.self !== window.top;
+      if (isIframe) {
+        window.open(url, 'oauth_popup', 'width=600,height=700');
+      } else {
+        window.location.href = url;
+      }
     } catch (err: any) {
       setError(err.message);
     }

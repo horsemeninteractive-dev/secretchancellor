@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trophy, Coins, Shield, User as UserIcon, Check, ShoppingBag, ArrowLeft, Star, Heart, Zap, Flame, Scroll } from 'lucide-react';
-import { User, CosmeticItem } from '../types';
+import { User, CosmeticItem, Policy } from '../types';
 import { cn } from '../lib/utils';
+import { getPolicyStyles, getVoteStyles, getFrameStyles } from '../lib/cosmetics';
 
 interface ProfileProps {
   user: User;
@@ -100,23 +101,6 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
     : 0;
 
   const filteredItems = SHOP_ITEMS.filter(item => item.type === shopCategory);
-
-  const getFrameStyles = (id: string) => {
-    switch(id) {
-      case 'frame-red': return "border-red-500 shadow-[inset_0_0_10px_rgba(239,68,68,0.5)]";
-      case 'frame-gold': return "border-yellow-500 shadow-[inset_0_0_10px_rgba(234,179,8,0.5)]";
-      case 'frame-blue': return "border-blue-500 shadow-[inset_0_0_10px_rgba(59,130,246,0.5)]";
-      case 'frame-rainbow': return "border-purple-500 shadow-[inset_0_0_10px_rgba(168,85,247,0.5)] animate-pulse";
-      case 'frame-neon': return "border-emerald-500 shadow-[inset_0_0_10px_rgba(16,185,129,0.5)]";
-      case 'frame-shadow': return "border-gray-500 shadow-[inset_0_0_10px_rgba(107,114,128,0.5)]";
-      case 'frame-thorns': return "border-red-900 shadow-[0_0_15px_rgba(127,29,29,0.4)] after:content-[''] after:absolute after:inset-[-4px] after:border-2 after:border-red-900/30 after:rounded-3xl after:rotate-45";
-      case 'frame-cyber': return "border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.4)] before:content-[''] before:absolute before:top-0 before:left-0 before:w-2 before:h-2 before:bg-cyan-400 before:rounded-full";
-      case 'frame-inferno': return "border-orange-600 shadow-[0_0_20px_rgba(234,88,12,0.6)] animate-pulse";
-      case 'frame-glitch': return "border-pink-500 shadow-[2px_2px_0_rgba(236,72,153,0.5),-2px_-2px_0_rgba(6,182,212,0.5)]";
-      case 'frame-royal': return "border-indigo-400 shadow-[0_0_15px_rgba(129,140,248,0.4)] before:content-[''] before:absolute before:top-[-8px] before:left-1/2 before:-translate-x-1/2 before:w-4 before:h-4 before:bg-indigo-400 before:rotate-45";
-      default: return "border-gray-500";
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
@@ -245,15 +229,21 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                     {shopCategory === 'frame' ? (
                       user.avatarUrl ? <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" /> : <UserIcon className="w-10 h-10 text-[#444]" />
                     ) : shopCategory === 'policy' ? (
-                      <Scroll className="w-10 h-10 text-[#444]" />
+                      <div className={cn("w-full h-full flex flex-col items-center justify-center gap-1", getPolicyStyles(undefined, 'Liberal'))}>
+                        <Scroll className="w-8 h-8" />
+                        <span className="text-[8px] font-mono uppercase">Liberal</span>
+                      </div>
                     ) : (
-                      <Check className="w-10 h-10 text-[#444]" />
+                      <div className={cn("w-full h-full flex flex-col items-center justify-center gap-1", getVoteStyles(undefined, 'Ja'))}>
+                        <span className="text-lg font-thematic uppercase">Ja!</span>
+                        <span className="text-[8px] font-mono uppercase">YES</span>
+                      </div>
                     )}
                   </div>
                   <h4 className="font-serif italic text-lg mb-1 text-white">Default {shopCategory}</h4>
                   <p className="text-[10px] text-[#666] font-mono uppercase mb-4">Standard Issue</p>
                   <button 
-                    onClick={() => handleEquip(shopCategory, undefined)}
+                    onClick={() => handleEquip(shopCategory, null as any)}
                     disabled={
                       (shopCategory === 'frame' && !user.activeFrame) ||
                       (shopCategory === 'policy' && !user.activePolicyStyle) ||
@@ -286,9 +276,15 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                           {item.type === 'frame' ? (
                             user.avatarUrl ? <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" /> : <UserIcon className="w-10 h-10 text-[#444]" />
                           ) : item.type === 'policy' ? (
-                            <Scroll className="w-10 h-10 text-[#444]" />
+                            <div className={cn("w-full h-full flex flex-col items-center justify-center gap-1", getPolicyStyles(item.id, 'Liberal'))}>
+                              <Scroll className="w-8 h-8" />
+                              <span className="text-[8px] font-mono uppercase">Liberal</span>
+                            </div>
                           ) : (
-                            <Check className="w-10 h-10 text-[#444]" />
+                            <div className={cn("w-full h-full flex flex-col items-center justify-center gap-1", getVoteStyles(item.id, 'Ja'))}>
+                              <span className="text-lg font-thematic uppercase">Ja!</span>
+                              <span className="text-[8px] font-mono uppercase">YES</span>
+                            </div>
                           )}
                         </div>
                         {item.type === 'frame' && (
