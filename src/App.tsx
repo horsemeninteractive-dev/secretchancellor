@@ -96,14 +96,25 @@ export default function App() {
   );
 
   // Sound effects
-  const playSound = (soundKey: string) => {
+  const playSound = (soundKey: string, packId?: string) => {
     if (!isSoundOn) return;
-    const pack = user?.activeSoundPack || 'default';
+    const pack = packId || user?.activeSoundPack || 'default';
     const url = SOUND_PACKS[pack]?.[soundKey] || SOUND_PACKS['default'][soundKey];
     if (!url) return;
     const audio = new Audio(url);
     audio.volume = soundVolume / 100;
     audio.play().catch(() => {});
+  };
+
+  const playMusic = (trackKey: string) => {
+    if (!musicAudioRef.current) return;
+    const url = MUSIC_TRACKS[trackKey] || MUSIC_TRACKS['music-ambient'];
+    musicAudioRef.current.src = url;
+    musicAudioRef.current.play().catch(() => {});
+  };
+
+  const stopMusic = () => {
+    musicAudioRef.current?.pause();
   };
 
   const speak = (text: string) => {
@@ -1230,9 +1241,14 @@ export default function App() {
 
                     {/* Back: Vote Reveal */}
                     <div className={cn(
-                      "absolute inset-0 flex flex-col items-center justify-center backface-hidden rotate-y-180 rounded-xl border-2",
+                      "absolute inset-0 flex flex-col items-center justify-center backface-hidden rotate-y-180 rounded-xl border-2 overflow-hidden",
                       getVoteStyles(p.activeVotingStyle, prevVote)
                     )}>
+                      {p.activeVotingStyle === 'vote-pass-0' && (
+                        <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-xl">
+                          <div className="absolute inset-0 animate-purple-rain bg-purple-500/50" />
+                        </div>
+                      )}
                       <div className="text-2xl font-thematic uppercase tracking-widest leading-none">{prevVote}</div>
                       <div className="text-[8px] font-mono uppercase mt-1">({prevVote === 'Ja' ? 'YES' : 'NO'})</div>
                     </div>
@@ -2228,6 +2244,8 @@ export default function App() {
             onClose={() => setIsProfileOpen(false)} 
             onUpdateUser={setUser}
             playSound={playSound}
+            playMusic={playMusic}
+            stopMusic={stopMusic}
             settings={{ isMusicOn, setIsMusicOn, isSoundOn, setIsSoundOn, musicVolume, setMusicVolume, soundVolume, setSoundVolume, isFullscreen, setIsFullscreen }}
           />
         )}

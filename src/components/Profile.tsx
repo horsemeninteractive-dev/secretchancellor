@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Trophy, Coins, Shield, User as UserIcon, Check, ShoppingBag, ArrowLeft, Star, Heart, Zap, Flame, Scroll } from 'lucide-react';
+import { X, Trophy, Coins, Shield, User as UserIcon, Check, ShoppingBag, ArrowLeft, Star, Heart, Zap, Flame, Scroll, Play, Pause } from 'lucide-react';
 import { User, CosmeticItem, Policy } from '../types';
 import { cn } from '../lib/utils';
 import { getPolicyStyles, getVoteStyles, getFrameStyles } from '../lib/cosmetics';
@@ -11,6 +11,8 @@ interface ProfileProps {
   onUpdateUser: (user: User) => void;
   token: string;
   playSound: (soundKey: string) => void;
+  playMusic: (trackKey: string) => void;
+  stopMusic: () => void;
   settings: {
     isMusicOn: boolean;
     setIsMusicOn: React.Dispatch<React.SetStateAction<boolean>>;
@@ -72,17 +74,43 @@ const SHOP_ITEMS: CosmeticItem[] = [
   { id: 'bg-concrete', name: 'Urban Concrete', price: 1400, type: 'background', description: 'Rough, brutalist concrete wall.', imageUrl: 'https://www.transparenttextures.com/patterns/concrete-wall.png' },
   
   // Assembly Pass Rewards (Free Tier)
-  { id: 'bg-pass-0', name: 'Season 0 Background', price: 0, type: 'background', description: 'Exclusive Season 0 background.', imageUrl: 'https://www.transparenttextures.com/patterns/carbon-fibre.png' },
-  { id: 'vote-pass-0', name: 'Season 0 Voting Card', price: 0, type: 'vote', description: 'Exclusive Season 0 voting card.' },
-  { id: 'music-pass-0', name: 'Season 0 Music', price: 0, type: 'music', description: 'Exclusive Season 0 music track.' },
-  { id: 'frame-pass-0', name: 'Season 0 Frame', price: 0, type: 'frame', description: 'Exclusive Season 0 avatar frame.' },
+  { id: 'bg-pass-0', name: 'Season 0: Geometric Grid', price: 0, type: 'background', description: 'Exclusive Season 0 background.', imageUrl: 'https://www.transparenttextures.com/patterns/gplay.png' },
+  { id: 'vote-pass-0', name: 'Season 0: Purple Rain', price: 0, type: 'vote', description: 'Exclusive Season 0 animated voting card.', imageUrl: 'https://www.transparenttextures.com/patterns/diagonal-striped-brick.png' },
+  { id: 'music-pass-0', name: 'Season 0: Static Noise', price: 0, type: 'music', description: 'Exclusive Season 0 music track.', imageUrl: 'https://www.transparenttextures.com/patterns/noise-lines-small.png' },
+  { id: 'frame-pass-0', name: 'Season 0: Purple Pill', price: 0, type: 'frame', description: 'Exclusive Season 0 animated avatar frame.', imageUrl: 'https://www.transparenttextures.com/patterns/circles-light.png' },
 ];
 
-export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, token, playSound, settings }) => {
+export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, token, playSound, playMusic, stopMusic, settings }) => {
   const [activeTab, setActiveTab] = useState<'stats' | 'shop' | 'settings' | 'pass'>('stats');
   const [shopCategory, setShopCategory] = useState<'frame' | 'policy' | 'vote' | 'music' | 'sound' | 'background'>('frame');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [playingItemId, setPlayingItemId] = useState<string | null>(null);
+  
+  const playPreview = (item: CosmeticItem) => {
+    if (playingItemId === item.id) {
+      setPlayingItemId(null);
+      // Stop preview, resume background music
+      stopMusic();
+      playMusic(user.activeMusic || 'music-ambient');
+      return;
+    }
+    
+    // Stop background music, play preview
+    stopMusic();
+    setPlayingItemId(item.id);
+    
+    if (item.type === 'sound') {
+      // Play sound pack sequence
+      const soundKeys = ['click', 'death', 'election_passed'];
+      soundKeys.forEach((soundKey, index) => {
+        setTimeout(() => playSound(soundKey, item.id), index * 1000);
+      });
+      setTimeout(() => setPlayingItemId(null), soundKeys.length * 1000);
+    } else if (item.type === 'music') {
+      playMusic(item.id);
+    }
+  };
   
   // Settings props destructuring
   const { isMusicOn, setIsMusicOn, isSoundOn, setIsSoundOn, musicVolume, setMusicVolume, soundVolume, setSoundVolume, isFullscreen, setIsFullscreen } = settings;
@@ -294,9 +322,9 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
             <div className="relative max-w-2xl mx-auto py-8">
               {/* Headers */}
               <div className="flex justify-between items-center mb-8">
-                <span className="text-xs font-mono text-[#666]">Free Tier</span>
-                <span className="text-xl font-thematic text-white">Season 0</span>
-                <span className="text-xs font-mono text-[#666]">Premium Tier</span>
+                <span className="text-[10px] font-mono text-[#666]">Free Tier</span>
+                <span className="text-2xl font-thematic text-white">Season 0</span>
+                <span className="text-[10px] font-mono text-[#666]">Premium Tier</span>
               </div>
 
               {/* Center Line */}
@@ -320,11 +348,52 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                       {/* Free Tier Node */}
                       <div className={cn("w-1/2 pr-8 text-right", !isFree && "opacity-0 pointer-events-none")}>
                         {isFree && (
-                          <div className={cn("inline-block p-4 rounded-2xl border border-[#222] bg-[#141414]", isUnlocked ? "border-red-900/50" : "opacity-50 grayscale")}>
+                          <div className={cn("inline-block p-4 rounded-2xl border border-[#222] bg-[#141414]", isUnlocked ? "border-red-900/50" : "opacity-50")}>
                             <div className="flex items-center gap-4">
                               {level === 30 ? (
-                                <div className="w-10 h-10 rounded-lg bg-[#222] flex items-center justify-center text-[10px] text-purple-500">500 CP</div>
-                              ) : item?.imageUrl && <img src={item.imageUrl} alt={item.name} className="w-10 h-10 rounded-lg object-cover" referrerPolicy="no-referrer" />}
+                                <div className="w-10 h-10 rounded-lg bg-[#222] flex items-center justify-center">
+                                  <Zap className="w-6 h-6 text-purple-500" />
+                                </div>
+                              ) : item && (
+                                <div className="relative w-10 h-10">
+                                  <div className="w-10 h-10 rounded-lg bg-[#222] border border-[#333] flex items-center justify-center overflow-hidden">
+                                    {item.type === 'music' ? (
+                                      <button onClick={() => playPreview(item)} className="w-full h-full flex items-center justify-center">
+                                        {playingItemId === item.id ? <Pause className="w-5 h-5 text-white" /> : <Play className="w-5 h-5 text-white" />}
+                                      </button>
+                                    ) : item.type === 'frame' ? (
+                                      <>
+                                        {user.avatarUrl ? <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" /> : <UserIcon className="w-5 h-5 text-[#444]" />}
+                                      </>
+                                    ) : item.type === 'policy' ? (
+                                      <div className={cn("w-full h-full flex flex-col items-center justify-center gap-0.5", getPolicyStyles(item.id, 'Liberal'))}>
+                                        <Scroll className="w-4 h-4" />
+                                      </div>
+                                    ) : item.type === 'vote' ? (
+                                      <div className={cn("relative w-full h-full flex flex-col items-center justify-center gap-0.5 overflow-hidden", getVoteStyles(item.id, 'Ja'))}>
+                                        {item.id === 'vote-pass-0' && (
+                                          <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-lg">
+                                            <div className="absolute inset-0 animate-purple-rain bg-purple-500/50" />
+                                          </div>
+                                        )}
+                                        <span className="text-xs font-thematic uppercase">Ja!</span>
+                                      </div>
+                                    ) : item.type === 'background' ? (
+                                      <div className="w-full h-full bg-[#141414] flex items-center justify-center">
+                                        <div className="w-full h-full opacity-50" style={{ backgroundImage: `url("${item.imageUrl}")` }} />
+                                      </div>
+                                    ) : (
+                                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                    )}
+                                  </div>
+                                  {item.type === 'frame' && (
+                                    <div className={cn(
+                                      "absolute inset-0 border-2 rounded-lg pointer-events-none",
+                                      getFrameStyles(item.id)
+                                    )} />
+                                  )}
+                                </div>
+                              )}
                               <div className="text-left">
                                 <div className="text-xs text-white font-medium mb-1">{level === 30 ? '500 Cabinet Points' : item?.name}</div>
                                 <div className="text-[10px] text-[#666] uppercase tracking-widest">Free Tier</div>
@@ -412,7 +481,11 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                 {shopCategory !== 'music' && (
                   <div className="bg-[#141414] border border-[#222] rounded-3xl p-6 flex flex-col items-center text-center group">
                     <div className="w-20 h-20 rounded-2xl bg-[#222] border border-[#333] mb-4 flex items-center justify-center overflow-hidden">
-                      {shopCategory === 'frame' ? (
+                      {shopCategory === 'sound' ? (
+                        <button onClick={() => playPreview({ id: 'default', name: 'Default', price: 0, type: 'sound', description: 'Standard Issue' })} className="w-full h-full flex items-center justify-center">
+                          {playingItemId === 'default' ? <Pause className="w-8 h-8 text-white" /> : <Play className="w-8 h-8 text-white" />}
+                        </button>
+                      ) : shopCategory === 'frame' ? (
                         user.avatarUrl ? <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" /> : <UserIcon className="w-10 h-10 text-[#444]" />
                       ) : shopCategory === 'policy' ? (
                         <div className={cn("w-full h-full flex flex-col items-center justify-center gap-1", getPolicyStyles(undefined, 'Liberal'))}>
@@ -485,6 +558,10 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                         <div className="w-20 h-20 rounded-2xl bg-[#222] border border-[#333] flex items-center justify-center overflow-hidden">
                           {item.type === 'frame' ? (
                             user.avatarUrl ? <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" /> : <UserIcon className="w-10 h-10 text-[#444]" />
+                          ) : item.type === 'music' || item.type === 'sound' ? (
+                            <button onClick={() => playPreview(item)} className="w-full h-full flex items-center justify-center">
+                              {playingItemId === item.id ? <Pause className="w-8 h-8 text-white" /> : <Play className="w-8 h-8 text-white" />}
+                            </button>
                           ) : item.type === 'policy' ? (
                             <div className={cn("w-full h-full flex flex-col items-center justify-center gap-1", getPolicyStyles(item.id, 'Liberal'))}>
                               <Scroll className="w-8 h-8" />

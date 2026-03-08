@@ -13,6 +13,7 @@ export const getFrameStyles = (id: string) => {
     case 'frame-inferno': return "border-orange-600 shadow-[0_0_20px_rgba(234,88,12,0.6)] animate-pulse";
     case 'frame-glitch': return "border-pink-500 shadow-[2px_2px_0_rgba(236,72,153,0.5),-2px_-2px_0_rgba(6,182,212,0.5)]";
     case 'frame-royal': return "border-indigo-400 shadow-[0_0_15px_rgba(129,140,248,0.4)] before:content-[''] before:absolute before:top-[-8px] before:left-1/2 before:-translate-x-1/2 before:w-4 before:h-4 before:bg-indigo-400 before:rotate-45";
+    case 'frame-pass-0': return "border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.6)] animate-spin-slow animate-pulse";
     default: return "border-gray-500";
   }
 };
@@ -42,6 +43,8 @@ export const getVoteStyles = (styleId: string | undefined, type: 'Ja' | 'Nein') 
       return isJa ? "bg-cyan-900/20 border-cyan-500 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]" : "bg-pink-900/20 border-pink-500 text-pink-400 shadow-[0_0_15px_rgba(236,72,153,0.4)]";
     case 'vote-ancient':
       return isJa ? "bg-[#d2b48c] border-[#8b4513] text-[#4a2c1d] font-serif" : "bg-[#c0c0c0] border-[#696969] text-[#2f4f4f] font-serif";
+    case 'vote-pass-0':
+      return isJa ? "bg-purple-900/40 border-purple-500 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.4)] animate-pulse" : "bg-gray-900/40 border-gray-500 text-gray-400 shadow-[0_0_15px_rgba(107,114,128,0.4)]";
     default:
       return isJa ? "bg-white border-white text-black" : "bg-black border-[#333] text-white";
   }
@@ -55,6 +58,7 @@ export const getBackgroundTexture = (id: string | undefined) => {
     case 'bg-wood': return 'https://www.transparenttextures.com/patterns/dark-wood.png';
     case 'bg-paper': return 'https://www.transparenttextures.com/patterns/old-mathematics.png';
     case 'bg-concrete': return 'https://www.transparenttextures.com/patterns/concrete-wall.png';
+    case 'bg-pass-0': return 'https://www.transparenttextures.com/patterns/gplay.png';
     default: return 'https://www.transparenttextures.com/patterns/carbon-fibre.png';
   }
 };
