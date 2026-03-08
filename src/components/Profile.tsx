@@ -70,10 +70,16 @@ const SHOP_ITEMS: CosmeticItem[] = [
   { id: 'bg-wood', name: 'Dark Mahogany', price: 2000, type: 'background', description: 'Rich, polished dark wood grain.', imageUrl: 'https://www.transparenttextures.com/patterns/dark-wood.png' },
   { id: 'bg-paper', name: 'Aged Parchment', price: 1800, type: 'background', description: 'Weathered, historical paper texture.', imageUrl: 'https://www.transparenttextures.com/patterns/old-mathematics.png' },
   { id: 'bg-concrete', name: 'Urban Concrete', price: 1400, type: 'background', description: 'Rough, brutalist concrete wall.', imageUrl: 'https://www.transparenttextures.com/patterns/concrete-wall.png' },
+  
+  // Assembly Pass Rewards (Free Tier)
+  { id: 'bg-pass-0', name: 'Season 0 Background', price: 0, type: 'background', description: 'Exclusive Season 0 background.', imageUrl: 'https://www.transparenttextures.com/patterns/carbon-fibre.png' },
+  { id: 'vote-pass-0', name: 'Season 0 Voting Card', price: 0, type: 'vote', description: 'Exclusive Season 0 voting card.' },
+  { id: 'music-pass-0', name: 'Season 0 Music', price: 0, type: 'music', description: 'Exclusive Season 0 music track.' },
+  { id: 'frame-pass-0', name: 'Season 0 Frame', price: 0, type: 'frame', description: 'Exclusive Season 0 avatar frame.' },
 ];
 
 export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, token, playSound, settings }) => {
-  const [activeTab, setActiveTab] = useState<'stats' | 'shop' | 'settings'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'shop' | 'settings' | 'pass'>('stats');
   const [shopCategory, setShopCategory] = useState<'frame' | 'policy' | 'vote' | 'music' | 'sound' | 'background'>('frame');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -195,7 +201,11 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 bg-[#222] rounded-xl border border-[#333]">
                 <Coins className="w-4 h-4 text-emerald-500" />
-                <span className="text-sm font-mono text-emerald-500">{user.stats.points} PTS</span>
+                <span className="text-sm font-mono text-emerald-500">{user.stats.points} IP</span>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-[#222] rounded-xl border border-[#333]">
+                <Zap className="w-4 h-4 text-purple-500" />
+                <span className="text-sm font-mono text-purple-500">{(user.cabinetPoints ?? 0)} CP</span>
               </div>
             </div>
           </div>
@@ -236,8 +246,21 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
               activeTab === 'shop' ? "text-white" : "text-[#444] hover:text-[#666]"
             )}
           >
-            Cosmetic Shop
+            Shop
             {activeTab === 'shop' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-500" />}
+          </button>
+          <button 
+            onClick={() => {
+              playSound('click');
+              setActiveTab('pass');
+            }}
+            className={cn(
+              "flex-1 py-4 text-xs font-mono uppercase tracking-widest transition-all relative",
+              activeTab === 'pass' ? "text-white" : "text-[#444] hover:text-[#666]"
+            )}
+          >
+            Assembly Pass
+            {activeTab === 'pass' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-500" />}
           </button>
           <button 
             onClick={() => {
@@ -266,6 +289,67 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
               <StatCard label="Hitler Games" value={user.stats.hitlerGames} icon={<Shield className="w-4 h-4" />} />
               <StatCard label="Kills" value={user.stats.kills} icon={<Zap className="w-4 h-4 text-yellow-500" />} />
               <StatCard label="Deaths" value={user.stats.deaths} icon={<Heart className="w-4 h-4 text-red-500" />} />
+            </div>
+          ) : activeTab === 'pass' ? (
+            <div className="relative max-w-2xl mx-auto py-8">
+              {/* Headers */}
+              <div className="flex justify-between items-center mb-8">
+                <span className="text-xs font-mono text-[#666]">Free Tier</span>
+                <span className="text-xl font-thematic text-white">Season 0</span>
+                <span className="text-xs font-mono text-[#666]">Premium Tier</span>
+              </div>
+
+              {/* Center Line */}
+              <div className="absolute left-1/2 top-20 bottom-0 w-0.5 bg-[#222] -translate-x-1/2">
+                <div className="w-full bg-yellow-500 transition-all duration-500" style={{ height: `${Math.min(100, Math.max(0, ((Math.min(50, Math.floor(user.stats.gamesPlayed / 5) + 1) - 1 + (user.stats.gamesPlayed % 5) / 5) / 49) * 100))}%` }} />
+              </div>
+              
+              <div className="space-y-12">
+                {[5, 10, 15, 20, 25, 30, 35, 40, 45, 50].map(level => {
+                  const isFree = level % 10 === 0;
+                  const isUnlocked = Math.floor(user.stats.gamesPlayed / 5) + 1 >= level;
+                  const item = isFree && level !== 30 ? SHOP_ITEMS.find(i => (level === 10 && i.id === 'bg-pass-0') || (level === 20 && i.id === 'vote-pass-0') || (level === 40 && i.id === 'music-pass-0') || (level === 50 && i.id === 'frame-pass-0')) : null;
+
+                  return (
+                    <div key={level} className="relative flex items-center justify-center">
+                      {/* Level Marker */}
+                      <div className="absolute left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-[#1a1a1a] border-2 border-[#333] flex items-center justify-center text-[10px] font-mono text-[#666] z-10">
+                        {level}
+                      </div>
+
+                      {/* Free Tier Node */}
+                      <div className={cn("w-1/2 pr-8 text-right", !isFree && "opacity-0 pointer-events-none")}>
+                        {isFree && (
+                          <div className={cn("inline-block p-4 rounded-2xl border border-[#222] bg-[#141414]", isUnlocked ? "border-red-900/50" : "opacity-50 grayscale")}>
+                            <div className="flex items-center gap-4">
+                              {level === 30 ? (
+                                <div className="w-10 h-10 rounded-lg bg-[#222] flex items-center justify-center text-[10px] text-purple-500">500 CP</div>
+                              ) : item?.imageUrl && <img src={item.imageUrl} alt={item.name} className="w-10 h-10 rounded-lg object-cover" referrerPolicy="no-referrer" />}
+                              <div className="text-left">
+                                <div className="text-xs text-white font-medium mb-1">{level === 30 ? '500 Cabinet Points' : item?.name}</div>
+                                <div className="text-[10px] text-[#666] uppercase tracking-widest">Free Tier</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Premium Tier Node */}
+                      <div className="w-1/2 pl-8 text-left">
+                        <div className={cn("inline-block p-4 rounded-2xl border border-[#222] bg-[#141414] opacity-50 grayscale cursor-not-allowed")}>
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-lg bg-[#222] flex items-center justify-center text-[10px] text-[#666]">PREM</div>
+                            <div className="text-left">
+                              <div className="text-xs text-white font-medium mb-1">Premium Reward</div>
+                              <div className="text-[10px] text-purple-500 uppercase tracking-widest">Premium Tier (Unavailable)</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           ) : activeTab === 'shop' ? (
             <div className="space-y-8">
@@ -446,6 +530,13 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                         >
                           {isEquipped ? 'Equipped' : 'Equip'}
                         </button>
+                      ) : item.price === 0 ? (
+                        <button 
+                          disabled
+                          className="w-full py-2 bg-[#222] text-[#666] rounded-xl text-[10px] font-mono uppercase tracking-widest border border-[#333] cursor-not-allowed"
+                        >
+                          Locked (Pass)
+                        </button>
                       ) : (
                         <button 
                           onClick={() => {
@@ -456,7 +547,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                           className="w-full py-2 bg-red-900 text-white rounded-xl text-[10px] font-mono uppercase tracking-widest hover:bg-red-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                         >
                           <Coins className="w-3 h-3" />
-                          {item.price} PTS
+                          {item.price} IP
                         </button>
                       )}
                     </div>

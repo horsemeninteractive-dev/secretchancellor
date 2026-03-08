@@ -70,7 +70,7 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
           <div className="min-w-0">
             <div className="flex items-baseline gap-2">
               <h1 className="text-base sm:text-2xl font-thematic text-white tracking-wide leading-none truncate">Secret Chancellor</h1>
-              <span className="text-[8px] font-mono text-red-500/60 border border-red-900/40 rounded px-1 py-0.5 leading-none shrink-0">v0.8.1</span>
+              <span className="text-[8px] font-mono text-red-500/60 border border-red-900/40 rounded px-1 py-0.5 leading-none shrink-0">v0.8.5</span>
             </div>
             <p className="text-[8px] sm:text-[10px] uppercase tracking-widest text-[#666] font-mono mt-0.5">Assembly Lobby</p>
           </div>

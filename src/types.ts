@@ -45,6 +45,7 @@ export interface User {
   activeMusic?: string;
   activeSoundPack?: string;
   activeBackground?: string;
+  cabinetPoints: number;
 }
 export const User = {};
 

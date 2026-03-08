@@ -20,6 +20,7 @@ function mapSupabaseToUser(data: any): any {
     activeMusic:       data.active_music,
     activeSoundPack:   data.active_sound,
     activeBackground:  data.active_background,
+    cabinetPoints:     data.cabinet_points,
     googleId:          data.google_id,
     discordId:         data.discord_id,
   };
@@ -38,6 +39,7 @@ function mapUserToSupabase(userData: any): any {
     active_music:     userData.activeMusic,
     active_sound:     userData.activeSoundPack,
     active_background:userData.activeBackground,
+    cabinet_points:   userData.cabinetPoints,
     google_id:        userData.googleId,
     discord_id:       userData.discordId,
     stats:            userData.stats,
@@ -146,6 +148,7 @@ export function makeNewUser(overrides: Partial<any> = {}): any {
       elo:          1000,
       points:       0,
     },
+    cabinetPoints: 0,
     ownedCosmetics: ['music-ambient'],
     ...overrides,
   };
