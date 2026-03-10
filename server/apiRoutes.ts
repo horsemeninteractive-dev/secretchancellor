@@ -310,6 +310,36 @@ export function registerRoutes(
 
   // ── Friends ───────────────────────────────────────────────────────────────
 
+  app.get("/api/friends/status", async (req: Request, res: Response) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ error: "No token" });
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { username: string };
+      const user = await getUser(decoded.username);
+      if (!user) return res.status(404).json({ error: "User not found" });
+      const friends = await getFriends(user.id);
+      const statuses: Record<string, { isOnline: boolean; roomId?: string }> = {};
+      for (const friend of friends) {
+        const friendSocketId = userSockets.get(friend.id);
+        if (friendSocketId) {
+          let roomId: string | undefined;
+          for (const [rId, state] of rooms.entries()) {
+            if (state.players.some(p => p.userId === friend.id && !p.isDisconnected)) {
+              roomId = rId;
+              break;
+            }
+          }
+          statuses[friend.id] = { isOnline: true, roomId };
+        } else {
+          statuses[friend.id] = { isOnline: false };
+        }
+      }
+      res.json({ statuses });
+    } catch (_) {
+      res.status(401).json({ error: "Invalid token" });
+    }
+  });
+
   app.get("/api/friends", async (req: Request, res: Response) => {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) return res.status(401).json({ error: "No token" });
@@ -416,28 +446,45 @@ export function registerRoutes(
       const user    = await getUser(decoded.username);
       if (!user) return res.status(404).json({ error: "User not found" });
 
+      const PASS_ITEM_LEVELS: { [key: string]: number } = {
+        'bg-pass-0': 10,
+        'vote-pass-0': 20,
+        'music-pass-0': 40,
+        'frame-pass-0': 50,
+      };
+
+      const isItemUnlocked = (itemId: string) => {
+        if (user.ownedCosmetics.includes(itemId)) return true;
+        const requiredLevel = PASS_ITEM_LEVELS[itemId];
+        if (requiredLevel) {
+          const userLevel = Math.floor(user.stats.gamesPlayed / 5) + 1;
+          return userLevel >= requiredLevel;
+        }
+        return false;
+      };
+
       if (frameId !== undefined) {
-        if (frameId && !user.ownedCosmetics.includes(frameId)) return res.status(400).json({ error: "Not owned" });
+        if (frameId && !isItemUnlocked(frameId)) return res.status(400).json({ error: "Not owned" });
         user.activeFrame = frameId;
       }
       if (policyStyle !== undefined) {
-        if (policyStyle && !user.ownedCosmetics.includes(policyStyle)) return res.status(400).json({ error: "Not owned" });
+        if (policyStyle && !isItemUnlocked(policyStyle)) return res.status(400).json({ error: "Not owned" });
         user.activePolicyStyle = policyStyle;
       }
       if (votingStyle !== undefined) {
-        if (votingStyle && !user.ownedCosmetics.includes(votingStyle)) return res.status(400).json({ error: "Not owned" });
+        if (votingStyle && !isItemUnlocked(votingStyle)) return res.status(400).json({ error: "Not owned" });
         user.activeVotingStyle = votingStyle;
       }
       if (music !== undefined) {
-        if (music && !user.ownedCosmetics.includes(music)) return res.status(400).json({ error: "Not owned" });
+        if (music && !isItemUnlocked(music)) return res.status(400).json({ error: "Not owned" });
         user.activeMusic = music;
       }
       if (soundPack !== undefined) {
-        if (soundPack && !user.ownedCosmetics.includes(soundPack)) return res.status(400).json({ error: "Not owned" });
+        if (soundPack && !isItemUnlocked(soundPack)) return res.status(400).json({ error: "Not owned" });
         user.activeSoundPack = soundPack;
       }
       if (backgroundId !== undefined) {
-        if (backgroundId && !user.ownedCosmetics.includes(backgroundId)) return res.status(400).json({ error: "Not owned" });
+        if (backgroundId && !isItemUnlocked(backgroundId)) return res.status(400).json({ error: "Not owned" });
         user.activeBackground = backgroundId;
       }
 

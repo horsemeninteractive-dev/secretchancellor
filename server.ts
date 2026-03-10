@@ -40,8 +40,16 @@ async function startServer() {
         const friendSocketId = userSockets.get(friend.id);
         if (friendSocketId) {
           console.log(`Notifying friend ${friend.id} at socket ${friendSocketId}`);
+          // Find which room the friend is in (if any)
+          let friendRoomId: string | undefined;
+          for (const [rId, state] of engine.rooms.entries()) {
+            if (state.players.some(p => p.userId === friend.id && !p.isDisconnected)) {
+              friendRoomId = rId;
+              break;
+            }
+          }
           io.to(friendSocketId).emit("userStatusChanged", { userId, isOnline: true });
-          socket.emit("userStatusChanged", { userId: friend.id, isOnline: true });
+          socket.emit("userStatusChanged", { userId: friend.id, isOnline: true, roomId: friendRoomId });
         }
       }
     });
@@ -127,8 +135,17 @@ async function startServer() {
         for (const friend of friends) {
           const friendSocketId = userSockets.get(friend.id);
           if (friendSocketId) {
-            io.to(friendSocketId).emit("userStatusChanged", { userId, isOnline: true });
-            socket.emit("userStatusChanged", { userId: friend.id, isOnline: true });
+            // Tell friend this user is online and in this room
+            io.to(friendSocketId).emit("userStatusChanged", { userId, isOnline: true, roomId });
+            // Tell this user which room the friend is in (if any)
+            let friendRoomId: string | undefined;
+            for (const [rId, state] of engine.rooms.entries()) {
+              if (state.players.some(p => p.userId === friend.id && !p.isDisconnected)) {
+                friendRoomId = rId;
+                break;
+              }
+            }
+            socket.emit("userStatusChanged", { userId: friend.id, isOnline: true, roomId: friendRoomId });
           }
         }
         const user = await getUserById(userId);

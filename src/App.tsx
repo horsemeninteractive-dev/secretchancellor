@@ -7,6 +7,7 @@ import { Lobby } from './components/Lobby';
 import { Profile } from './components/Profile';
 import { GameRoom } from './components/GameRoom';
 import { UpdateBanner } from './components/UpdateBanner';
+import { InviteModal } from './components/game/modals/InviteModal';
 import { MUSIC_TRACKS, SOUND_PACKS } from './lib/audio';
 import { discordSdk, setupDiscordSdk } from './lib/discord';
 import { cn } from './lib/utils';
@@ -25,6 +26,7 @@ export default function App() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isDiscord, setIsDiscord] = useState(false);
+  const [pendingInvite, setPendingInvite] = useState<{ fromUsername: string; roomId: string } | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -192,11 +194,15 @@ export default function App() {
       setTimeout(() => setError(null), 3000);
     });
     socket.on('userUpdate', (updatedUser: User) => setUser(updatedUser));
+    socket.on('friendInvite', (data: { fromUsername: string; roomId: string }) => {
+      setPendingInvite(data);
+    });
     return () => {
       socket.off('gameStateUpdate');
       socket.off('privateInfo');
       socket.off('error');
       socket.off('userUpdate');
+      socket.off('friendInvite');
     };
   }, []);
 
@@ -316,6 +322,15 @@ export default function App() {
                 soundVolume, setSoundVolume,
                 isFullscreen, setIsFullscreen
               }}
+              onJoinRoom={(roomId) => { setIsProfileOpen(false); handleJoinRoom(roomId); }}
+            />
+          )}
+          {pendingInvite && (
+            <InviteModal
+              inviterName={pendingInvite.fromUsername}
+              roomId={pendingInvite.roomId}
+              onAccept={() => { handleJoinRoom(pendingInvite.roomId); setPendingInvite(null); }}
+              onReject={() => setPendingInvite(null)}
             />
           )}
         </>
@@ -354,6 +369,15 @@ export default function App() {
                 isFullscreen, setIsFullscreen
               }}
               roomId={gameState?.roomId}
+              onJoinRoom={(roomId) => { setIsProfileOpen(false); handleLeaveRoom(); setTimeout(() => handleJoinRoom(roomId), 100); }}
+            />
+          )}
+          {pendingInvite && (
+            <InviteModal
+              inviterName={pendingInvite.fromUsername}
+              roomId={pendingInvite.roomId}
+              onAccept={() => { handleLeaveRoom(); setTimeout(() => handleJoinRoom(pendingInvite.roomId), 100); setPendingInvite(null); }}
+              onReject={() => setPendingInvite(null)}
             />
           )}
         </>

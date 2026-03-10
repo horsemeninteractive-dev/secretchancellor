@@ -42,7 +42,7 @@ export const PlayerGrid = ({ gameState, me, speakingPlayers, playSound, token, s
                 }
               }}
               className={cn(
-                'relative p-1 sm:p-4 rounded-xl border transition-all duration-300 flex flex-col items-center justify-center min-h-0 card-border overflow-hidden cursor-pointer',
+                'relative p-1 sm:p-4 rounded-xl border transition-all duration-300 flex flex-col items-center justify-center min-h-0 overflow-hidden cursor-pointer',
                 p.isAlive ? 'bg-[#1a1a1a]/80 backdrop-blur-sm border-[#222]' : 'bg-[#111]/50 border-transparent opacity-50 grayscale',
                 p.isPresidentialCandidate && 'border-yellow-500/50 ring-1 ring-yellow-500/20',
                 p.isChancellorCandidate && 'border-blue-500/50 ring-1 ring-blue-500/20',
@@ -65,24 +65,25 @@ export const PlayerGrid = ({ gameState, me, speakingPlayers, playSound, token, s
                     'flex flex-col items-center text-center min-h-0 overflow-hidden',
                     isManyPlayers ? 'gap-0.5' : 'gap-1 sm:gap-2'
                   )}>
-                    <div className="relative shrink-0">
+                    <div className="relative shrink-0 p-1">
                       <div className={cn(
-                        'rounded-full bg-[#222] flex items-center justify-center border border-[#333] relative overflow-hidden',
-                        isManyPlayers ? 'w-6 h-6 sm:w-12 sm:h-12' : 'w-10 h-10 sm:w-12 sm:h-12'
+                        'bg-[#222] flex items-center justify-center relative overflow-hidden',
+                        !p.activeFrame && 'border border-[#333]',
+                        isManyPlayers ? 'w-6 h-6 sm:w-12 sm:h-12 rounded-lg' : 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl'
                       )}>
                         {p.avatarUrl
                           ? <img src={p.avatarUrl} alt={p.name} className="w-full h-full object-cover" />
                           : <Users className={cn('text-[#666]', isManyPlayers ? 'w-3 h-3 sm:w-6 sm:h-6' : 'w-5 h-5 sm:w-6 sm:h-6')} />}
                         {p.activeFrame && (
-                          <div className={cn('absolute inset-0 border-2 sm:border-4 rounded-full pointer-events-none', getFrameStyles(p.activeFrame))} />
+                          <div className={cn('absolute inset-0 pointer-events-none', isManyPlayers ? 'rounded-lg' : 'rounded-xl', getFrameStyles(p.activeFrame))} />
                         )}
                         {!p.isAlive && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full">
+                          <div className={cn("absolute inset-0 flex items-center justify-center bg-black/40", isManyPlayers ? 'rounded-lg' : 'rounded-xl')}>
                             <Eye className={cn('text-red-600 drop-shadow-[0_0_5px_rgba(220,38,38,0.8)]', isManyPlayers ? 'w-4 h-4 sm:w-8 sm:h-8' : 'w-6 h-6 sm:w-8 sm:h-8')} />
                           </div>
                         )}
                         {(gameState.phase === 'Voting' || gameState.phase === 'Voting_Reveal') && p.vote && (
-                          <div className="sm:hidden absolute inset-0 flex items-center justify-center bg-green-500/40 backdrop-blur-[1px]">
+                          <div className={cn("sm:hidden absolute inset-0 flex items-center justify-center bg-green-500/40 backdrop-blur-[1px]", isManyPlayers ? 'rounded-lg' : 'rounded-xl')}>
                             <Check className="w-4 h-4 text-white drop-shadow-[0_0_3px_rgba(0,0,0,0.5)]" />
                           </div>
                         )}
@@ -91,12 +92,12 @@ export const PlayerGrid = ({ gameState, me, speakingPlayers, playSound, token, s
                       {/* Mobile role badges */}
                       <div className="sm:hidden absolute top-0 -right-1 flex flex-col gap-0.5 z-10">
                         {(p.isPresident || p.isPresidentialCandidate) && (
-                          <div className="w-3 h-3 bg-yellow-500 rounded-full border border-[#1a1a1a] flex items-center justify-center shadow-sm">
+                          <div className="w-3 h-3 bg-yellow-500 rounded-sm border border-[#1a1a1a] flex items-center justify-center shadow-sm">
                             <span className="text-[7px] font-bold text-black leading-none">P</span>
                           </div>
                         )}
                         {(p.isChancellor || p.isChancellorCandidate) && (
-                          <div className="w-3 h-3 bg-blue-500 rounded-full border border-[#1a1a1a] flex items-center justify-center shadow-sm">
+                          <div className="w-3 h-3 bg-blue-500 rounded-sm border border-[#1a1a1a] flex items-center justify-center shadow-sm">
                             <span className="text-[7px] font-bold text-white leading-none">C</span>
                           </div>
                         )}
@@ -104,7 +105,8 @@ export const PlayerGrid = ({ gameState, me, speakingPlayers, playSound, token, s
 
                       {p.activeFrame && (
                         <div className={cn(
-                          'absolute -inset-1 border-2 rounded-full pointer-events-none',
+                          'absolute -inset-1 pointer-events-none',
+                          isManyPlayers ? 'rounded-lg' : 'rounded-xl',
                           p.activeFrame === 'frame-red' && 'border-red-500',
                           p.activeFrame === 'frame-gold' && 'border-yellow-500',
                           p.activeFrame === 'frame-blue' && 'border-blue-500',

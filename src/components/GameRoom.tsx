@@ -21,7 +21,6 @@ import { PolicyPeekModal } from './game/modals/PolicyPeekModal';
 import { DossierModal } from './game/modals/DossierModal';
 import { DeclarationModal } from './game/modals/DeclarationModal';
 import { FriendRequestModal } from './game/modals/FriendRequestModal';
-import { InviteModal } from './game/modals/InviteModal';
 import { PlayerProfileModal } from './game/modals/PlayerProfileModal';
 
 const CLIENT_VERSION = 'v0.8.9';
@@ -114,14 +113,10 @@ export const GameRoom = ({
   const [investigationResult, setInvestigationResult] = useState<{ targetName: string; role: Role } | null>(null);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [pendingRequest, setPendingRequest] = useState<{ fromUserId: string; fromUsername: string } | null>(null);
-  const [pendingInvite, setPendingInvite] = useState<{ fromUsername: string; roomId: string } | null>(null);
 
   useEffect(() => {
     socket.on('policyPeekResult', (policies: Policy[]) => setPeekedPolicies(policies));
     socket.on('investigationResult', (result) => setInvestigationResult(result));
-    socket.on('friendInvite', (data: { fromUsername: string; roomId: string }) => {
-      setPendingInvite({ fromUsername: data.fromUsername, roomId: data.roomId });
-    });
     socket.on('friendRequestReceived', async (data: { fromUserId: string }) => {
       try {
         const response = await fetch(`/api/user/${data.fromUserId}`, {
@@ -139,7 +134,6 @@ export const GameRoom = ({
       socket.off('policyPeekResult');
       socket.off('investigationResult');
       socket.off('friendRequestReceived');
-      socket.off('friendInvite');
     };
   }, [token]);
 
@@ -405,9 +399,9 @@ export const GameRoom = ({
         'fixed inset-0 bg-texture text-[#e4e3e0] font-sans flex flex-col overflow-hidden transition-all duration-1000',
         gameState.stateDirectives >= 3 && gameState.phase !== 'GameOver' && 'danger-zone-pulse'
       )}
-      style={{
-        backgroundImage: `radial-gradient(circle at 50% 50%, rgba(20, 20, 20, 0.8) 0%, rgba(10, 10, 10, 1) 100%), url("${getBackgroundTexture(user?.activeBackground)}")`
-      }}
+      style={user?.activeBackground ? {
+        backgroundImage: `radial-gradient(circle at 50% 50%, rgba(20, 20, 20, 0.5) 0%, rgba(10, 10, 10, 0.8) 100%), url("${getBackgroundTexture(user.activeBackground)}")`
+      } : {}}
     >
       <GameHeader
         gameState={gameState}
@@ -502,17 +496,6 @@ export const GameRoom = ({
             setPendingRequest(null);
           }}
           onDeny={() => setPendingRequest(null)}
-        />
-      )}
-      {pendingInvite && (
-        <InviteModal
-          inviterName={pendingInvite.fromUsername}
-          roomId={pendingInvite.roomId}
-          onAccept={() => {
-            onJoinRoom(pendingInvite.roomId);
-            setPendingInvite(null);
-          }}
-          onReject={() => setPendingInvite(null)}
         />
       )}
       {selectedPlayerId && (

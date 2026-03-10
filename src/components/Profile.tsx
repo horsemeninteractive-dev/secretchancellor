@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Trophy, Coins, Shield, User as UserIcon, Check, ShoppingBag, ArrowLeft, Star, Heart, Zap, Flame, Scroll, Play, Pause } from 'lucide-react';
 import { User, CosmeticItem, Policy } from '../types';
 import { FriendsList } from './FriendsList';
+import { Inventory } from './Inventory';
 import { cn } from '../lib/utils';
 import { getPolicyStyles, getVoteStyles, getFrameStyles } from '../lib/cosmetics';
+import { DEFAULT_ITEMS, PASS_ITEM_LEVELS } from '../constants';
 
 interface ProfileProps {
   user: User;
@@ -27,6 +29,7 @@ interface ProfileProps {
     setIsFullscreen: React.Dispatch<React.SetStateAction<boolean>>;
   };
   roomId?: string;
+  onJoinRoom?: (roomId: string) => void;
 }
 
 const SHOP_ITEMS: CosmeticItem[] = [
@@ -82,8 +85,8 @@ const SHOP_ITEMS: CosmeticItem[] = [
   { id: 'frame-pass-0', name: 'Season 0: Purple Pill', price: 0, type: 'frame', description: 'Exclusive Season 0 animated avatar frame.', imageUrl: 'https://www.transparenttextures.com/patterns/circles-light.png' },
 ];
 
-export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, token, playSound, playMusic, stopMusic, settings, roomId }) => {
-  const [activeTab, setActiveTab] = useState<'stats' | 'shop' | 'settings' | 'pass' | 'friends'>('stats');
+export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, token, playSound, playMusic, stopMusic, settings, roomId, onJoinRoom }) => {
+  const [activeTab, setActiveTab] = useState<'stats' | 'shop' | 'settings' | 'pass' | 'friends' | 'inventory'>('stats');
   const [shopCategory, setShopCategory] = useState<'frame' | 'policy' | 'vote' | 'music' | 'sound' | 'background'>('frame');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -150,16 +153,17 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
   };
 
   const handleEquip = async (type: 'frame' | 'policy' | 'vote' | 'music' | 'sound' | 'background', itemId: string | undefined) => {
+    console.log('handleEquip called', type, itemId);
     setIsLoading(true);
     setError('');
     try {
       const body: any = {};
-      if (type === 'frame') body.frameId = itemId;
-      if (type === 'policy') body.policyStyle = itemId;
-      if (type === 'vote') body.votingStyle = itemId;
-      if (type === 'music') body.music = itemId === 'music-ambient' ? null : itemId;
-      if (type === 'sound') body.soundPack = itemId;
-      if (type === 'background') body.backgroundId = itemId;
+      if (type === 'frame') body.frameId = itemId || null;
+      if (type === 'policy') body.policyStyle = itemId || null;
+      if (type === 'vote') body.votingStyle = itemId || null;
+      if (type === 'music') body.music = itemId === 'music-ambient' ? null : (itemId || null);
+      if (type === 'sound') body.soundPack = itemId || null;
+      if (type === 'background') body.backgroundId = itemId || null;
 
       const response = await fetch('/api/profile/frame', {
         method: 'POST',
@@ -252,14 +256,14 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-[#222]">
+        <div className="grid grid-cols-3 border-b border-[#222]">
           <button 
             onClick={() => {
               playSound('click');
               setActiveTab('stats');
             }}
             className={cn(
-              "flex-1 py-4 text-xs font-mono uppercase tracking-widest transition-all relative",
+              "py-4 text-xs font-mono uppercase tracking-widest transition-all relative border-r border-b border-[#222]",
               activeTab === 'stats' ? "text-white" : "text-[#444] hover:text-[#666]"
             )}
           >
@@ -269,10 +273,23 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
           <button 
             onClick={() => {
               playSound('click');
+              setActiveTab('inventory');
+            }}
+            className={cn(
+              "py-4 text-xs font-mono uppercase tracking-widest transition-all relative border-r border-b border-[#222]",
+              activeTab === 'inventory' ? "text-white" : "text-[#444] hover:text-[#666]"
+            )}
+          >
+            Inventory
+            {activeTab === 'inventory' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-500" />}
+          </button>
+          <button 
+            onClick={() => {
+              playSound('click');
               setActiveTab('friends');
             }}
             className={cn(
-              "flex-1 py-4 text-xs font-mono uppercase tracking-widest transition-all relative",
+              "py-4 text-xs font-mono uppercase tracking-widest transition-all relative border-b border-[#222]",
               activeTab === 'friends' ? "text-white" : "text-[#444] hover:text-[#666]"
             )}
           >
@@ -285,7 +302,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
               setActiveTab('pass');
             }}
             className={cn(
-              "flex-1 py-4 text-xs font-mono uppercase tracking-widest transition-all relative",
+              "py-4 text-xs font-mono uppercase tracking-widest transition-all relative border-r border-b border-[#222]",
               activeTab === 'pass' ? "text-white" : "text-[#444] hover:text-[#666]"
             )}
           >
@@ -298,7 +315,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
               setActiveTab('shop');
             }}
             className={cn(
-              "flex-1 py-4 text-xs font-mono uppercase tracking-widest transition-all relative",
+              "py-4 text-xs font-mono uppercase tracking-widest transition-all relative border-r border-b border-[#222]",
               activeTab === 'shop' ? "text-white" : "text-[#444] hover:text-[#666]"
             )}
           >
@@ -311,7 +328,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
               setActiveTab('settings');
             }}
             className={cn(
-              "flex-1 py-4 text-xs font-mono uppercase tracking-widest transition-all relative",
+              "py-4 text-xs font-mono uppercase tracking-widest transition-all relative border-b border-[#222]",
               activeTab === 'settings' ? "text-white" : "text-[#444] hover:text-[#666]"
             )}
           >
@@ -334,31 +351,40 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
               <StatCard label="Deaths" value={user.stats.deaths} icon={<Heart className="w-4 h-4 text-red-500" />} />
             </div>
           ) : activeTab === 'friends' ? (
-            <FriendsList user={user} token={token} playSound={playSound} roomId={roomId} />
+            <FriendsList user={user} token={token} playSound={playSound} roomId={roomId} onJoinRoom={onJoinRoom} />
           ) : activeTab === 'pass' ? (
             <div className="relative max-w-2xl mx-auto py-8">
+              {/* Assembly Pass Banner */}
+              <div className="mb-8 p-4 bg-[#222] border border-[#333] rounded-2xl text-center">
+                <h3 className="text-xl font-thematic text-white tracking-widest uppercase">Assembly Pass</h3>
+                <p className="text-[10px] font-mono text-[#666] uppercase tracking-widest mt-1">Season 0</p>
+              </div>
+
               {/* Headers */}
-              <div className="flex justify-between items-center mb-8">
-                <span className="text-[10px] font-mono text-[#666]">Free Tier</span>
-                <span className="text-2xl font-thematic text-white">Season 0</span>
-                <span className="text-[10px] font-mono text-[#666]">Premium Tier</span>
+              <div className="flex justify-between items-center mb-8 px-4">
+                <span className="text-[10px] font-mono text-white bg-[#333] px-3 py-1 rounded-full">Free Tier</span>
+                <span className="text-[10px] font-mono text-purple-500 bg-purple-900/20 px-3 py-1 rounded-full border border-purple-900/50">Premium Tier</span>
               </div>
 
               {/* Center Line */}
-              <div className="absolute left-1/2 top-20 bottom-0 w-0.5 bg-[#222] -translate-x-1/2">
-                <div className="w-full bg-yellow-500 transition-all duration-500" style={{ height: `${Math.min(100, Math.max(0, ((Math.min(50, Math.floor(user.stats.gamesPlayed / 5) + 1) - 1 + (user.stats.gamesPlayed % 5) / 5) / 49) * 100))}%` }} />
+              <div className="absolute left-1/2 top-40 bottom-0 w-0.5 bg-[#222] -translate-x-1/2">
+                <div className="w-full bg-yellow-500 transition-all duration-500" style={{ height: `${Math.min(100, Math.max(0, ((Math.floor(user.stats.gamesPlayed / 5)) / 10) * 100))}%` }} />
               </div>
               
               <div className="space-y-12">
                 {[5, 10, 15, 20, 25, 30, 35, 40, 45, 50].map(level => {
-                  const isFree = level % 10 === 0;
-                  const isUnlocked = Math.floor(user.stats.gamesPlayed / 5) + 1 >= level;
-                  const item = isFree && level !== 30 ? SHOP_ITEMS.find(i => (level === 10 && i.id === 'bg-pass-0') || (level === 20 && i.id === 'vote-pass-0') || (level === 40 && i.id === 'music-pass-0') || (level === 50 && i.id === 'frame-pass-0')) : null;
+                  const isFree = level % 10 === 0; // Only show rewards every 10 levels for Free Tier
+                  const currentLevel = Math.floor(user.stats.gamesPlayed / 5) + 1;
+                  const isUnlocked = currentLevel >= level;
+                  const item = isFree ? SHOP_ITEMS.find(i => (level === 10 && i.id === 'bg-pass-0') || (level === 20 && i.id === 'vote-pass-0') || (level === 40 && i.id === 'music-pass-0') || (level === 50 && i.id === 'frame-pass-0')) : null;
 
                   return (
                     <div key={level} className="relative flex items-center justify-center">
                       {/* Level Marker */}
-                      <div className="absolute left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-[#1a1a1a] border-2 border-[#333] flex items-center justify-center text-[10px] font-mono text-[#666] z-10">
+                      <div className={cn(
+                        "absolute left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-[#1a1a1a] border-2 flex items-center justify-center text-[10px] font-mono z-10 transition-colors",
+                        isUnlocked ? "border-yellow-500 text-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]" : "border-[#333] text-[#666]"
+                      )}>
                         {level}
                       </div>
 
@@ -366,7 +392,11 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                       <div className={cn("w-1/2 pr-8 text-right", !isFree && "opacity-0 pointer-events-none")}>
                         {isFree && (
                           <div className={cn("inline-block p-4 rounded-2xl border border-[#222] bg-[#141414]", isUnlocked ? "border-red-900/50" : "opacity-50")}>
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center justify-end gap-4">
+                              <div className="text-right">
+                                <div className="text-xs text-white font-medium mb-1">{level === 30 ? '500 Cabinet Points' : item?.name || 'Reward'}</div>
+                                <div className="text-[10px] text-[#666] uppercase tracking-widest">Free Tier</div>
+                              </div>
                               {level === 30 ? (
                                 <div className="w-10 h-10 rounded-lg bg-[#222] flex items-center justify-center">
                                   <Zap className="w-6 h-6 text-purple-500" />
@@ -411,10 +441,6 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                                   )}
                                 </div>
                               )}
-                              <div className="text-left">
-                                <div className="text-xs text-white font-medium mb-1">{level === 30 ? '500 Cabinet Points' : item?.name}</div>
-                                <div className="text-[10px] text-[#666] uppercase tracking-widest">Free Tier</div>
-                              </div>
                             </div>
                           </div>
                         )}
@@ -437,6 +463,17 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                 })}
               </div>
             </div>
+          ) : activeTab === 'inventory' ? (
+            <Inventory 
+              user={user} 
+              onUpdateUser={onUpdateUser} 
+              token={token} 
+              playSound={playSound} 
+              handleEquip={handleEquip} 
+              items={SHOP_ITEMS}
+              playPreview={playPreview}
+              playingItemId={playingItemId}
+            />
           ) : activeTab === 'shop' ? (
             <div className="space-y-8">
               {error && (
@@ -451,7 +488,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                 <div className="flex gap-1 sm:gap-2 p-1 bg-[#141414] rounded-2xl border border-[#222]">
                   {[
                     { id: 'frame', label: 'Frames' },
-                    { id: 'policy', label: 'Policies' },
+                    { id: 'policy', label: 'Directives' },
                     { id: 'vote', label: 'Votes' }
                   ].map((cat) => (
                     <button
@@ -494,73 +531,10 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Default Item - Hidden for music as Shadows Over Parliament is the default */}
-                {shopCategory !== 'music' && (
-                  <div className="bg-[#141414] border border-[#222] rounded-3xl p-6 flex flex-col items-center text-center group">
-                    <div className="w-20 h-20 rounded-2xl bg-[#222] border border-[#333] mb-4 flex items-center justify-center overflow-hidden">
-                      {shopCategory === 'sound' ? (
-                        <button onClick={() => playPreview({ id: 'default', name: 'Default', price: 0, type: 'sound', description: 'Standard Issue' })} className="w-full h-full flex items-center justify-center">
-                          {playingItemId === 'default' ? <Pause className="w-8 h-8 text-white" /> : <Play className="w-8 h-8 text-white" />}
-                        </button>
-                      ) : shopCategory === 'frame' ? (
-                        user.avatarUrl ? <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" /> : <UserIcon className="w-10 h-10 text-[#444]" />
-                      ) : shopCategory === 'policy' ? (
-                        <div className={cn("w-full h-full flex flex-col items-center justify-center gap-1", getPolicyStyles(undefined, 'Civil'))}>
-                          <Scroll className="w-8 h-8" />
-                          <span className="text-[8px] font-mono uppercase">Civil</span>
-                        </div>
-                      ) : shopCategory === 'vote' ? (
-                        <div className={cn("w-full h-full flex flex-col items-center justify-center gap-1", getVoteStyles(undefined, 'Aye'))}>
-                          <span className="text-lg font-thematic uppercase">AYE!</span>
-                          <span className="text-[8px] font-mono uppercase">YES</span>
-                        </div>
-                      ) : shopCategory === 'background' ? (
-                        <div className="w-full h-full bg-[#141414] flex items-center justify-center">
-                          <div className="w-full h-full opacity-50" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/carbon-fibre.png")' }} />
-                        </div>
-                      ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center gap-1">
-                          <span className="text-[8px] font-mono uppercase">{shopCategory}</span>
-                        </div>
-                      )}
-                    </div>
-                    <h4 className="font-serif italic text-lg mb-1 text-white">Default {shopCategory}</h4>
-                    <p className="text-[10px] text-[#666] font-mono uppercase mb-4">Standard Issue</p>
-                    <button 
-                      onClick={() => {
-                        playSound('click');
-                        handleEquip(shopCategory, null as any);
-                      }}
-                      disabled={
-                        (shopCategory === 'frame' && !user.activeFrame) ||
-                        (shopCategory === 'policy' && !user.activePolicyStyle) ||
-                        (shopCategory === 'vote' && !user.activeVotingStyle) ||
-                        (shopCategory === 'music' && !user.activeMusic) ||
-                        (shopCategory === 'sound' && !user.activeSoundPack) ||
-                        (shopCategory === 'background' && !user.activeBackground)
-                      }
-                      className={cn(
-                        "w-full py-2 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-all",
-                        ((shopCategory === 'frame' && !user.activeFrame) ||
-                         (shopCategory === 'policy' && !user.activePolicyStyle) ||
-                         (shopCategory === 'vote' && !user.activeVotingStyle) ||
-                         (shopCategory === 'music' && !user.activeMusic) ||
-                         (shopCategory === 'sound' && !user.activeSoundPack) ||
-                         (shopCategory === 'background' && !user.activeBackground)) ? "bg-emerald-900/20 text-emerald-500 border border-emerald-900/50" : "bg-[#222] text-white hover:bg-[#333]"
-                      )}
-                    >
-                      {((shopCategory === 'frame' && !user.activeFrame) ||
-                        (shopCategory === 'policy' && !user.activePolicyStyle) ||
-                        (shopCategory === 'vote' && !user.activeVotingStyle) ||
-                        (shopCategory === 'music' && !user.activeMusic) ||
-                        (shopCategory === 'sound' && !user.activeSoundPack) ||
-                        (shopCategory === 'background' && !user.activeBackground)) ? 'Equipped' : 'Equip'}
-                    </button>
-                  </div>
-                )}
-
                 {filteredItems.map((item) => {
-                  const isOwned = user.ownedCosmetics.includes(item.id) || item.id === 'music-ambient';
+                  const isPassItem = !!PASS_ITEM_LEVELS[item.id];
+                  const isUnlocked = isPassItem ? (Math.floor(user.stats.gamesPlayed / 5) + 1 >= PASS_ITEM_LEVELS[item.id]) : false;
+                  const isOwned = user.ownedCosmetics.includes(item.id) || item.id === 'music-ambient' || isUnlocked;
                   const isEquipped = 
                     (item.type === 'frame' && user.activeFrame === item.id) ||
                     (item.type === 'policy' && user.activePolicyStyle === item.id) ||
@@ -607,22 +581,15 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                         )}
                       </div>
                       <h4 className="font-serif italic text-lg mb-1 text-white">{item.name}</h4>
-                      <p className="text-[10px] text-[#666] font-mono uppercase mb-2">{item.type} Style</p>
+                      <p className="text-[10px] text-[#666] font-mono uppercase mb-2">{item.type === 'policy' ? 'Directive Style' : `${item.type} Style`}</p>
                       <p className="text-[10px] text-[#444] font-sans mb-4 line-clamp-2">{item.description}</p>
                       
                       {isOwned ? (
                         <button 
-                          onClick={() => {
-                            playSound('click');
-                            handleEquip(item.type as any, item.id);
-                          }}
-                          disabled={isEquipped}
-                          className={cn(
-                            "w-full py-2 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-all",
-                            isEquipped ? "bg-emerald-900/20 text-emerald-500 border border-emerald-900/50" : "bg-[#222] text-white hover:bg-[#333]"
-                          )}
+                          disabled
+                          className="w-full py-2 bg-[#222] text-[#666] rounded-xl text-[10px] font-mono uppercase tracking-widest border border-[#333] cursor-not-allowed"
                         >
-                          {isEquipped ? 'Equipped' : 'Equip'}
+                          Owned
                         </button>
                       ) : item.price === 0 ? (
                         <button 

@@ -136,7 +136,7 @@ export const GameHeader = ({
             ? <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
             : <UserIcon className="w-3.5 h-3.5 sm:w-4 h-4 text-[#666]" />}
           {user?.activeFrame && (
-            <div className={cn('absolute inset-0 border-2 rounded-xl pointer-events-none', getFrameStyles(user.activeFrame))} />
+            <div className={cn('absolute inset-0 rounded-xl pointer-events-none', getFrameStyles(user.activeFrame))} />
           )}
         </button>
 

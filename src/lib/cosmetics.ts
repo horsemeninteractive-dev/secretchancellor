@@ -2,19 +2,19 @@ import { Policy } from '../types';
 
 export const getFrameStyles = (id: string) => {
   switch(id) {
-    case 'frame-red': return "border-red-500 shadow-[inset_0_0_10px_rgba(239,68,68,0.5)]";
-    case 'frame-gold': return "border-yellow-500 shadow-[inset_0_0_10px_rgba(234,179,8,0.5)]";
-    case 'frame-blue': return "border-blue-500 shadow-[inset_0_0_10px_rgba(59,130,246,0.5)]";
-    case 'frame-rainbow': return "border-purple-500 shadow-[inset_0_0_10px_rgba(168,85,247,0.5)] animate-pulse";
-    case 'frame-neon': return "border-emerald-500 shadow-[inset_0_0_10px_rgba(16,185,129,0.5)]";
-    case 'frame-shadow': return "border-gray-500 shadow-[inset_0_0_10px_rgba(107,114,128,0.5)]";
-    case 'frame-thorns': return "border-red-900 shadow-[0_0_15px_rgba(127,29,29,0.4)] after:content-[''] after:absolute after:inset-[-4px] after:border-2 after:border-red-900/30 after:rounded-3xl after:rotate-45";
-    case 'frame-cyber': return "border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.4)] before:content-[''] before:absolute before:top-0 before:left-0 before:w-2 before:h-2 before:bg-cyan-400 before:rounded-full";
-    case 'frame-inferno': return "border-orange-600 shadow-[0_0_20px_rgba(234,88,12,0.6)] animate-pulse";
-    case 'frame-glitch': return "border-pink-500 shadow-[2px_2px_0_rgba(236,72,153,0.5),-2px_-2px_0_rgba(6,182,212,0.5)]";
-    case 'frame-royal': return "border-indigo-400 shadow-[0_0_15px_rgba(129,140,248,0.4)] before:content-[''] before:absolute before:top-[-8px] before:left-1/2 before:-translate-x-1/2 before:w-4 before:h-4 before:bg-indigo-400 before:rotate-45";
-    case 'frame-pass-0': return "border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.6)] animate-spin-slow animate-pulse";
-    default: return "border-gray-500";
+    case 'frame-red': return "shadow-[inset_0_0_10px_rgba(239,68,68,0.5)]";
+    case 'frame-gold': return "shadow-[inset_0_0_10px_rgba(234,179,8,0.5)]";
+    case 'frame-blue': return "shadow-[inset_0_0_10px_rgba(59,130,246,0.5)]";
+    case 'frame-rainbow': return "shadow-[inset_0_0_10px_rgba(168,85,247,0.5)] animate-pulse";
+    case 'frame-neon': return "shadow-[inset_0_0_10px_rgba(16,185,129,0.5)]";
+    case 'frame-shadow': return "shadow-[inset_0_0_10px_rgba(107,114,128,0.5)]";
+    case 'frame-thorns': return "shadow-[0_0_15px_rgba(127,29,29,0.4)] after:content-[''] after:absolute after:inset-[-4px] after:border-2 after:border-red-900/30 after:rounded-3xl after:rotate-45";
+    case 'frame-cyber': return "shadow-[0_0_15px_rgba(6,182,212,0.4)] before:content-[''] before:absolute before:top-0 before:left-0 before:w-2 before:h-2 before:bg-cyan-400 before:rounded-full";
+    case 'frame-inferno': return "shadow-[0_0_20px_rgba(234,88,12,0.6)] animate-pulse";
+    case 'frame-glitch': return "shadow-[2px_2px_0_rgba(236,72,153,0.5),-2px_-2px_0_rgba(6,182,212,0.5)]";
+    case 'frame-royal': return "shadow-[0_0_15px_rgba(129,140,248,0.4)] before:content-[''] before:absolute before:top-[-8px] before:left-1/2 before:-translate-x-1/2 before:w-4 before:h-4 before:bg-indigo-400 before:rotate-45";
+    case 'frame-pass-0': return "shadow-[0_0_20px_rgba(168,85,247,0.6)] animate-spin-slow animate-pulse";
+    default: return "";
   }
 };
 

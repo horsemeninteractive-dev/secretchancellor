@@ -9,11 +9,13 @@ interface FriendsListProps {
   token: string;
   playSound: (sound: string) => void;
   roomId?: string;
+  onJoinRoom?: (roomId: string) => void;
 }
 
-export const FriendsList: React.FC<FriendsListProps> = ({ user, token, playSound, roomId }) => {
+export const FriendsList: React.FC<FriendsListProps> = ({ user, token, playSound, roomId, onJoinRoom }) => {
   const [friends, setFriends] = useState<User[]>([]);
   const [onlineFriends, setOnlineFriends] = useState<Set<string>>(new Set());
+  const [friendRooms, setFriendRooms] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
 
   const inviteFriend = async (friendId: string) => {
@@ -48,12 +50,26 @@ export const FriendsList: React.FC<FriendsListProps> = ({ user, token, playSound
   useEffect(() => {
     const fetchFriends = async () => {
       try {
-        const response = await fetch('/api/friends', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (response.ok) {
-          const data = await response.json();
+        const [friendsRes, statusRes] = await Promise.all([
+          fetch('/api/friends', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/friends/status', { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+        if (friendsRes.ok) {
+          const data = await friendsRes.json();
           setFriends(data.friends);
+        }
+        if (statusRes.ok) {
+          const statusData = await statusRes.json();
+          const online = new Set<string>();
+          const rooms = new Map<string, string>();
+          for (const [userId, info] of Object.entries(statusData.statuses as Record<string, { isOnline: boolean; roomId?: string }>)) {
+            if (info.isOnline) {
+              online.add(userId);
+              if (info.roomId) rooms.set(userId, info.roomId);
+            }
+          }
+          setOnlineFriends(online);
+          setFriendRooms(rooms);
         }
       } catch (err) {
         console.error("Failed to fetch friends", err);
@@ -71,10 +87,16 @@ export const FriendsList: React.FC<FriendsListProps> = ({ user, token, playSound
       fetchFriends();
       playSound('notification');
     });
-    socket.on('userStatusChanged', ({ userId, isOnline }) => {
+    socket.on('userStatusChanged', ({ userId, isOnline, roomId: friendRoomId }: { userId: string; isOnline: boolean; roomId?: string }) => {
       setOnlineFriends(prev => {
         const next = new Set(prev);
         if (isOnline) next.add(userId);
+        else next.delete(userId);
+        return next;
+      });
+      setFriendRooms(prev => {
+        const next = new Map(prev);
+        if (isOnline && friendRoomId) next.set(userId, friendRoomId);
         else next.delete(userId);
         return next;
       });
@@ -98,28 +120,54 @@ export const FriendsList: React.FC<FriendsListProps> = ({ user, token, playSound
         <p className="text-gray-500 font-mono text-sm">No friends yet.</p>
       ) : (
         <div className="space-y-2">
-          {friends.map(friend => (
-            <div key={friend.id} className="flex items-center justify-between bg-[#141414] p-3 rounded-xl border border-[#222]">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <img src={friend.avatarUrl || 'https://storage.googleapis.com/secretchancellor/SC.png'} alt={friend.username} className="w-8 h-8 rounded-full" />
-                  <div className={cn("absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-[#141414]", onlineFriends.has(friend.id) ? "bg-emerald-500" : "bg-gray-500")} />
+          {friends.map(friend => {
+            const isOnline = onlineFriends.has(friend.id);
+            const friendRoom = friendRooms.get(friend.id);
+            const canJoin = isOnline && !!friendRoom && onJoinRoom;
+            const canInvite = !!roomId;
+            return (
+              <div key={friend.id} className="flex items-center justify-between bg-[#141414] p-3 rounded-xl border border-[#222]">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <img src={friend.avatarUrl || 'https://storage.googleapis.com/secretchancellor/SC.png'} alt={friend.username} className="w-8 h-8 rounded-full" />
+                    <div className={cn("absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-[#141414]", isOnline ? "bg-emerald-500" : "bg-gray-500")} />
+                  </div>
+                  <div>
+                    <span className="font-mono text-sm">{friend.username}</span>
+                    {isOnline && friendRoom && (
+                      <p className="text-[10px] font-mono text-emerald-400/70">In game: {friendRoom}</p>
+                    )}
+                    {isOnline && !friendRoom && (
+                      <p className="text-[10px] font-mono text-emerald-400/70">Online</p>
+                    )}
+                  </div>
                 </div>
-                <span className="font-mono text-sm">{friend.username}</span>
+                <div className="flex gap-2">
+                  {canJoin && (
+                    <button
+                      className="p-2 hover:bg-emerald-900/30 text-emerald-400 rounded-lg"
+                      title="Join their game"
+                      onClick={() => { playSound('click'); onJoinRoom(friendRoom!); }}
+                    >
+                      <Gamepad2 size={16} />
+                    </button>
+                  )}
+                  {canInvite && (
+                    <button
+                      className="p-2 hover:bg-[#222] rounded-lg"
+                      title="Invite to your game"
+                      onClick={() => inviteFriend(friend.id)}
+                    >
+                      <UserPlus size={16} />
+                    </button>
+                  )}
+                  <button className="p-2 hover:bg-red-900/20 text-red-500 rounded-lg" onClick={() => removeFriend(friend.id)}>
+                    <UserMinus size={16} />
+                  </button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <button className="p-2 hover:bg-[#222] rounded-lg" onClick={() => playSound('click')}>
-                  <Gamepad2 size={16} />
-                </button>
-                <button className="p-2 hover:bg-[#222] rounded-lg" onClick={() => inviteFriend(friend.id)}>
-                  <UserPlus size={16} />
-                </button>
-                <button className="p-2 hover:bg-red-900/20 text-red-500 rounded-lg" onClick={() => removeFriend(friend.id)}>
-                  <UserMinus size={16} />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

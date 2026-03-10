@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Users, MessageSquare, LogOut, User as UserIcon, Trophy, Coins, Settings } from 'lucide-react';
 import { User, RoomInfo } from '../types';
 import { cn } from '../lib/utils';
+import { getFrameStyles } from '../lib/cosmetics';
 
 interface LobbyProps {
   user: User;
@@ -57,9 +58,9 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
   return (
     <div 
       className="min-h-screen bg-texture text-white font-sans flex flex-col"
-      style={{ 
-        backgroundImage: `radial-gradient(circle at 50% 50%, rgba(20, 20, 20, 0.8) 0%, rgba(10, 10, 10, 1) 100%), url("${getBackgroundTexture(user.activeBackground)}")` 
-      }}
+      style={user.activeBackground ? { 
+        backgroundImage: `radial-gradient(circle at 50% 50%, rgba(20, 20, 20, 0.5) 0%, rgba(10, 10, 10, 0.8) 100%), url("${getBackgroundTexture(user.activeBackground)}")` 
+      } : {}}
     >
       {/* Header */}
       <header className="h-20 border-b border-[#222] bg-[#1a1a1a]/50 backdrop-blur-xl px-6 flex items-center justify-between sticky top-0 z-50">
@@ -107,7 +108,7 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
                 <UserIcon className="w-5 h-5 text-[#666]" />
               )}
               {user.activeFrame && (
-                <div className="absolute inset-0 border-2 border-red-500 rounded-xl pointer-events-none" />
+                <div className={cn("absolute inset-0 rounded-xl pointer-events-none", getFrameStyles(user.activeFrame))} />
               )}
             </div>
           </button>

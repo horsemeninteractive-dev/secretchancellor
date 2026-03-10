@@ -46,6 +46,7 @@ export interface User {
   activeSoundPack?: string;
   activeBackground?: string;
   cabinetPoints: number;
+  claimedRewards: string[];
 }
 export const User = {};
 

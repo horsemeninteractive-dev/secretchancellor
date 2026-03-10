@@ -1227,6 +1227,12 @@ export class GameEngine {
         user.stats.points += state.mode === "Ranked" ? 25 : 10;
       }
 
+      const level = Math.floor(user.stats.gamesPlayed / 5) + 1;
+      if (level >= 30 && !user.claimedRewards.includes('level-30-cp')) {
+        user.cabinetPoints += 500;
+        user.claimedRewards.push('level-30-cp');
+      }
+
       await saveUser(user);
       const { password: _, ...userWithoutPassword } = user;
       this.io.to(p.id).emit("userUpdate", userWithoutPassword);
