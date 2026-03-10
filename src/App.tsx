@@ -160,6 +160,12 @@ export default function App() {
     }
   }, [token]);
 
+  useEffect(() => {
+    if (user) {
+      socket.emit('userConnected', user.id);
+    }
+  }, [user]);
+
   // OAuth redirect token
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -198,6 +204,7 @@ export default function App() {
     setUser(userData);
     setToken(authToken);
     localStorage.setItem('token', authToken);
+    socket.emit('userConnected', userData.id);
     try {
       if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen()
@@ -322,6 +329,7 @@ export default function App() {
             onLeaveRoom={handleLeaveRoom}
             onPlayAgain={() => socket.emit('playAgain')}
             onOpenProfile={() => setIsProfileOpen(true)}
+            onJoinRoom={handleJoinRoom}
             setUser={setUser}
             setGameState={setGameState}
             setPrivateInfo={setPrivateInfo}
@@ -345,6 +353,7 @@ export default function App() {
                 soundVolume, setSoundVolume,
                 isFullscreen, setIsFullscreen
               }}
+              roomId={gameState?.roomId}
             />
           )}
         </>

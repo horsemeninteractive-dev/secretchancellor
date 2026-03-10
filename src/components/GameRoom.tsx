@@ -20,6 +20,8 @@ import { InvestigationModal } from './game/modals/InvestigationModal';
 import { PolicyPeekModal } from './game/modals/PolicyPeekModal';
 import { DossierModal } from './game/modals/DossierModal';
 import { DeclarationModal } from './game/modals/DeclarationModal';
+import { FriendRequestModal } from './game/modals/FriendRequestModal';
+import { InviteModal } from './game/modals/InviteModal';
 import { PlayerProfileModal } from './game/modals/PlayerProfileModal';
 
 const CLIENT_VERSION = 'v0.8.9';
@@ -32,6 +34,7 @@ interface GameRoomProps {
   onLeaveRoom: () => void;
   onPlayAgain: () => void;
   onOpenProfile: () => void;
+  onJoinRoom: (roomId: string) => void;
   setUser: (u: User) => void;
   setGameState: (gs: GameState | null) => void;
   setPrivateInfo: (info: { role: Role; stateAgents?: { id: string; name: string; role: Role }[] } | null) => void;
@@ -42,7 +45,7 @@ interface GameRoomProps {
 
 export const GameRoom = ({
   gameState, privateInfo, user, token,
-  onLeaveRoom, onPlayAgain, onOpenProfile,
+  onLeaveRoom, onPlayAgain, onOpenProfile, onJoinRoom,
   setUser, setGameState, setPrivateInfo,
   updateAvailable,
   playSound, soundVolume
@@ -110,15 +113,35 @@ export const GameRoom = ({
   const [peekedPolicies, setPeekedPolicies] = useState<Policy[] | null>(null);
   const [investigationResult, setInvestigationResult] = useState<{ targetName: string; role: Role } | null>(null);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
+  const [pendingRequest, setPendingRequest] = useState<{ fromUserId: string; fromUsername: string } | null>(null);
+  const [pendingInvite, setPendingInvite] = useState<{ fromUsername: string; roomId: string } | null>(null);
 
   useEffect(() => {
     socket.on('policyPeekResult', (policies: Policy[]) => setPeekedPolicies(policies));
     socket.on('investigationResult', (result) => setInvestigationResult(result));
+    socket.on('friendInvite', (data: { fromUsername: string; roomId: string }) => {
+      setPendingInvite({ fromUsername: data.fromUsername, roomId: data.roomId });
+    });
+    socket.on('friendRequestReceived', async (data: { fromUserId: string }) => {
+      try {
+        const response = await fetch(`/api/user/${data.fromUserId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const userData = await response.json();
+          setPendingRequest({ fromUserId: data.fromUserId, fromUsername: userData.user.username });
+        }
+      } catch (err) {
+        console.error("Failed to fetch requester info", err);
+      }
+    });
     return () => {
       socket.off('policyPeekResult');
       socket.off('investigationResult');
+      socket.off('friendRequestReceived');
+      socket.off('friendInvite');
     };
-  }, []);
+  }, [token]);
 
   // ── Declaration state & logic ────────────────────────────────────────────
   const [showDeclarationUI, setShowDeclarationUI] = useState(false);
@@ -471,12 +494,34 @@ export const GameRoom = ({
       />
 
       {/* Modals */}
+      {pendingRequest && (
+        <FriendRequestModal
+          fromUsername={pendingRequest.fromUsername}
+          onAccept={() => {
+            socket.emit('acceptFriendRequest', pendingRequest.fromUserId);
+            setPendingRequest(null);
+          }}
+          onDeny={() => setPendingRequest(null)}
+        />
+      )}
+      {pendingInvite && (
+        <InviteModal
+          inviterName={pendingInvite.fromUsername}
+          roomId={pendingInvite.roomId}
+          onAccept={() => {
+            onJoinRoom(pendingInvite.roomId);
+            setPendingInvite(null);
+          }}
+          onReject={() => setPendingInvite(null)}
+        />
+      )}
       {selectedPlayerId && (
         <PlayerProfileModal
           userId={selectedPlayerId}
           token={token || ''}
           onClose={() => setSelectedPlayerId(null)}
           playSound={playSound}
+          onSendFriendRequest={(targetUserId) => socket.emit('sendFriendRequest', targetUserId)}
         />
       )}
       <InvestigationModal

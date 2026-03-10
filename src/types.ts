@@ -188,10 +188,11 @@ export interface ServerToClientEvents {
   friendRequestReceived: (data: { fromUserId: string }) => void;
   friendRequestAccepted: (data: { fromUserId: string }) => void;
   userStatusChanged: (data: { userId: string; isOnline: boolean; roomId?: string }) => void;
-  friendInvite: (data: { fromUserId: string; fromUsername: string }) => void;
+  friendInvite: (data: { fromUserId: string; fromUsername: string; roomId: string }) => void;
 }
 
 export interface ClientToServerEvents {
+  userConnected: (userId: string) => void;
   joinRoom: (data: { roomId: string; name: string; userId?: string; activeFrame?: string; activePolicyStyle?: string; activeVotingStyle?: string; maxPlayers?: number; actionTimer?: number; mode?: GameMode; isSpectator?: boolean }) => void;
   leaveRoom: () => void;
   playAgain: () => void;

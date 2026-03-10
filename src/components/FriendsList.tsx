@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { socket } from '../socket';
 import { User } from '../types';
 import { cn } from '../lib/utils';
-import { UserPlus, Check, UserCheck, Users, Gamepad2 } from 'lucide-react';
+import { UserPlus, Check, UserCheck, Users, Gamepad2, UserMinus } from 'lucide-react';
 
 interface FriendsListProps {
   user: User;
   token: string;
   playSound: (sound: string) => void;
+  roomId?: string;
 }
 
-export const FriendsList: React.FC<FriendsListProps> = ({ user, token, playSound }) => {
+export const FriendsList: React.FC<FriendsListProps> = ({ user, token, playSound, roomId }) => {
   const [friends, setFriends] = useState<User[]>([]);
   const [onlineFriends, setOnlineFriends] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -20,10 +21,27 @@ export const FriendsList: React.FC<FriendsListProps> = ({ user, token, playSound
     try {
       await fetch(`/api/friends/invite/${friendId}`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({ roomId })
       });
     } catch (err) {
       console.error("Failed to invite friend", err);
+    }
+  };
+
+  const removeFriend = async (friendId: string) => {
+    playSound('click');
+    try {
+      await fetch(`/api/friends/${friendId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setFriends(prev => prev.filter(f => f.id !== friendId));
+    } catch (err) {
+      console.error("Failed to remove friend", err);
     }
   };
 
@@ -95,6 +113,9 @@ export const FriendsList: React.FC<FriendsListProps> = ({ user, token, playSound
                 </button>
                 <button className="p-2 hover:bg-[#222] rounded-lg" onClick={() => inviteFriend(friend.id)}>
                   <UserPlus size={16} />
+                </button>
+                <button className="p-2 hover:bg-red-900/20 text-red-500 rounded-lg" onClick={() => removeFriend(friend.id)}>
+                  <UserMinus size={16} />
                 </button>
               </div>
             </div>

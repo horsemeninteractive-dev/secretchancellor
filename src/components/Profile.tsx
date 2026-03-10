@@ -26,6 +26,7 @@ interface ProfileProps {
     isFullscreen: boolean;
     setIsFullscreen: React.Dispatch<React.SetStateAction<boolean>>;
   };
+  roomId?: string;
 }
 
 const SHOP_ITEMS: CosmeticItem[] = [
@@ -81,7 +82,7 @@ const SHOP_ITEMS: CosmeticItem[] = [
   { id: 'frame-pass-0', name: 'Season 0: Purple Pill', price: 0, type: 'frame', description: 'Exclusive Season 0 animated avatar frame.', imageUrl: 'https://www.transparenttextures.com/patterns/circles-light.png' },
 ];
 
-export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, token, playSound, playMusic, stopMusic, settings }) => {
+export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, token, playSound, playMusic, stopMusic, settings, roomId }) => {
   const [activeTab, setActiveTab] = useState<'stats' | 'shop' | 'settings' | 'pass' | 'friends'>('stats');
   const [shopCategory, setShopCategory] = useState<'frame' | 'policy' | 'vote' | 'music' | 'sound' | 'background'>('frame');
   const [isLoading, setIsLoading] = useState(false);
@@ -333,7 +334,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
               <StatCard label="Deaths" value={user.stats.deaths} icon={<Heart className="w-4 h-4 text-red-500" />} />
             </div>
           ) : activeTab === 'friends' ? (
-            <FriendsList user={user} token={token} playSound={playSound} />
+            <FriendsList user={user} token={token} playSound={playSound} roomId={roomId} />
           ) : activeTab === 'pass' ? (
             <div className="relative max-w-2xl mx-auto py-8">
               {/* Headers */}

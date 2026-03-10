@@ -30,6 +30,22 @@ async function startServer() {
     const getRoom = (): string | undefined =>
       Array.from(socket.rooms).find(r => r !== socket.id);
 
+    socket.on("userConnected", async (userId) => {
+      console.log(`User connected: ${userId}, socket: ${socket.id}`);
+      socket.data.userId = userId;
+      userSockets.set(userId, socket.id);
+      const friends = await getFriends(userId);
+      console.log(`Notifying ${friends.length} friends for user ${userId}`);
+      for (const friend of friends) {
+        const friendSocketId = userSockets.get(friend.id);
+        if (friendSocketId) {
+          console.log(`Notifying friend ${friend.id} at socket ${friendSocketId}`);
+          io.to(friendSocketId).emit("userStatusChanged", { userId, isOnline: true });
+          socket.emit("userStatusChanged", { userId: friend.id, isOnline: true });
+        }
+      }
+    });
+
     socket.on("joinRoom", async ({
       roomId, name, userId, activeFrame, activePolicyStyle, activeVotingStyle,
       maxPlayers, actionTimer, mode, isSpectator,
@@ -112,6 +128,7 @@ async function startServer() {
           const friendSocketId = userSockets.get(friend.id);
           if (friendSocketId) {
             io.to(friendSocketId).emit("userStatusChanged", { userId, isOnline: true });
+            socket.emit("userStatusChanged", { userId: friend.id, isOnline: true });
           }
         }
         const user = await getUserById(userId);

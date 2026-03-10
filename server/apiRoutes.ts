@@ -390,6 +390,7 @@ export function registerRoutes(
 
   app.post("/api/friends/invite/:friendId", async (req: Request, res: Response) => {
     const token = req.headers.authorization?.split(" ")[1];
+    const { roomId } = req.body;
     if (!token) return res.status(401).json({ error: "No token" });
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as { username: string };
@@ -398,7 +399,7 @@ export function registerRoutes(
       
       const friendSocketId = userSockets.get(req.params.friendId);
       if (friendSocketId) {
-        io.to(friendSocketId).emit("friendInvite", { fromUserId: user.id, fromUsername: user.username });
+        io.to(friendSocketId).emit("friendInvite", { fromUserId: user.id, fromUsername: user.username, roomId });
       }
       res.json({ success: true });
     } catch (_) {

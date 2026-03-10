@@ -5,18 +5,21 @@ import { X, Trophy, User as UserIcon, UserPlus, UserMinus, Shield, Check, Zap } 
 import { User } from '../../../types';
 import { cn } from '../../../lib/utils';
 import { getFrameStyles } from '../../../lib/cosmetics';
+import { socket } from '../../../socket';
 
 interface PlayerProfileModalProps {
   userId: string;
   token: string;
   onClose: () => void;
   playSound: (sound: string) => void;
+  onSendFriendRequest: (userId: string) => void;
 }
 
-export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({ userId, token, onClose, playSound }) => {
+export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({ userId, token, onClose, playSound, onSendFriendRequest }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isFriend, setIsFriend] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isPending, setIsPending] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -38,6 +41,17 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({ userId, 
       }
     };
     fetchUser();
+
+    socket.on('friendRequestAccepted', (data: { fromUserId: string }) => {
+      if (data.fromUserId === userId) {
+        setIsFriend(true);
+        setIsPending(false);
+      }
+    });
+
+    return () => {
+      socket.off('friendRequestAccepted');
+    };
   }, [userId, token]);
 
   const toggleFriend = async () => {
@@ -50,17 +64,8 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({ userId, 
         });
         setIsFriend(false);
       } else {
-        await fetch('/api/friends/request', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` 
-          },
-          body: JSON.stringify({ targetUserId: userId })
-        });
-        // Assuming request sent successfully, we might want to show "Pending" state
-        // But for now, let's just toggle
-        setIsFriend(true);
+        onSendFriendRequest(userId);
+        setIsPending(true);
       }
     } catch (err) {
       console.error("Failed to toggle friend", err);
@@ -149,6 +154,7 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({ userId, 
 
           <button 
             onClick={toggleFriend}
+            disabled={isPending}
             className={cn(
               "w-full py-3 rounded-xl font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all border",
               isFriend 
@@ -156,7 +162,7 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({ userId, 
                 : "bg-red-900 text-white border-red-700 hover:bg-red-800"
             )}
           >
-            {isFriend ? <><UserMinus size={14} /> Remove Friend</> : <><UserPlus size={14} /> Add Friend</>}
+            {isFriend ? <><UserMinus size={14} /> Remove Friend</> : isPending ? "Request Sent" : <><UserPlus size={14} /> Add Friend</>}
           </button>
         </div>
       </motion.div>
