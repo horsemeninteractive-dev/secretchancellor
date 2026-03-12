@@ -56,7 +56,7 @@ export const DossierModal = ({ isOpen, onClose, privateInfo }: DossierModalProps
                     'text-5xl font-thematic tracking-wide uppercase',
                     privateInfo.role === 'Civil' ? 'text-blue-400' : 'text-red-500'
                   )}>
-                    {privateInfo.role === 'Civil' ? 'CIVIL' : privateInfo.role === 'Overseer' ? 'OVERSEER' : 'STATE AGENT'}
+                    {privateInfo.role === 'Civil' ? 'CIVIL' : privateInfo.role === 'Overseer' ? 'OVERSEER' : 'STATE'}
                   </div>
                   <div className="text-[10px] text-[#666] italic">
                     {privateInfo.role === 'Civil'
@@ -98,7 +98,7 @@ export const DossierModal = ({ isOpen, onClose, privateInfo }: DossierModalProps
                             ? 'bg-red-900/40 text-red-500 border border-red-900/50'
                             : 'bg-[#222] text-[#666]'
                         )}>
-                          {f.role === 'Overseer' ? 'The Overseer' : 'State Agent'}
+                          {f.role === 'Overseer' ? 'The Overseer' : 'State'}
                         </span>
                       </div>
                     ))}

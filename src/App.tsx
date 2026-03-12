@@ -273,13 +273,21 @@ export default function App() {
     setJoined(false);
     setGameState(null);
     setPrivateInfo(null);
+    
+    const safeOnComplete = typeof onComplete === 'function' ? onComplete : undefined;
+
     if (token) {
       fetch('/api/me', { headers: { Authorization: `Bearer ${token}` } })
         .then(res => res.json())
-        .then(data => { if (data.user) setUser(data.user); if (onComplete) onComplete(); })
-        .catch(() => { if (onComplete) onComplete(); });
+        .then(data => { 
+          if (data.user) setUser(data.user); 
+          if (safeOnComplete) safeOnComplete(); 
+        })
+        .catch(() => { 
+          if (safeOnComplete) safeOnComplete(); 
+        });
     } else {
-        if (onComplete) onComplete();
+        if (safeOnComplete) safeOnComplete();
     }
   };
 

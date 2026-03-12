@@ -333,6 +333,7 @@ export class GameEngine {
     this.startActionTimer(roomId);
     s.log.push(`${president.name} nominated ${target.name} for Chancellor.`);
     updateSuspicionFromNomination(s, president.id, target.id);
+    this.triggerAIReactions(s, roomId, 'nomination', { targetId: target.id });
     this.broadcastState(roomId);
     this.processAITurns(roomId);
   }
@@ -625,6 +626,48 @@ export class GameEngine {
     }
     state.messages.push({ sender: ai.name, text, timestamp: Date.now(), type: "text" });
     if (state.messages.length > 50) state.messages.shift();
+  }
+
+  private triggerAIReactions(state: GameState, roomId: string, type: 'nomination' | 'enactment' | 'failed_vote', context?: any): void {
+    const aiPlayers = state.players.filter(p => p.isAI && p.isAlive);
+    if (aiPlayers.length === 0) return;
+
+    // Pick one or two AIs to react
+    const commentators = aiPlayers.sort(() => Math.random() - 0.5).slice(0, Math.random() > 0.7 ? 2 : 1);
+
+    for (const commentator of commentators) {
+      setTimeout(() => {
+        if (state.isPaused) return;
+        
+        let lines: readonly string[] = CHAT.banter;
+
+        if (type === 'nomination' && context?.targetId) {
+          const target = state.players.find(p => p.id === context.targetId);
+          if (target) {
+            if (commentator.id === target.id) {
+              lines = CHAT.defendingSelf;
+            } else {
+              const suspicion = getSuspicion(commentator, target.id);
+              if (suspicion > 0.75) {
+                lines = CHAT.highSuspicion;
+              } else if (suspicion > 0.55) {
+                lines = CHAT.suspiciousNominee;
+              } else if (suspicion < 0.25) {
+                lines = CHAT.praisingCivil;
+              } else {
+                lines = CHAT.banter;
+              }
+            }
+            this.postAIChat(state, commentator, lines, target.name);
+          }
+        } else if (type === 'failed_vote') {
+          lines = CHAT.governmentFailed;
+          this.postAIChat(state, commentator, lines);
+        }
+        
+        this.broadcastState(roomId);
+      }, 1000 + Math.random() * 2000);
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1100,17 +1143,8 @@ export class GameEngine {
       if ((s.phase as string) !== "GameOver") this.nextPresident(s, roomId);
     }
 
-    // Random AI comments on the failure
-    const aiAlive = s.players.filter(p => p.isAI && p.isAlive);
-    if (aiAlive.length > 0 && Math.random() > 0.5) {
-      const commentator = aiAlive[Math.floor(Math.random() * aiAlive.length)];
-      setTimeout(() => {
-        if (!s.isPaused) {
-          this.postAIChat(s, commentator, CHAT.governmentFailed);
-          this.broadcastState(roomId);
-        }
-      }, 900);
-    }
+    // AI comments on the failure
+    this.triggerAIReactions(s, roomId, 'failed_vote');
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1347,6 +1381,20 @@ export class GameEngine {
       type: "round_separator",
       round: state.round,
     });
+
+    // Random AI banter at round start
+    if (Math.random() > 0.6) {
+      const aiAlive = state.players.filter(p => p.isAI && p.isAlive);
+      if (aiAlive.length > 0) {
+        const commentator = aiAlive[Math.floor(Math.random() * aiAlive.length)];
+        setTimeout(() => {
+          if (!state.isPaused) {
+            this.postAIChat(state, commentator, CHAT.banter);
+            this.broadcastState(roomId);
+          }
+        }, 2000);
+      }
+    }
 
     const oldIdx = state.presidentIdx;
     do {

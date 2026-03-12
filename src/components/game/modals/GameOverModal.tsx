@@ -81,7 +81,7 @@ export const GameOverModal = ({ gameState, onPlayAgain, onLeave, onOpenLog }: Ga
                       p.role === 'State' ? 'bg-red-900/20 border-red-500/30 text-red-500' :
                       'bg-red-900/40 border-red-500 text-red-400 font-bold'
                     )}>
-                      {p.role === 'Civil' ? 'Civil' : p.role === 'State' ? 'State Agent' : 'The Overseer'}
+                      {p.role === 'Civil' ? 'Civil' : p.role === 'State' ? 'State' : 'The Overseer'}
                     </div>
                   </div>
                 ))}
