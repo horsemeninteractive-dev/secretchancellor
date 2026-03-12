@@ -1149,7 +1149,8 @@ export class GameEngine {
     updateSuspicionFromDeclarations(state);
     const action = getExecutiveAction(state);
 
-    if (action !== "None") {
+    if (action !== "None" && state.lastExecutiveActionRound !== state.round) {
+      state.lastExecutiveActionRound = state.round;
       if (action === "PolicyPeek") {
         const top3 = state.deck.slice(0, 3);
         if (state.presidentId) {

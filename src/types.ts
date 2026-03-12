@@ -173,6 +173,7 @@ export interface GameState {
   lastGovernmentVotes?: { [playerId: string]: 'Aye' | 'Nay' };
   lastGovernmentPresidentId?: string;
   lastGovernmentChancellorId?: string;
+  lastExecutiveActionRound?: number;
   // Used by coordinated State AI lying: president stores the chancellor's intended claim
   pendingChancellorClaim?: { civ: number; sta: number };
   // Structured per-round history for the history panel
