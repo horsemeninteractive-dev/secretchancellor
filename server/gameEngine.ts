@@ -1097,6 +1097,7 @@ export class GameEngine {
           if (state.phase !== "GameOver") {
             state.log.push(`[DEBUG] Assassin: clearing titlePrompt, advancing phase from ${state.phase}`);
             state.titlePrompt = undefined;
+            state.phase = nextPhase || 'Handler_Action'; // Ensure phase is set to nextPhase
             this.advancePhase(state, roomId);
           }
           break;
