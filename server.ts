@@ -269,6 +269,7 @@ async function startServer() {
         wasPresident: false,
         wasChancellor: false,
         isReady: false,
+        isAI: false,
       };
 
       state.players.push(player);
@@ -354,7 +355,7 @@ async function startServer() {
       const roomId = getRoom();
       if (!roomId) return;
       const state = engine.rooms.get(roomId);
-      if (!state || state.phase !== "Election") return;
+      if (!state || state.phase !== "Nominate_Chancellor") return;
 
       const president = state.players[state.presidentIdx];
       if (president.id !== socket.id || !president.isAlive || president.hasActed) return;

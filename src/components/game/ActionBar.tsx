@@ -30,15 +30,22 @@ export const ActionBar = ({ gameState, me, user, showDebug, onOpenLog, onPlayAga
   const phaseLabel = () => {
     switch (gameState.phase) {
       case 'Lobby': return `Waiting for players (${gameState.players.length}/${gameState.maxPlayers})...`;
-      case 'Election': return `${gameState.players[gameState.presidentIdx]?.name} is nominating a Chancellor.`;
+      case 'Interdictor_Action': return 'Interdictor is choosing a target.';
+      case 'Next_President': return 'Preparing for the next round.';
+      case 'Nominate_Chancellor': return `${gameState.players[gameState.presidentIdx]?.name} is nominating a Chancellor.`;
+      case 'Broker_Action': return 'Broker is reviewing the nomination.';
       case 'Voting':
       case 'Voting_Reveal': return 'The Assembly is voting.';
+      case 'Strategist_Action': return 'Strategist is looking at the deck.';
       case 'Legislative_President': return 'President is reviewing directives.';
       case 'Legislative_Chancellor': return 'Chancellor is enacting a directive.';
-      case 'Executive_Action': return `Executive Action: ${gameState.currentExecutiveAction}`;
+      case 'President_Declaration': return 'President is declaring directives.';
+      case 'Chancellor_Declaration': return 'Chancellor is declaring directives.';
+      case 'Auditor_Action': return 'Auditor is inspecting the discard pile.';
       case 'Assassin_Action': return 'Assassin is choosing a target.';
+      case 'Handler_Action': return 'Handler is using their power.';
+      case 'Round_End': return 'The round is ending.';
       case 'GameOver': return `${gameState.winner === 'Civil' ? 'Civil' : 'State'} faction victorious!`;
-      case 'Nomination_Review': return 'A Broker is reviewing the nomination.';
       default: return '';
     }
   };

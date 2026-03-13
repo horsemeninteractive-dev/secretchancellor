@@ -7,7 +7,27 @@ export interface PrivateInfo {
   titleRole?: TitleRole;
 }
 export type Policy = 'Civil' | 'State';
-export type GamePhase = 'Lobby' | 'Election' | 'Voting' | 'Nomination_Review' | 'Voting_Reveal' | 'Legislative_President' | 'Legislative_Chancellor' | 'Executive_Action' | 'Assassin_Action' | 'GameOver';
+export type GamePhase = 
+  | 'Lobby' 
+  | 'Interdictor_Action' 
+  | 'Next_President' 
+  | 'Nominate_Chancellor' 
+  | 'Nomination_Review'
+  | 'Election'
+  | 'Broker_Action' 
+  | 'Voting' 
+  | 'Voting_Reveal' 
+  | 'Strategist_Action' 
+  | 'Legislative_President' 
+  | 'Legislative_Chancellor' 
+  | 'President_Declaration' 
+  | 'Chancellor_Declaration' 
+  | 'Auditor_Action' 
+  | 'Assassin_Action' 
+  | 'Handler_Action' 
+  | 'Round_End' 
+  | 'Executive_Action' 
+  | 'GameOver';
 export type ExecutiveAction = 'Investigate' | 'SpecialElection' | 'Execution' | 'PolicyPeek' | 'None';
 export type GameMode = 'Casual' | 'Ranked';
 
@@ -176,6 +196,7 @@ export interface GameState {
   lastExecutiveActionStateCount?: number;
   // Used by coordinated State AI lying: president stores the chancellor's intended claim
   pendingChancellorClaim?: { civ: number; sta: number };
+  isStrategistAction?: boolean;
   // Structured per-round history for the history panel
   roundHistory?: {
     round: number;
