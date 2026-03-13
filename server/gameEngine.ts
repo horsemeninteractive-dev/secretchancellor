@@ -166,8 +166,15 @@ export class GameEngine {
       if (eligible.length > 0) {
         const target = eligible[Math.floor(Math.random() * eligible.length)];
         target.isChancellorCandidate = true;
-        s.phase = "Voting";
         s.log.push(`[Timer] ${president.name} was too slow. ${target.name} was auto-nominated.`);
+
+        const broker = s.players.find(p => p.titleRole === 'Broker' && !p.titleUsed && p.isAlive);
+        if (broker && broker.id !== president.id) {
+          s.titlePrompt = { playerId: broker.id, role: 'Broker', context: {}, nextPhase: 'Voting' };
+          s.phase = 'Nomination_Review';
+        } else {
+          s.phase = "Voting";
+        }
         this.broadcastState(roomId);
         this.processAITurns(roomId);
       }
@@ -185,7 +192,7 @@ export class GameEngine {
 
     } else if (s.phase === "Legislative_President") {
       const president = s.players.find(p => p.isPresident);
-      if (president) {
+      if (president && s.drawnPolicies.length > 0) {
         s.presidentSaw = [...s.drawnPolicies];
         const discarded = s.drawnPolicies.splice(
           Math.floor(Math.random() * s.drawnPolicies.length), 1
@@ -216,6 +223,7 @@ export class GameEngine {
     } else if (s.phase === "Legislative_Chancellor") {
       const chancellor = s.players.find(p => p.isChancellor);
       if (chancellor && s.chancellorPolicies.length > 0) {
+        // Policy not yet played — auto-play a random directive.
         const played   = s.chancellorPolicies.splice(
           Math.floor(Math.random() * s.chancellorPolicies.length), 1
         )[0];
@@ -224,16 +232,18 @@ export class GameEngine {
         s.chancellorTimedOut = true;
         s.log.push(`[Timer] ${chancellor.name} was too slow. A random directive was enacted.`);
         this.triggerPolicyEnactment(s, roomId, played, false, chancellor.id);
+      } else if (s.lastEnactedPolicy) {
+        // Policy was already played but one or both players haven't declared yet.
+        // triggerAIDeclarations handles AI players, but if a human player never
+        // sends declarePolicies the timer just resets and fires again as a no-op.
+        // Set both timeout flags so triggerAIDeclarations treats everyone as timed
+        // out and auto-declares for any player who still hasn't submitted.
+        s.log.push("[Timer] Declaration time expired. Auto-declaring for undeclared players.");
+        s.presidentTimedOut = true;
+        s.chancellorTimedOut = true;
+        this.triggerAIDeclarations(s, roomId);
       }
 
-    } else if (s.phase === "Assassin_Action") {
-      const nextPhase = s.titlePrompt?.nextPhase;
-      s.titlePrompt = undefined;
-      s.phase = nextPhase || 'Election';
-      if (s.phase === 'Election') {
-        this.nextPresident(s, roomId, true);
-      }
-      this.broadcastState(roomId);
     } else if (s.phase === "Executive_Action") {
       const president = s.players.find(p => p.isPresident);
       if (president) {
@@ -799,17 +809,28 @@ export class GameEngine {
         declareForAI(president, "President");
       }
 
-      const checkAndDeclareChancellor = () => {
+      const checkAndDeclareChancellor = (retriesLeft: number = 10) => {
         if (state.isPaused) return;
+        // If the phase has advanced (timer forced it, or GameOver), stop retrying.
+        if (state.phase !== "Legislative_Chancellor") return;
         const chancellorDeclared = state.declarations.some(d => d.type === "Chancellor");
         if (chancellorDeclared) return;
         if (chancellor.isAI || state.chancellorTimedOut) {
           const presidentDeclared = state.declarations.some(d => d.type === "President");
-          if (!presidentDeclared) { setTimeout(checkAndDeclareChancellor, 2000); return; }
+          if (!presidentDeclared) {
+            if (retriesLeft <= 0) {
+              // President never declared — force-declare them timed-out and then proceed
+              state.presidentTimedOut = true;
+              declareForAI(president, "President");
+            } else {
+              setTimeout(() => checkAndDeclareChancellor(retriesLeft - 1), 2000);
+            }
+            return;
+          }
           declareForAI(chancellor, "Chancellor");
         }
       };
-      setTimeout(checkAndDeclareChancellor, 2000);
+      setTimeout(() => checkAndDeclareChancellor(), 2000);
     }, 1500);
   }
 
@@ -829,6 +850,8 @@ export class GameEngine {
     this.broadcastState(roomId);
 
     setTimeout(async () => {
+      const state = this.rooms.get(roomId);
+      if (!state) return;
       console.log(`[DEBUG] triggerPolicyEnactment timeout: roomId=${roomId}, isPaused=${state.isPaused}`);
       if (state.isPaused) return;
 
@@ -972,7 +995,6 @@ export class GameEngine {
           break;
       }
       this.io.to(roomId).emit("powerUsed", { role: state.titlePrompt.role });
-      player.titleUsed = true;
       if (player.isAI) {
         this.postAIChat(state, player, CHAT.powerUsage);
       }
@@ -984,18 +1006,19 @@ export class GameEngine {
       }
     }
 
+    // Mark the title as consumed regardless of whether the ability was used or declined.
+    // This MUST be unconditional — if titleUsed stays false after a decline or timer expiry,
+    // checkRoundEnd will re-detect the unused title (e.g. Assassin) and re-set the prompt,
+    // causing an infinite re-hang.
+    player.titleUsed = true;
+
     // Check for next title ability (chaining)
     let nextPrompt: any = undefined;
-    const nextInterdictor = state.players.find(p => p.titleRole === 'Interdictor' && !p.titleUsed && p.isAlive);
 
     if (role === 'Broker') {
       const anotherBroker = state.players.find(p => p.titleRole === 'Broker' && !p.titleUsed && p.isAlive && p.id !== player.id);
       if (anotherBroker) {
         nextPrompt = { playerId: anotherBroker.id, role: 'Broker', context: {}, nextPhase };
-      }
-    } else if (role === 'Handler') {
-      if (nextInterdictor) {
-        nextPrompt = { playerId: nextInterdictor.id, role: 'Interdictor', context: {}, nextPhase };
       }
     } else if (role === 'Interdictor') {
       const anotherInterdictor = state.players.find(p => p.titleRole === 'Interdictor' && !p.titleUsed && p.isAlive && p.id !== player.id);
@@ -1011,10 +1034,14 @@ export class GameEngine {
 
       // Only transition phase if the ability didn't already change it (e.g. Broker to Election)
       // and if we have a nextPhase or are in a blocking title phase.
-      // Handler and Interdictor must NOT fire processAITurns here — startElection() below
-      // is their sole launcher. Calling both causes a double-fire that corrupts the nomination.
+      // Handler calls nextPresident (not startElection) so the presidential order advances and
+      // Interdictor can fire from within nextPresident. Interdictor calls startElection directly.
+      // Assassin has its own explicit continuation below.
       if (state.phase === phaseBefore) {
-        if (nextPhase && role !== 'Handler' && role !== 'Interdictor') {
+        if (nextPhase && role !== 'Handler' && role !== 'Interdictor' && role !== 'Assassin') {
+          // Assassin has its own explicit continuation below — exclude it here to prevent
+          // the nextPhase block from firing processAITurns with Election phase while the
+          // Assassin block immediately rolls phase back to Legislative_Chancellor.
           state.phase = nextPhase;
           this.startActionTimer(roomId);
           this.processAITurns(roomId);
@@ -1026,30 +1053,56 @@ export class GameEngine {
       }
     }
 
-    // Handler and Interdictor: startElection is the sole place that kicks off the round.
-    // Broker (used): same pattern — startElection handles everything.
-    if ((role === 'Handler' || role === 'Interdictor') && !state.titlePrompt) {
-      this.startElection(state, roomId);
+    // Handler: nextPresident is the sole place that advances the presidential order and
+    // checks for Interdictor. startElection would skip that advancement entirely.
+    if (role === 'Handler' && !state.titlePrompt) {
+      this.nextPresident(state, roomId, true);
       return;
     }
-    // If Broker was used, we MUST start the election now.
-    if (role === 'Broker' && abilityData.use) {
+    // Interdictor and Broker (used): startElection kicks off the election phase.
+    if ((role === 'Interdictor' || (role === 'Broker' && abilityData.use)) && !state.titlePrompt) {
       this.startElection(state, roomId);
       return;
     }
 
     if (role === 'Assassin') {
+      // Declarations are already complete when the Assassin fires (checkRoundEnd triggered it).
+      // Handler fires after Assassin but before round end / nextPresident.
       if (state.phase !== 'GameOver') {
-        state.phase = 'Legislative_Chancellor';
+        const handlerAfterAssassin = state.players.find(p => p.titleRole === 'Handler' && !p.titleUsed && p.isAlive);
+        if (handlerAfterAssassin) {
+          state.phase = 'Nomination_Review';
+          state.titlePrompt = {
+            playerId: handlerAfterAssassin.id,
+            role: 'Handler',
+            context: {},
+            nextPhase: 'Election'
+          };
+          this.startActionTimer(roomId);
+          this.broadcastState(roomId);
+          this.processAITurns(roomId);
+        } else {
+          this.nextPresident(state, roomId, true);
+        }
       }
-      this.checkRoundEnd(state, roomId);
+      return;
     }
 
-    // Auditor is triggered from inside checkRoundEnd, which then returns early while
-    // the prompt is pending. Once the ability resolves, checkRoundEnd must be called
-    // again so round progression (executive actions / nextPresident) can continue.
+    // Auditor is triggered from inside checkRoundEnd (after policy enactment) OR
+    // from handleVetoResponse (when veto is accepted). checkRoundEnd guards on
+    // phase === "Legislative_Chancellor" and both declarations present — which is
+    // true in the veto path too, so it would re-enter and re-fire Assassin etc.
+    // Use lastEnactedPolicy as the discriminant: present means normal round end,
+    // absent means veto context where we just need to advance the presidency.
     if (role === 'Auditor') {
-      this.checkRoundEnd(state, roomId);
+      if (state.lastEnactedPolicy) {
+        this.checkRoundEnd(state, roomId);
+      } else {
+        // Veto context — no policy was enacted, just advance to next president.
+        if (state.phase !== 'GameOver') {
+          this.nextPresident(state, roomId, false);
+        }
+      }
     }
 
     this.broadcastState(roomId);
@@ -1098,18 +1151,26 @@ export class GameEngine {
 
       s.previousVotes = undefined;
       this.broadcastState(roomId);
-      this.processAITurns(roomId);
+      // Only kick off AI turns if the game is still running and there is no pending
+      // title prompt (e.g. Strategist). Those paths call processAITurns themselves.
+      if (s.phase !== "GameOver" && !s.titlePrompt) {
+        this.processAITurns(roomId);
+      }
     }, 6000);
   }
 
   private async handleElectionPassed(s: GameState, roomId: string, voteInfo: string): Promise<void> {
     s.log.push(`The election passed! ${voteInfo}`);
-    const chancellor = s.players.find(p => p.isChancellorCandidate)!;
-    const president  = s.players.find(p => p.isPresidentialCandidate)!;
+    const chancellor = s.players.find(p => p.isChancellorCandidate);
+    const president  = s.players.find(p => p.isPresidentialCandidate);
+    if (!chancellor || !president) {
+      s.log.push("[ERROR] handleElectionPassed: missing chancellor or president candidate. Advancing to next round.");
+      this.nextPresident(s, roomId);
+      return;
+    }
 
     if (s.stateDirectives >= 3 && chancellor.role === "Overseer") {
       s.phase = "GameOver";
-      this.startActionTimer(roomId);
       s.winner = "State";
       s.winReason = "THE OVERSEER HAS ASCENDED";
       s.log.push("The Overseer was elected Chancellor! State Supremacy!");
@@ -1133,13 +1194,18 @@ export class GameEngine {
 
     updateSuspicionFromNomination(s, president.id, chancellor.id);
 
-    // Ensure we have at least 4 cards to draw (important for Strategist)
+    // Ensure we have at least 3 cards to draw (4 for Strategist)
     if (s.deck.length < 4) {
       if (s.discard.length > 0) {
         s.log.push("Reshuffling discard pile to ensure enough directives...");
         s.deck = shuffle([...s.deck, ...s.discard]);
         s.discard = [];
       }
+    }
+    if (s.deck.length === 0) {
+      s.log.push("[ERROR] handleElectionPassed: deck and discard both empty, cannot deal policies.");
+      this.nextPresident(s, roomId);
+      return;
     }
     
     // Check for Strategist
@@ -1183,6 +1249,12 @@ export class GameEngine {
       if (s.deck.length < 1) {
         s.deck = shuffle([...s.deck, ...s.discard]);
         s.discard = [];
+      }
+      if (s.deck.length === 0) {
+        s.log.push("[ERROR] handleElectionFailed: deck and discard both empty, cannot enact chaos policy.");
+        s.electionTracker = 0;
+        this.nextPresident(s, roomId);
+        return;
       }
       const chaosPolicy = s.deck.shift()!;
       s.electionTracker = 0;
@@ -1352,9 +1424,9 @@ export class GameEngine {
     if (agree) {
       state.log.push(`${player.name} (President) agreed to the Veto. Both directives discarded.`);
       state.discard.push(...state.chancellorPolicies);
-      this.checkAuditorTrigger(state);
       state.chancellorPolicies = [];
       state.vetoRequested = false;
+      this.checkAuditorTrigger(state);
       if (state.titlePrompt) {
         this.startActionTimer(roomId);
         this.broadcastState(roomId);
@@ -1374,11 +1446,22 @@ export class GameEngine {
       });
 
       state.electionTracker++;
-      if (state.electionTracker === 3) {
+      if (state.titlePrompt) {
+        // Auditor (or another title ability) is pending — don't advance yet.
+        // The Auditor resolution path will call nextPresident or triggerPolicyEnactment
+        // itself once the ability is resolved.
+      } else if (state.electionTracker === 3) {
         state.log.push("Election tracker reached 3! Chaos directive enacted.");
         if (state.deck.length < 1) {
           state.deck = shuffle([...state.deck, ...state.discard]);
           state.discard = [];
+        }
+        if (state.deck.length === 0) {
+          state.log.push("[ERROR] handleVetoResponse: deck and discard both empty, cannot enact chaos policy.");
+          state.electionTracker = 0;
+          this.nextPresident(state, roomId, false);
+          this.broadcastState(roomId);
+          return;
         }
         const chaosPolicy = state.deck.shift()!;
         state.electionTracker = 0;
@@ -1390,7 +1473,6 @@ export class GameEngine {
         }
       }
 
-      this.triggerAIDeclarations(state, roomId);
     } else {
       state.log.push(`${player.name} (President) denied the Veto. Chancellor must enact a directive.`);
       state.vetoRequested = false;
@@ -1434,7 +1516,7 @@ export class GameEngine {
 
     // Reshuffle if fewer than 4 cards remain before the round starts
     if (state.deck.length < 4) {
-      state.log.push("Fewer than 3 cards in deck. Reshuffling discard pile...");
+      state.log.push("Fewer than 4 cards in deck. Reshuffling discard pile...");
       state.deck = shuffle([...state.deck, ...state.discard]);
       state.discard = [];
     }
@@ -1462,37 +1544,38 @@ export class GameEngine {
     }
 
     const oldIdx = state.presidentIdx;
+    let safetyLimit = state.players.length + 1;
     do {
       if (state.presidentialOrder) {
         const currentId = state.players[state.presidentIdx].id;
         const currentIndexInOrder = state.presidentialOrder.indexOf(currentId);
         const nextIndexInOrder = (currentIndexInOrder + 1) % state.presidentialOrder.length;
         const nextId = state.presidentialOrder[nextIndexInOrder];
-        state.presidentIdx = state.players.findIndex(p => p.id === nextId);
+        const found = state.players.findIndex(p => p.id === nextId);
+        // If the id in presidentialOrder has no matching player (e.g. stale after a reconnect
+        // replacement race), skip it by leaving presidentIdx unchanged and letting the loop
+        // count it against safetyLimit rather than crashing with index -1.
+        if (found !== -1) state.presidentIdx = found;
       } else {
         state.presidentIdx = (state.presidentIdx + 1) % state.players.length;
       }
-    } while (!state.players[state.presidentIdx].isAlive);
+      safetyLimit--;
+    } while ((!state.players[state.presidentIdx] || !state.players[state.presidentIdx].isAlive) && safetyLimit > 0);
+
+    if (safetyLimit <= 0 && !state.players[state.presidentIdx].isAlive) {
+      // No alive players found — this should never happen in a healthy game state.
+      // Bail out to prevent corrupting the game with a dead president.
+      state.log.push("[ERROR] nextPresident: no alive player found to become president. Aborting round advance.");
+      return;
+    }
     
     if (process.env.NODE_ENV !== 'production') state.log.push(`DEBUG: President index was ${oldIdx}, now ${state.presidentIdx}, player: ${state.players[state.presidentIdx].name}`);
 
-    const handler = state.players.find(p => p.titleRole === 'Handler' && !p.titleUsed && p.isAlive);
     const interdictor = state.players.find(p => p.titleRole === 'Interdictor' && !p.titleUsed && p.isAlive);
     
-    if (process.env.NODE_ENV !== 'production') state.log.push(`DEBUG: Handler found: ${handler?.name}, Interdictor found: ${interdictor?.name}`);
+    if (process.env.NODE_ENV !== 'production') state.log.push(`DEBUG: Interdictor found: ${interdictor?.name}`);
 
-    if (handler) {
-      state.phase = "Nomination_Review";
-      state.titlePrompt = {
-        playerId: handler.id,
-        role: 'Handler',
-        context: {},
-        nextPhase: 'Election'
-      };
-      this.startActionTimer(roomId);
-      this.broadcastState(roomId);
-      this.processAITurns(roomId);
-    } else if (interdictor && interdictor.id !== state.players[state.presidentIdx].id) {
+    if (interdictor && interdictor.id !== state.players[state.presidentIdx].id) {
       state.phase = "Nomination_Review";
       state.titlePrompt = {
         playerId: interdictor.id,
@@ -1515,6 +1598,13 @@ export class GameEngine {
     state.declarations         = [];
     state.presidentTimedOut    = false;
     state.chancellorTimedOut   = false;
+    // Clear stale policy-hand data from the previous government so that
+    // triggerAIDeclarations never reads cards from a prior round.
+    state.drawnPolicies        = [];
+    state.chancellorPolicies   = [];
+    state.presidentSaw         = undefined;
+    state.chancellorSaw        = undefined;
+    state.lastEnactedPolicy    = undefined;
     state.players.forEach(p => {
       p.isPresidentialCandidate = false;
       p.isChancellorCandidate   = false;
@@ -1692,6 +1782,7 @@ export class GameEngine {
         ? availableBots[Math.floor(Math.random() * availableBots.length)]
         : AI_BOTS[Math.floor(Math.random() * AI_BOTS.length)];
 
+      const oldId = player.id;
       player.isAI          = true;
       player.isDisconnected = false;
       player.id            = `ai-${randomUUID()}`;
@@ -1699,6 +1790,12 @@ export class GameEngine {
       player.name          = bot.name;
       player.avatarUrl     = bot.avatarUrl;
       player.personality   = bot.personality;
+      // Keep presidentialOrder consistent with the new id so nextPresident
+      // doesn't land on -1 when walking the order array.
+      if (state.presidentialOrder) {
+        const orderIdx = state.presidentialOrder.indexOf(oldId);
+        if (orderIdx !== -1) state.presidentialOrder[orderIdx] = player.id;
+      }
       state.log.push(`${player.name} (AI) has taken over the seat.`);
       state.isPaused = false;
       this.processAITurns(roomId);
@@ -1773,12 +1870,4 @@ export class GameEngine {
       this.io.to(p.id).emit("userUpdate", userWithoutPassword);
     }
   }
-}
-
-// ---------------------------------------------------------------------------
-// Small helper to call startActionTimer from handleElectionPassed without
-// breaking the "this" context inside an arrow-function callback.
-// ---------------------------------------------------------------------------
-function startActionTimerRef(engine: GameEngine, roomId: string): void {
-  engine.startActionTimer(roomId);
 }
