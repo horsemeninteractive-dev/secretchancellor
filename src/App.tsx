@@ -12,7 +12,7 @@ import { MUSIC_TRACKS, SOUND_PACKS } from './lib/audio';
 import { discordSdk, setupDiscordSdk } from './lib/discord';
 import { cn, getProxiedUrl } from './lib/utils';
 
-const CLIENT_VERSION = 'v0.9.0';
+const CLIENT_VERSION = 'v0.9.1';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
