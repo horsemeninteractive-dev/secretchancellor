@@ -151,10 +151,10 @@ export const PlayerGrid = ({ gameState, me, speakingPlayers, playSound, token, s
 
                     <div className={cn(
                       'font-thematic tracking-wide truncate px-1 leading-tight',
-                      stream && isVideoActive ? 'text-[8px] sm:text-responsive-xs bg-black/50 rounded px-1' : 'text-responsive-xs sm:text-responsive-sm',
+                      stream && isVideoActive ? 'text-[7px] sm:text-[9px] bg-black/50 rounded px-1' : 'text-[9px] sm:text-[11px]',
                       p.isAlive ? 'text-white/90' : 'text-[#444]'
                     )}>
-                      {p.name} {p.id === socket.id && '(You)'}
+                      {p.name.replace(' (AI)', '')} {p.id === socket.id && '(You)'}
                     </div>
 
                     {/* Badges */}

@@ -80,12 +80,12 @@ export const RoundHistory = ({ gameState, isOpen, onClose }: RoundHistoryProps) 
                   <div className="flex items-center gap-3 text-[11px]">
                     <div className="flex items-center gap-1.5">
                       <span className="px-1.5 py-0.5 rounded bg-yellow-900/20 border border-yellow-500/20 text-yellow-500 font-mono text-[8px] uppercase">Pres</span>
-                      <span className="text-white/80">{entry.presidentName}</span>
+                      <span className="text-white/80">{entry.presidentName.replace(' (AI)', '')}</span>
                     </div>
                     <div className="text-[#333]">×</div>
                     <div className="flex items-center gap-1.5">
                       <span className="px-1.5 py-0.5 rounded bg-blue-900/20 border border-blue-500/20 text-blue-400 font-mono text-[8px] uppercase">Chan</span>
-                      <span className="text-white/80">{entry.chancellorName}</span>
+                      <span className="text-white/80">{entry.chancellorName.replace(' (AI)', '')}</span>
                     </div>
                   </div>
 

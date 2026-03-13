@@ -296,7 +296,7 @@ export default function App() {
   };
 
   return (
-    <div className={cn("h-screen bg-[#0a0a0a] flex flex-col bg-texture", isDiscord && isMobile ? "pt-12" : "")}>
+    <div className={cn("h-[100dvh] bg-[#0a0a0a] flex flex-col bg-texture", isDiscord && isMobile ? "pt-12" : "")}>
       <UpdateBanner visible={updateAvailable} />
 
       {error && (

@@ -515,7 +515,7 @@ export const GameRoom = ({
     <div
       ref={containerRef}
       className={cn(
-        'flex-1 w-full bg-texture text-[#e4e3e0] font-sans flex flex-col overflow-hidden transition-all duration-1000',
+        'flex-1 w-full bg-texture text-[#e4e3e0] font-sans grid grid-rows-[auto_1fr] overflow-hidden transition-all duration-1000',
         gameState.stateDirectives >= 3 && gameState.phase !== 'GameOver' && 'danger-zone-pulse'
       )}
       style={{
@@ -538,53 +538,55 @@ export const GameRoom = ({
         playSound={playSound}
       />
 
-      <main 
-        className="flex-1 flex flex-col min-h-0 relative origin-top transition-all duration-300"
-        style={{ 
-          transform: uiScale < 1 ? `scale(${uiScale})` : 'none',
-          width: uiScale < 1 ? `${100 / uiScale}%` : '100%',
-          height: uiScale < 1 ? `${100 / uiScale}%` : '100%',
-        }}
-      >
-        <PolicyTracks gameState={gameState} />
+      <main className="relative overflow-hidden w-full h-full">
+        <div 
+          className="absolute top-0 left-0 flex flex-col origin-top-left transition-all duration-300"
+          style={{ 
+            transform: `scale(${uiScale})`,
+            width: `${100 / uiScale}%`,
+            height: `${100 / uiScale}%`,
+          }}
+        >
+          <PolicyTracks gameState={gameState} />
 
-        <PlayerGrid
-          gameState={gameState}
-          me={me}
-          speakingPlayers={speakingPlayers}
-          playSound={playSound}
-          token={token || ''}
-          selectedPlayerId={selectedPlayerId}
-          setSelectedPlayerId={setSelectedPlayerId}
-          localStream={localStream}
-          remoteStreams={remoteStreams}
-          isVideoActive={isVideoActive}
-        />
+          <PlayerGrid
+            gameState={gameState}
+            me={me}
+            speakingPlayers={speakingPlayers}
+            playSound={playSound}
+            token={token || ''}
+            selectedPlayerId={selectedPlayerId}
+            setSelectedPlayerId={setSelectedPlayerId}
+            localStream={localStream}
+            remoteStreams={remoteStreams}
+            isVideoActive={isVideoActive}
+          />
 
-        <ActionBar
-          gameState={gameState}
-          me={me}
-          user={user}
-          showDebug={showDebug}
-          onOpenLog={() => { playSound('click'); setIsLogOpen(true); }}
-          onPlayAgain={onPlayAgain}
-          onLeaveRoom={onLeaveRoom}
-          playSound={playSound}
-          isVoiceActive={isVoiceActive}
-          setIsVoiceActive={setIsVoiceActive}
-          isVideoActive={isVideoActive}
-          setIsVideoActive={setIsVideoActive}
-        />
+          <ActionBar
+            gameState={gameState}
+            me={me}
+            user={user}
+            showDebug={showDebug}
+            onOpenLog={() => { playSound('click'); setIsLogOpen(true); }}
+            onPlayAgain={onPlayAgain}
+            onLeaveRoom={onLeaveRoom}
+            playSound={playSound}
+            isVoiceActive={isVoiceActive}
+            setIsVoiceActive={setIsVoiceActive}
+            isVideoActive={isVideoActive}
+            setIsVideoActive={setIsVideoActive}
+          />
 
-        {/* Overlays within main */}
-        <PauseOverlay gameState={gameState} />
+          {/* Overlays within main */}
+          <PauseOverlay gameState={gameState} />
 
-        <GameOverModal
-          gameState={gameState}
-          onPlayAgain={onPlayAgain}
-          onLeave={onLeaveRoom}
-          onOpenLog={() => setIsLogOpen(true)}
-        />
+          <GameOverModal
+            gameState={gameState}
+            onPlayAgain={onPlayAgain}
+            onLeave={onLeaveRoom}
+            onOpenLog={() => setIsLogOpen(true)}
+          />
+        </div>
       </main>
 
       {/* Policy flip animation */}

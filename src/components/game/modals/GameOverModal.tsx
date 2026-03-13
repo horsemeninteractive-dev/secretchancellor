@@ -73,7 +73,7 @@ export const GameOverModal = ({ gameState, onPlayAgain, onLeave, onOpenLog }: Ga
                           ? <img src={getProxiedUrl(p.avatarUrl)} alt={p.name} className="w-full h-full object-cover" />
                           : p.name.charAt(0)}
                       </div>
-                      <span className="text-responsive-sm text-white font-medium">{p.name}</span>
+                      <span className="text-responsive-sm text-white font-medium">{p.name.replace(' (AI)', '')}</span>
                     </div>
                     <div className={cn(
                       'px-3 py-1 rounded-lg border text-responsive-xs font-mono uppercase tracking-widest',

@@ -622,7 +622,7 @@ export class GameEngine {
   private postAIChat(state: GameState, ai: Player, lines: readonly string[], targetName?: string): void {
     let text = lines[Math.floor(Math.random() * lines.length)];
     if (targetName) {
-      text = text.replace("{name}", targetName);
+      text = text.replace("{name}", targetName.replace(" (AI)", ""));
     }
     state.messages.push({ sender: ai.name, text, timestamp: Date.now(), type: "text" });
     if (state.messages.length > 50) state.messages.shift();
@@ -648,11 +648,13 @@ export class GameEngine {
               lines = CHAT.defendingSelf;
             } else {
               const suspicion = getSuspicion(commentator, target.id);
-              if (suspicion > 0.75) {
+              const isTeammate = commentator.role !== "Civil" && (target.role === "State" || target.role === "Overseer");
+
+              if (suspicion > 0.75 && !isTeammate) {
                 lines = CHAT.highSuspicion;
-              } else if (suspicion > 0.55) {
+              } else if (suspicion > 0.55 && !isTeammate) {
                 lines = CHAT.suspiciousNominee;
-              } else if (suspicion < 0.25) {
+              } else if (suspicion < 0.25 || isTeammate) {
                 lines = CHAT.praisingCivil;
               } else {
                 lines = CHAT.banter;

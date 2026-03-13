@@ -626,6 +626,25 @@ async function startServer() {
         lastGovernmentVotes: undefined,
         lastGovernmentPresidentId: undefined,
         lastGovernmentChancellorId: undefined,
+        messages: [],
+        detainedPlayerId: undefined,
+        rejectedChancellorId: undefined,
+        presidentId: undefined,
+        chancellorId: undefined,
+        investigationResult: undefined,
+        presidentSaw: undefined,
+        chancellorSaw: undefined,
+        presidentTimedOut: false,
+        chancellorTimedOut: false,
+        isPaused: false,
+        pauseReason: undefined,
+        pauseTimer: undefined,
+        disconnectedPlayerId: undefined,
+        titlePrompt: undefined,
+        lastExecutiveActionStateCount: 0,
+        vetoUnlocked: false,
+        vetoRequested: false,
+        previousVotes: undefined,
       });
 
       state.players = state.players.filter(p => !p.isAI);
@@ -642,6 +661,9 @@ async function startServer() {
         p.wasChancellor = false;
         p.vote = undefined;
         p.isReady = false;
+        p.hasActed = false;
+        p.suspicion = undefined;
+        p.stateEnactments = 0;
       });
 
       engine.broadcastState(roomId);

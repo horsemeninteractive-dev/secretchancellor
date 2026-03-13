@@ -79,7 +79,7 @@ export const AssemblyLog = ({ log, isOpen, onClose, showDebug }: AssemblyLogProp
                     <div className="text-[8px] font-mono opacity-30 uppercase tracking-widest">Event #{i + 1}</div>
                     <div className="h-[1px] flex-1 bg-white/5" />
                   </div>
-                  <div className="font-medium tracking-wide text-inherit">{entry}</div>
+                  <div className="font-medium tracking-wide text-inherit">{entry.replace(/ \(AI\)/g, '')}</div>
                 </div>
               );
             })}

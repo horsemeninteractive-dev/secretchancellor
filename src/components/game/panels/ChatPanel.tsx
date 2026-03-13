@@ -79,7 +79,9 @@ export const ChatPanel = ({
                     : <UserIcon className="w-4 h-4 text-[#444] m-2" />}
                 </div>
                 <div className={cn('flex flex-col min-w-0', item.sender === me?.name ? 'items-end' : 'items-start')}>
-                  <div className="text-[9px] text-[#444] font-mono mb-1 whitespace-nowrap">{item.sender}</div>
+                  <div className="text-[9px] text-[#444] font-mono mb-1 whitespace-nowrap">
+                    {item.sender.replace(' (AI)', '')}
+                  </div>
                   <div className={cn(
                     'px-3 py-2 rounded-2xl text-xs max-w-[85%] break-words whitespace-pre-wrap leading-relaxed',
                     item.sender === me?.name

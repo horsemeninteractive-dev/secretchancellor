@@ -30,7 +30,7 @@ export const InvestigationModal = ({ result, onClose }: InvestigationModalProps)
           </div>
           <div className="space-y-2">
             <h3 className="text-[10px] uppercase tracking-[0.2em] text-[#666] font-mono">Investigation Result</h3>
-            <p className="text-xl font-serif italic text-white">{result.targetName} is a:</p>
+            <p className="text-xl font-serif italic text-white">{result.targetName.replace(' (AI)', '')} is a:</p>
           </div>
           <div className={cn(
             'text-4xl font-serif italic py-4 rounded-2xl border-2',
