@@ -4,6 +4,7 @@ import { GameState, Player, Role, Policy, User, PrivateInfo } from '../types';
 import { getBackgroundTexture } from '../lib/cosmetics';
 import { cn, getProxiedUrl } from '../lib/utils';
 import * as aiSpeech from '../services/aiSpeech';
+import * as geminiSpeech from '../services/geminiSpeech';
 
 import { GameHeader } from './game/GameHeader';
 import { PolicyTracks } from './game/PolicyTracks';
@@ -43,6 +44,7 @@ interface GameRoomProps {
   playSound: (soundKey: string) => void;
   soundVolume: number;
   ttsVoice: string;
+  ttsEngine: string;
   isAiVoiceEnabled: boolean;
   uiScaleSetting: number;
 }
@@ -52,7 +54,7 @@ export const GameRoom = ({
   onLeaveRoom, onPlayAgain, onOpenProfile, onJoinRoom,
   setUser, setGameState, setPrivateInfo,
   updateAvailable,
-  playSound, soundVolume, ttsVoice, isAiVoiceEnabled,
+  playSound, soundVolume, ttsVoice, ttsEngine, isAiVoiceEnabled,
   uiScaleSetting
 }: GameRoomProps) => {
   const me = gameState.players.find(p => p.id === socket.id);
@@ -349,18 +351,30 @@ export const GameRoom = ({
     
     const sender = gameState.players.find(p => p.name === lastMessage.sender);
     if (sender && sender.isAI) {
-      const profile = aiSpeech.getVoiceProfileForAi(sender.name);
-      if (profile) {
-        aiSpeech.speakAiMessage(
-          lastMessage.text, 
-          sender.name, 
-          profile,
-          () => setSpeakingPlayers(prev4 => ({ ...prev4, [sender.id]: true })),
-          () => setSpeakingPlayers(prev4 => ({ ...prev4, [sender.id]: false }))
-        );
+      if (ttsEngine === 'gemini') {
+        const voice = geminiSpeech.getGeminiVoiceForAi(sender.name);
+        geminiSpeech.generateGeminiSpeech({ text: lastMessage.text, voice }).then(audio => {
+          if (audio) {
+            audio.volume = soundVolume / 100;
+            setSpeakingPlayers(prev => ({ ...prev, [sender.id]: true }));
+            audio.onended = () => setSpeakingPlayers(prev => ({ ...prev, [sender.id]: false }));
+            audio.play().catch(console.error);
+          }
+        });
+      } else {
+        const profile = aiSpeech.getVoiceProfileForAi(sender.name);
+        if (profile) {
+          aiSpeech.speakAiMessage(
+            lastMessage.text, 
+            sender.name, 
+            profile,
+            () => setSpeakingPlayers(prev4 => ({ ...prev4, [sender.id]: true })),
+            () => setSpeakingPlayers(prev4 => ({ ...prev4, [sender.id]: false }))
+          );
+        }
       }
     }
-  }, [gameState.messages.length, isAiVoiceEnabled]);
+  }, [gameState.messages.length, isAiVoiceEnabled, ttsEngine, soundVolume]);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStreams, setRemoteStreams] = useState<Record<string, MediaStream>>({});
   const [speakingPlayers, setSpeakingPlayers] = useState<Record<string, boolean>>({});

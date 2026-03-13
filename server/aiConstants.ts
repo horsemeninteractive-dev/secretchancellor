@@ -36,6 +36,11 @@ export const CHAT = {
     "I enacted what I was given. The President controls the discard.",
     "The President passed me a dead hand. I had no choice.",
     "Ask the President why they only passed State directives to me.",
+    "My hands were tied by the President's choice.",
+    "I am merely the instrument of the President's will.",
+    "The President's discard pile tells the real story.",
+    "Don't blame me for the President's incompetence.",
+    "The President gave me no other option.",
   ],
   // Chancellor after State directive enacted — State chancellor deflects blame
   chanStateStateEnacted: [
@@ -44,6 +49,11 @@ export const CHAT = {
     "Sometimes the Secretariat decides for us.",
     "A difficult hand, but we must proceed.",
     "The odds were not in our favor this round.",
+    "The deck is clearly rigged against the Charter.",
+    "I did what I had to do for the State.",
+    "The cards were not in our favor.",
+    "Blame the deck, not the player.",
+    "The State demands sacrifice, and this was it.",
   ],
   // President after State directive enacted — Civil president pins chancellor
   presCivilStateEnacted: [
@@ -52,6 +62,11 @@ export const CHAT = {
     "I gave them a choice. They chose the State.",
     "The Chancellor is responsible for that enactment. I passed them a Civil option.",
     "I am surprised by the Chancellor's decision. I sent them a Civil directive.",
+    "The Chancellor clearly has their own agenda.",
+    "I did my part. The Chancellor failed the Assembly.",
+    "I offered a Civil path. They rejected it.",
+    "The Chancellor's betrayal is their own.",
+    "I cannot control the Chancellor's actions.",
   ],
   // President after State directive enacted — State president deflects
   presStateStateEnacted: [
@@ -60,6 +75,11 @@ export const CHAT = {
     "I passed on what I could. The hand was compromised.",
     "The Secretariat is testing us. No Civil cards in that draw.",
     "A pure State draw. My hands were tied.",
+    "The deck is not our friend today.",
+    "I had no Civil cards to pass. Believe me.",
+    "The State's influence is strong in this deck.",
+    "I am just as frustrated as you are.",
+    "The cards were stacked against us from the start.",
   ],
   // After a failed government vote
   governmentFailed: [
@@ -68,6 +88,11 @@ export const CHAT = {
     "We need to form a functional government. Now.",
     "The Assembly is divided. This is dangerous.",
     "Another failed vote. The State grows stronger with every delay.",
+    "We are running out of time.",
+    "Stalling only helps the State.",
+    "We must come to an agreement.",
+    "This deadlock is unacceptable.",
+    "The Assembly is failing us.",
   ],
   // After investigation — Civil result
   investigateCivil: [
@@ -76,6 +101,11 @@ export const CHAT = {
     "{name} appears to stand with the Assembly.",
     "I've cleared {name}. They are one of us.",
     "My findings on {name} are positive. They support the Charter.",
+    "{name} is definitely on our side.",
+    "I trust {name} completely.",
+    "The investigation was successful. {name} is Civil.",
+    "{name} is a true ally.",
+    "I have verified {name}'s loyalty.",
   ],
   // After investigation — State result
   investigateState: [
@@ -85,6 +115,10 @@ export const CHAT = {
     "{name}'s allegiance is not to the Charter.",
     "I cannot trust {name} after what I've seen.",
     "The evidence against {name} is damning.",
+    "{name} is a threat to the Charter.",
+    "I've uncovered {name}'s true colors.",
+    "Watch out for {name}.",
+    "The investigation revealed {name}'s treachery.",
   ],
   // Suspicious nomination comment (Civil AI)
   suspiciousNominee: [
@@ -93,6 +127,11 @@ export const CHAT = {
     "That nomination raises questions within the Secretariat.",
     "I'm not sure {name} is the right person for this role.",
     "Why {name}? There are more trustworthy options.",
+    "I don't like this nomination.",
+    "This government seems suspicious.",
+    "I'm keeping a close eye on {name}.",
+    "I have my doubts about this choice.",
+    "This nomination is questionable.",
   ],
   // High suspicion comments
   highSuspicion: [
@@ -101,6 +140,11 @@ export const CHAT = {
     "The data suggests {name} is not who they claim to be.",
     "We need to marginalize {name} before it's too late.",
     "I'm calling it out: {name} is working for the State.",
+    "{name} is a traitor.",
+    "I'm certain {name} is State.",
+    "We need to get rid of {name}.",
+    "Don't trust {name} under any circumstances.",
+    "{name} is sabotaging us.",
   ],
   // Defending self
   defendingSelf: [
@@ -109,6 +153,11 @@ export const CHAT = {
     "The accusations against me are baseless distractions.",
     "I have only ever worked for the Assembly's success.",
     "Look at the facts, not the rumors. I am loyal.",
+    "I have nothing to hide.",
+    "My loyalty to the Charter is unwavering.",
+    "I am being framed.",
+    "The accusations are false.",
+    "I am as Civil as they come.",
   ],
   // Praising someone as Civil
   praisingCivil: [
@@ -117,6 +166,11 @@ export const CHAT = {
     "We need more people like {name} in power.",
     "I'm confident in {name}'s alignment.",
     "{name} is a true patriot of the Charter.",
+    "{name} is a great leader.",
+    "I fully support {name}.",
+    "{name} is doing a great job.",
+    "We can count on {name}.",
+    "{name} is a pillar of the Assembly.",
   ],
   // Early game support when no actions have occurred
   neutralSupport: [
@@ -125,6 +179,11 @@ export const CHAT = {
     "Let's see what {name} can do.",
     "I don't have any reason to doubt {name} yet.",
     "A fresh start with {name} might be what we need.",
+    "I'm neutral on {name} for now.",
+    "Let's see how {name} performs.",
+    "I'm open to {name}'s nomination.",
+    "I'm not sure about {name} yet.",
+    "I'll wait and see with {name}.",
   ],
   // General game banter
   banter: [
@@ -133,6 +192,24 @@ export const CHAT = {
     "One wrong move and the Charter falls.",
     "Trust is a rare commodity in these times.",
     "Let's focus on the directives. The Assembly depends on us.",
+    "The State is always watching.",
+    "We must be careful.",
+    "The Assembly is in danger.",
+    "We need to be smarter.",
+    "The State is closing in.",
+  ],
+  // Power usage
+  powerUsage: [
+    "I am using my power to ensure the Assembly's success.",
+    "This power is necessary to protect the Charter.",
+    "I must use this power to uncover the truth.",
+    "The situation demands this action.",
+    "I am using this power to secure our future.",
+    "This is the only way to proceed.",
+    "I am using this power for the good of the Assembly.",
+    "This power will help us identify the threats.",
+    "I have no choice but to use this power.",
+    "I am using this power to strengthen our position.",
   ],
 } as const;
 

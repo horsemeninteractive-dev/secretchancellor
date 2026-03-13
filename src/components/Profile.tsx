@@ -29,6 +29,8 @@ interface ProfileProps {
     setIsFullscreen: React.Dispatch<React.SetStateAction<boolean>>;
     ttsVoice: string;
     setTtsVoice: React.Dispatch<React.SetStateAction<string>>;
+    ttsEngine: string;
+    setTtsEngine: React.Dispatch<React.SetStateAction<string>>;
     isAiVoiceEnabled: boolean;
     setIsAiVoiceEnabled: React.Dispatch<React.SetStateAction<boolean>>;
     uiScaleSetting: number;
@@ -149,6 +151,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
     soundVolume, setSoundVolume, 
     isFullscreen, setIsFullscreen, 
     ttsVoice, setTtsVoice, 
+    ttsEngine, setTtsEngine,
     isAiVoiceEnabled, setIsAiVoiceEnabled,
     uiScaleSetting, setUiScaleSetting
   } = settings;
@@ -678,6 +681,22 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
               <div className="p-4 bg-[#141414] border border-[#222] rounded-2xl space-y-2">
                 <span className="text-sm font-mono text-white">Sound Effects Volume</span>
                 <input type="range" min="0" max="100" value={soundVolume} onChange={(e) => setSoundVolume(parseInt(e.target.value))} className="w-full accent-red-900" />
+              </div>
+              <div className="p-4 bg-[#141414] border border-[#222] rounded-2xl space-y-2">
+                <span className="text-sm font-mono text-white">TTS Engine</span>
+                <select 
+                  value={ttsEngine} 
+                  onChange={(e) => setTtsEngine(e.target.value)}
+                  className="w-full bg-[#222] text-white p-2 rounded-xl text-sm font-mono border border-[#333]"
+                >
+                  <option value="browser">Browser (Free, Offline)</option>
+                  <option value="gemini">Gemini (High Quality, Free Tier)</option>
+                </select>
+                <p className="text-[10px] font-mono text-[#444] uppercase">
+                  {ttsEngine === 'gemini' 
+                    ? 'Uses Gemini 2.5 Flash for professional voices. Requires internet.' 
+                    : 'Uses your device\'s built-in voices. Works offline.'}
+                </p>
               </div>
               <div className="p-4 bg-[#141414] border border-[#222] rounded-2xl space-y-2">
                 <span className="text-sm font-mono text-white">TTS Voice</span>

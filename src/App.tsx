@@ -83,6 +83,7 @@ export default function App() {
   const [soundVolume, setSoundVolume] = useState(() => parseInt(localStorage.getItem('soundVolume') || '50'));
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [ttsVoice, setTtsVoice] = useState<string>(localStorage.getItem('ttsVoice') || '');
+  const [ttsEngine, setTtsEngine] = useState<string>(localStorage.getItem('ttsEngine') || 'browser');
   const [isAiVoiceEnabled, setIsAiVoiceEnabled] = useState(() => localStorage.getItem('isAiVoiceEnabled') !== 'false');
   const [uiScaleSetting, setUiScaleSetting] = useState(() => parseFloat(localStorage.getItem('uiScaleSetting') || '1'));
   const musicAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -94,27 +95,39 @@ export default function App() {
     localStorage.setItem('musicVolume', String(musicVolume));
     localStorage.setItem('soundVolume', String(soundVolume));
     localStorage.setItem('ttsVoice', ttsVoice);
+    localStorage.setItem('ttsEngine', ttsEngine);
     localStorage.setItem('isAiVoiceEnabled', String(isAiVoiceEnabled));
     localStorage.setItem('uiScaleSetting', String(uiScaleSetting));
   }, [isMusicOn, isSoundOn, musicVolume, soundVolume, ttsVoice, isAiVoiceEnabled, uiScaleSetting]);
 
   // Power Used TTS
   useEffect(() => {
-    socket.on('powerUsed', (data: { role: string }) => {
+    socket.on('powerUsed', async (data: { role: string }) => {
       if (!isSoundOn) return;
 
-      const utterance = new SpeechSynthesisUtterance(`${data.role} power used`);
-      utterance.volume = soundVolume / 100;
-      const voices = window.speechSynthesis.getVoices();
-      const voice = voices.find(v => v.name === ttsVoice) || voices.find(v => v.lang.startsWith('en'));
-      if (voice) utterance.voice = voice;
-      window.speechSynthesis.speak(utterance);
+      const text = `${data.role} power used`;
+
+      if (ttsEngine === 'gemini') {
+        const { generateGeminiSpeech } = await import('./services/geminiSpeech');
+        const audio = await generateGeminiSpeech({ text, voice: 'Zephyr' });
+        if (audio) {
+          audio.volume = soundVolume / 100;
+          audio.play().catch(() => {});
+        }
+      } else {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.volume = soundVolume / 100;
+        const voices = window.speechSynthesis.getVoices();
+        const voice = voices.find(v => v.name === ttsVoice) || voices.find(v => v.lang.startsWith('en'));
+        if (voice) utterance.voice = voice;
+        window.speechSynthesis.speak(utterance);
+      }
     });
 
     return () => {
       socket.off('powerUsed');
     };
-  }, [isSoundOn, soundVolume, ttsVoice]);
+  }, [isSoundOn, soundVolume, ttsVoice, ttsEngine]);
 
   // Background Music Logic
   useEffect(() => {
@@ -360,6 +373,7 @@ export default function App() {
                 soundVolume, setSoundVolume,
                 isFullscreen, setIsFullscreen,
                 ttsVoice, setTtsVoice,
+                ttsEngine, setTtsEngine,
                 isAiVoiceEnabled, setIsAiVoiceEnabled,
                 uiScaleSetting, setUiScaleSetting
               }}
@@ -393,6 +407,7 @@ export default function App() {
             playSound={playSound}
             soundVolume={soundVolume}
             ttsVoice={ttsVoice}
+            ttsEngine={ttsEngine}
             isAiVoiceEnabled={isAiVoiceEnabled}
             uiScaleSetting={uiScaleSetting}
           />
@@ -412,6 +427,7 @@ export default function App() {
                 soundVolume, setSoundVolume,
                 isFullscreen, setIsFullscreen,
                 ttsVoice, setTtsVoice,
+                ttsEngine, setTtsEngine,
                 isAiVoiceEnabled, setIsAiVoiceEnabled,
                 uiScaleSetting, setUiScaleSetting
               }}

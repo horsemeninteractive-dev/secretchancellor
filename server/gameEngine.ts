@@ -952,6 +952,9 @@ export class GameEngine {
       }
       this.io.to(roomId).emit("powerUsed", { role: state.titlePrompt.role });
       player.titleUsed = true;
+      if (player.isAI) {
+        this.postAIChat(state, player, CHAT.powerUsage);
+      }
     } else {
       // If NOT using the ability, some roles need fallback logic
       if (role === 'Strategist' && state.drawnPolicies.length === 0) {
