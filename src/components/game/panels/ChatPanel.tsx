@@ -4,7 +4,7 @@ import { MessageSquare, X, Smile, Send, User as UserIcon } from 'lucide-react';
 import EmojiPicker, { Theme, EmojiStyle } from 'emoji-picker-react';
 import { GameState, Player } from '../../../types';
 import { EmojiRenderer } from '../../EmojiRenderer';
-import { cn } from '../../../lib/utils';
+import { cn, getProxiedUrl } from '../../../lib/utils';
 
 interface ChatPanelProps {
   gameState: GameState;
@@ -75,7 +75,7 @@ export const ChatPanel = ({
               <div key={i} className={cn('flex w-full gap-2', item.sender === me?.name ? 'flex-row-reverse' : 'flex-row')}>
                 <div className="w-8 h-8 rounded-full bg-[#222] border border-[#333] shrink-0 overflow-hidden">
                   {senderPlayer?.avatarUrl
-                    ? <img src={senderPlayer.avatarUrl} alt={item.sender} className="w-full h-full object-cover" />
+                    ? <img src={getProxiedUrl(senderPlayer.avatarUrl)} alt={item.sender} className="w-full h-full object-cover" />
                     : <UserIcon className="w-4 h-4 text-[#444] m-2" />}
                 </div>
                 <div className={cn('flex flex-col min-w-0', item.sender === me?.name ? 'items-end' : 'items-start')}>

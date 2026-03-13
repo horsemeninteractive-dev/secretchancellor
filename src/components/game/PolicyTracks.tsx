@@ -3,6 +3,7 @@ import { Scale, Eye, Search, Zap, Target, Trophy } from 'lucide-react';
 import { GameState } from '../../types';
 import { cn } from '../../lib/utils';
 import { User as UserIcon } from 'lucide-react';
+import { getProxiedUrl } from '../../lib/utils';
 
 interface PolicyTracksProps {
   gameState: GameState;
@@ -29,12 +30,12 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
   };
 
   return (
-    <div className="p-4 grid grid-cols-2 gap-4 bg-[#1a1a1a]/50 border-b border-[#222] shrink-0">
+    <div className="p-[1.5vh] grid grid-cols-2 gap-[1.5vh] bg-[#1a1a1a]/50 border-b border-[#222] shrink-0">
       {/* Civil Track */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-[10px] uppercase tracking-widest font-mono text-blue-400/70">
+      <div className="space-y-[0.5vh]">
+        <div className="flex items-center justify-between text-responsive-xs uppercase tracking-widest font-mono text-blue-400/70">
           <div className="flex items-center gap-1">
-            <Scale className="w-3 h-3" />
+            <Scale className="w-[1.5vh] h-[1.5vh]" />
             <span>Civil</span>
           </div>
           <span>{gameState.civilDirectives}/5</span>
@@ -44,7 +45,7 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
             <div
               key={i}
               className={cn(
-                'flex-1 h-8 rounded-sm border transition-all duration-500',
+                'flex-1 h-[3vh] rounded-sm border transition-all duration-500',
                 i < gameState.civilDirectives
                   ? 'bg-blue-900/40 border-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.2)]'
                   : 'bg-[#141414] border-[#222]'
@@ -55,10 +56,10 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
       </div>
 
       {/* State Track */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-[10px] uppercase tracking-widest font-mono text-red-500/70">
+      <div className="space-y-[0.5vh]">
+        <div className="flex items-center justify-between text-responsive-xs uppercase tracking-widest font-mono text-red-500/70">
           <div className="flex items-center gap-1">
-            <Eye className="w-3 h-3" />
+            <Eye className="w-[1.5vh] h-[1.5vh]" />
             <span>State</span>
           </div>
           <span>{gameState.stateDirectives}/6</span>
@@ -71,7 +72,7 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
               <div
                 key={i}
                 className={cn(
-                  'flex-1 h-8 rounded-sm border transition-all duration-500 relative group',
+                  'flex-1 h-[3vh] rounded-sm border transition-all duration-500 relative group',
                   slot ? 'cursor-pointer' : '',
                   i < gameState.stateDirectives
                     ? 'bg-red-900/40 border-red-500 shadow-[0_0_8px_rgba(239,68,68,0.2)]'
@@ -83,12 +84,12 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
               >
                 {slot && (
                   <div className="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-100 transition-opacity">
-                    <Icon className="w-3 h-3 text-red-500" />
+                    <Icon className="w-[1.2vh] h-[1.2vh] text-red-500" />
                   </div>
                 )}
                 {slot && (
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-32 p-2 bg-[#1a1a1a] border border-[#333] rounded-lg opacity-0 group-hover:opacity-100 group-[.tooltip-open]:opacity-100 pointer-events-none transition-opacity z-50 shadow-2xl">
-                    <div className="text-[8px] font-mono text-red-500 uppercase mb-1">{slot.power}</div>
+                    <div className="text-responsive-xs font-mono text-red-500 uppercase mb-1">{slot.power}</div>
                     <div className="text-[7px] text-[#888] leading-tight">{slot.description}</div>
                   </div>
                 )}
@@ -100,22 +101,22 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
 
       {/* Spectators */}
       {gameState.spectators.length > 0 && (
-        <div className="col-span-2 h-6 flex items-center gap-3 overflow-x-auto no-scrollbar">
+        <div className="col-span-2 h-[2.5vh] flex items-center gap-3 overflow-x-auto no-scrollbar">
           <div className="flex items-center gap-1.5 shrink-0">
-            <Eye className="w-2.5 h-2.5 text-[#444]" />
-            <span className="text-[7px] font-mono uppercase tracking-widest text-[#444]">
+            <Eye className="w-[1.2vh] h-[1.2vh] text-[#444]" />
+            <span className="text-responsive-xs font-mono uppercase tracking-widest text-[#444]">
               Spectators ({gameState.spectators.length})
             </span>
           </div>
           <div className="flex items-center gap-2">
             {gameState.spectators.map(s => (
               <div key={s.id} className="flex items-center gap-1 shrink-0">
-                <div className="w-3 h-3 rounded-full bg-[#222] overflow-hidden border border-[#333]">
+                <div className="w-[1.5vh] h-[1.5vh] rounded-full bg-[#222] overflow-hidden border border-[#333]">
                   {s.avatarUrl
-                    ? <img src={s.avatarUrl} alt={s.name} className="w-full h-full object-cover" />
-                    : <UserIcon className="w-1.5 h-1.5 text-[#444] m-auto" />}
+                    ? <img src={getProxiedUrl(s.avatarUrl)} alt={s.name} className="w-full h-full object-cover" />
+                    : <UserIcon className="w-[1vh] h-[1vh] text-[#444] m-auto" />}
                 </div>
-                <span className="text-[8px] text-[#666]">{s.name}</span>
+                <span className="text-responsive-xs text-[#666]">{s.name}</span>
               </div>
             ))}
           </div>
@@ -123,14 +124,14 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
       )}
 
       {/* Election Tracker */}
-      <div className="col-span-2 h-8 flex items-center justify-center gap-3 bg-[#141414] -mx-4 -mb-4 px-4 border-t border-[#222]">
-        <span className="text-[8px] uppercase tracking-[0.2em] text-[#444] font-mono">Election Tracker</span>
+      <div className="col-span-2 h-[3vh] flex items-center justify-center gap-3 bg-[#141414] -mx-4 -mb-4 px-4 border-t border-[#222]">
+        <span className="text-responsive-xs uppercase tracking-[0.2em] text-[#444] font-mono">Election Tracker</span>
         <div className="flex gap-2">
           {[0, 1, 2, 3].map(i => (
             <div
               key={i}
               className={cn(
-                'w-1.5 h-1.5 rounded-full border transition-all duration-300',
+                'w-[0.8vh] h-[0.8vh] rounded-full border transition-all duration-300',
                 gameState.electionTracker === i
                   ? 'bg-white border-white scale-125 shadow-[0_0_5px_white]'
                   : 'border-[#333] bg-transparent'

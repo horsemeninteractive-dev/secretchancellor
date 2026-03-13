@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { cn } from '../lib/utils';
+import { cn, getProxiedUrl } from '../lib/utils';
 import { CosmeticItem, User } from '../types';
 import { Play, Pause, User as UserIcon, Scroll } from 'lucide-react';
 import { getPolicyStyles, getVoteStyles, getFrameStyles, getRarity } from '../lib/cosmetics';
@@ -100,7 +100,7 @@ export const Inventory: React.FC<InventoryProps> = ({ user, handleEquip, playSou
                       </button>
                   ) : item.type === 'frame' ? (
                       <>
-                        {user.avatarUrl ? <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" /> : <UserIcon className="w-10 h-10 text-[#444]" />}
+                        {user.avatarUrl ? <img src={getProxiedUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover" /> : <UserIcon className="w-10 h-10 text-[#444]" />}
                         <div className={cn(
                           "absolute inset-0 border-4 rounded-2xl pointer-events-none",
                           getFrameStyles(item.id)
@@ -116,7 +116,7 @@ export const Inventory: React.FC<InventoryProps> = ({ user, handleEquip, playSou
                           <span className="text-[8px] font-mono uppercase">YES</span>
                       </div>
                   ) : item.imageUrl ? (
-                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      <img src={getProxiedUrl(item.imageUrl)} alt={item.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   ) : (
                       <div className="text-[8px] font-mono uppercase">{item.type}</div>
                   )}

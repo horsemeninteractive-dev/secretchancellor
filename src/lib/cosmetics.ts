@@ -30,7 +30,7 @@ export const getPolicyStyles = (styleId: string | undefined, type: Policy) => {
     case 'policy-blood':
       return isCivil ? "bg-gray-800 border-red-900 text-red-500" : "bg-black border-red-600 text-red-600 shadow-[0_0_10px_rgba(220,38,38,0.3)]";
     default:
-      return isCivil ? "bg-blue-900/20 border-blue-500/50 text-blue-400" : "bg-red-900/20 border-red-500/50 text-red-500";
+      return isCivil ? "bg-blue-900 border-blue-500/50 text-blue-400" : "bg-red-900 border-red-500/50 text-red-500";
   }
 };
 

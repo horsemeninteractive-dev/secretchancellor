@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import path from "path";
 import { createServer } from "http";
 import { Server } from "socket.io";
@@ -16,15 +17,115 @@ const PORT = 3000;
 async function startServer() {
   const app = express();
   app.set("trust proxy", 1);
+  app.use(cors({ origin: "*" }));
   app.use(express.json());
 
   const httpServer = createServer(app);
-  const io = new Server(httpServer, { cors: { origin: "https://theassembly.web.app" } });
+  const io = new Server(httpServer, { 
+    cors: { 
+      origin: "*",
+      methods: ["GET", "POST"]
+    } 
+  });
 
   const engine = new GameEngine({ io });
   const userSockets = new Map<string, string>();
 
   registerRoutes(app, io, engine, userSockets);
+
+  // Add headers for Discord Activity media permissions
+  app.use((req, res, next) => {
+    // Explicitly allow microphone, camera, and display-capture for Discord Activity
+    res.setHeader("Permissions-Policy", "microphone=*, camera=*, display-capture=*, speaker-selection=*, autoplay=*, text-to-speech=*, screen-wake-lock=*");
+    
+    // Comprehensive CSP for Discord Activity environment
+    res.setHeader("Content-Security-Policy", 
+      "default-src 'self' https://*.discord.com https://*.discordapp.io; " +
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.discord.com; " +
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+      "font-src 'self' data: https://fonts.gstatic.com; " +
+      "img-src 'self' data: blob: *; " +
+      "media-src 'self' blob: data: *; " +
+      "connect-src 'self' *; " +
+      "frame-ancestors 'self' https://discord.com https://*.discord.com https://*.discordapp.io;"
+    );
+
+    // Headers for cross-origin isolation (needed for some media features)
+    res.setHeader("Cross-Origin-Embedder-Policy", "credentialless");
+    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+    
+    next();
+  });
+
+  // Proxy route for external assets to bypass Discord's strict CSP
+  app.get("/proxy", async (req, res) => {
+    const url = req.query.url as string;
+    if (!url) return res.status(400).send("URL is required");
+    
+    console.log(`[Proxy] Requesting: ${url}`);
+    
+    try {
+      // Basic validation to prevent abuse
+      const allowedDomains = [
+        'storage.googleapis.com',
+        'gamesounds.xyz',
+        'api.dicebear.com',
+        'picsum.photos',
+        'raw.githubusercontent.com',
+        'transparenttextures.com',
+        'images.unsplash.com',
+        'i.pravatar.cc',
+        'cdn.discordapp.com',
+        'discord.com',
+        'fonts.googleapis.com',
+        'fonts.gstatic.com'
+      ];
+      
+      const parsedUrl = new URL(url);
+      if (!allowedDomains.some(domain => parsedUrl.hostname.endsWith(domain))) {
+        return res.status(403).send("Domain not allowed");
+      }
+
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+      });
+      
+      if (!response.ok) {
+        console.error(`[Proxy] Fetch failed for ${url}: ${response.status} ${response.statusText}`);
+        return res.status(response.status).send(response.statusText);
+      }
+
+      const contentType = response.headers.get("content-type");
+      if (contentType) res.setHeader("Content-Type", contentType);
+      
+      // Add CORP header to allow proxied assets in cross-origin isolated environments
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      
+      // Set cache headers for better performance
+      res.setHeader("Cache-Control", "public, max-age=31536000");
+      
+      const arrayBuffer = await response.arrayBuffer();
+      let body = Buffer.from(arrayBuffer);
+
+      // If it's a CSS file from Google Fonts, rewrite URLs to go through the proxy
+      if (contentType && contentType.includes("text/css") && url.includes("fonts.googleapis.com")) {
+        let css = body.toString();
+        // Replace url(https://fonts.gstatic.com/...) with url(/proxy?url=https%3A%2F%2Ffonts.gstatic.com%2F...)
+        css = css.replace(/url\((https:\/\/fonts\.gstatic\.com\/[^)]+)\)/g, (match, fontUrl) => {
+          return `url(/proxy?url=${encodeURIComponent(fontUrl)})`;
+        });
+        body = Buffer.from(css);
+      }
+      
+      res.send(body);
+    } catch (error: any) {
+      console.error(`[Proxy] Error fetching ${url}:`, error.message);
+      res.status(500).send("Error fetching resource");
+    }
+  });
 
   io.on("connection", (socket) => {
     const getRoom = (): string | undefined =>
@@ -344,7 +445,6 @@ async function startServer() {
       const discarded = state.drawnPolicies.splice(idx, 1)[0];
       if (!discarded) return;
       state.discard.push(discarded);
-      engine.checkAuditorTrigger(state);
 
       if (state.drawnPolicies.length > 2) {
         // Still more to discard (Strategist case)
@@ -378,7 +478,6 @@ async function startServer() {
       // Guard: splice on a partially-cleared array can return undefined
       if (!played) return;
       state.discard.push(...state.chancellorPolicies);
-      engine.checkAuditorTrigger(state);
       state.chancellorPolicies = [];
       engine.triggerPolicyEnactment(state, roomId, played, false, state.chancellorId);
       // Do NOT restart the timer here — phase stays Legislative_Chancellor during

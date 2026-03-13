@@ -4,7 +4,7 @@ import { Users, Eye, Check } from 'lucide-react';
 import { socket } from '../../socket';
 import { GameState, Player } from '../../types';
 import { getFrameStyles, getVoteStyles } from '../../lib/cosmetics';
-import { cn } from '../../lib/utils';
+import { cn, getProxiedUrl } from '../../lib/utils';
 
 const VideoPlayer = React.memo(({ stream, isMe }: { stream: MediaStream, isMe: boolean }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -35,9 +35,9 @@ export const PlayerGrid = ({ gameState, me, speakingPlayers, playSound, token, s
   const isManyPlayers = gameState.players.length > 6;
 
   return (
-    <div className="flex-1 p-2 sm:p-3 min-h-0">
+    <div className="flex-1 p-[1vh] sm:p-[1.5vh] min-h-0 overflow-hidden">
       <div className={cn(
-        'grid gap-1.5 sm:gap-3 h-full grid-cols-2',
+        'grid gap-[1vh] sm:gap-[1.5vh] h-full grid-cols-2',
         gameState.players.length <= 6 ? 'grid-rows-3' :
         gameState.players.length <= 8 ? 'grid-rows-4' : 'grid-rows-5',
         'sm:grid-cols-5 sm:grid-rows-2'
@@ -61,7 +61,7 @@ export const PlayerGrid = ({ gameState, me, speakingPlayers, playSound, token, s
                 }
               }}
               className={cn(
-                'relative p-1 sm:p-4 rounded-xl border transition-all duration-300 flex flex-col items-center justify-center min-h-0 cursor-pointer',
+                'relative p-[0.5vh] sm:p-[1vh] rounded-xl border transition-all duration-300 flex flex-col items-center justify-center min-h-0 cursor-pointer overflow-hidden',
                 p.isAlive ? 'bg-[#1a1a1a]/80 backdrop-blur-sm border-[#222]' : 'bg-[#111]/50 border-transparent opacity-50 grayscale',
                 p.isPresidentialCandidate && 'border-yellow-500/50 ring-1 ring-yellow-500/20',
                 p.isChancellorCandidate && 'border-blue-500/50 ring-1 ring-blue-500/20',
@@ -104,7 +104,7 @@ export const PlayerGrid = ({ gameState, me, speakingPlayers, playSound, token, s
                         isManyPlayers ? 'w-6 h-6 sm:w-12 sm:h-12 rounded-lg' : 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl'
                       )}>
                         {p.avatarUrl
-                          ? <img src={p.avatarUrl} alt={p.name} className="w-full h-full object-cover" />
+                          ? <img src={getProxiedUrl(p.avatarUrl)} alt={p.name} className="w-full h-full object-cover" />
                           : <Users className={cn('text-[#666]', isManyPlayers ? 'w-3 h-3 sm:w-6 sm:h-6' : 'w-5 h-5 sm:w-6 sm:h-6')} />}
                         {p.activeFrame && (
                           <div className={cn('absolute inset-0 pointer-events-none', isManyPlayers ? 'rounded-lg' : 'rounded-xl', getFrameStyles(p.activeFrame))} />
@@ -151,7 +151,7 @@ export const PlayerGrid = ({ gameState, me, speakingPlayers, playSound, token, s
 
                     <div className={cn(
                       'font-thematic tracking-wide truncate px-1 leading-tight',
-                      stream && isVideoActive ? 'text-[10px] sm:text-[14px] bg-black/50 rounded px-1' : 'text-[11px] sm:text-[16px]',
+                      stream && isVideoActive ? 'text-[8px] sm:text-responsive-xs bg-black/50 rounded px-1' : 'text-responsive-xs sm:text-responsive-sm',
                       p.isAlive ? 'text-white/90' : 'text-[#444]'
                     )}>
                       {p.name} {p.id === socket.id && '(You)'}
@@ -159,24 +159,24 @@ export const PlayerGrid = ({ gameState, me, speakingPlayers, playSound, token, s
 
                     {/* Badges */}
                     <div className={cn(
-                      'flex flex-wrap gap-1 shrink-0',
+                      'flex flex-wrap gap-0.5 sm:gap-1 shrink-0',
                       stream && isVideoActive ? 'justify-end' : 'justify-center hidden sm:flex'
                     )}>
                       {gameState.detainedPlayerId === p.id && (
-                        <span className="px-2 py-0.5 bg-purple-900/40 text-purple-500 font-mono uppercase rounded border border-purple-900/50 text-[9px]">Detained</span>
+                        <span className="px-1 sm:px-2 py-0.5 bg-purple-900/40 text-purple-500 font-mono uppercase rounded border border-purple-900/50 text-[7px] sm:text-[9px]">Detained</span>
                       )}
                       {(p.isPresident || p.isPresidentialCandidate) && (
-                        <span className="px-2 py-0.5 bg-yellow-900/40 text-yellow-500 font-mono uppercase rounded border border-yellow-900/50 text-[9px]">
+                        <span className="px-1 sm:px-2 py-0.5 bg-yellow-900/40 text-yellow-500 font-mono uppercase rounded border border-yellow-900/50 text-[7px] sm:text-[9px]">
                           {p.isPresident ? 'President' : 'Candidate'}
                         </span>
                       )}
                       {(p.isChancellor || p.isChancellorCandidate) && (
-                        <span className="px-2 py-0.5 bg-blue-900/40 text-blue-500 font-mono uppercase rounded border border-blue-900/50 text-[9px]">
+                        <span className="px-1 sm:px-2 py-0.5 bg-blue-900/40 text-blue-500 font-mono uppercase rounded border border-blue-900/50 text-[7px] sm:text-[9px]">
                           {p.isChancellor ? 'Chancellor' : 'Nominated'}
                         </span>
                       )}
                       {!p.isAlive && (
-                        <span className="px-2 py-0.5 bg-red-900/20 text-red-500 font-mono uppercase rounded border border-red-900/50 text-[9px]">Eliminated</span>
+                        <span className="px-1 sm:px-2 py-0.5 bg-red-900/20 text-red-500 font-mono uppercase rounded border border-red-900/50 text-[7px] sm:text-[9px]">Eliminated</span>
                       )}
                     </div>
 

@@ -10,7 +10,7 @@ import { UpdateBanner } from './components/UpdateBanner';
 import { InviteModal } from './components/game/modals/InviteModal';
 import { MUSIC_TRACKS, SOUND_PACKS } from './lib/audio';
 import { discordSdk, setupDiscordSdk } from './lib/discord';
-import { cn } from './lib/utils';
+import { cn, getProxiedUrl } from './lib/utils';
 
 const CLIENT_VERSION = 'v0.9.0';
 
@@ -26,20 +26,22 @@ export default function App() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isDiscord, setIsDiscord] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [pendingInvite, setPendingInvite] = useState<{ fromUsername: string; roomId: string } | null>(null);
 
   useEffect(() => {
     const init = async () => {
       await setupDiscordSdk();
       setIsDiscord(!!discordSdk?.instanceId);
-      console.log("Discord SDK initialized, instanceId:", discordSdk?.instanceId);
+      setIsMobile(discordSdk?.platform === 'mobile' || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+      console.log("Discord SDK initialized, instanceId:", discordSdk?.instanceId, "platform:", discordSdk?.platform);
       
       // Attempt auto-login if in Discord
       if (discordSdk?.instanceId) {
         try {
           console.log("Attempting auto-login...");
           const { code } = await discordSdk.commands.authorize({
-            client_id: import.meta.env.VITE_DISCORD_CLIENT_ID || "",
+            client_id: (import.meta as any).env?.VITE_DISCORD_CLIENT_ID || "",
             response_type: "code",
             state: "",
             prompt: "none",
@@ -82,6 +84,7 @@ export default function App() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [ttsVoice, setTtsVoice] = useState<string>(localStorage.getItem('ttsVoice') || '');
   const [isAiVoiceEnabled, setIsAiVoiceEnabled] = useState(() => localStorage.getItem('isAiVoiceEnabled') !== 'false');
+  const [uiScaleSetting, setUiScaleSetting] = useState(() => parseFloat(localStorage.getItem('uiScaleSetting') || '1'));
   const musicAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Persist settings
@@ -92,7 +95,8 @@ export default function App() {
     localStorage.setItem('soundVolume', String(soundVolume));
     localStorage.setItem('ttsVoice', ttsVoice);
     localStorage.setItem('isAiVoiceEnabled', String(isAiVoiceEnabled));
-  }, [isMusicOn, isSoundOn, musicVolume, soundVolume, ttsVoice, isAiVoiceEnabled]);
+    localStorage.setItem('uiScaleSetting', String(uiScaleSetting));
+  }, [isMusicOn, isSoundOn, musicVolume, soundVolume, ttsVoice, isAiVoiceEnabled, uiScaleSetting]);
 
   // Power Used TTS
   useEffect(() => {
@@ -119,7 +123,7 @@ export default function App() {
       return;
     }
     const trackKey = user?.activeMusic || 'music-ambient';
-    const url = MUSIC_TRACKS[trackKey] || MUSIC_TRACKS['music-ambient'];
+    const url = getProxiedUrl(MUSIC_TRACKS[trackKey] || MUSIC_TRACKS['music-ambient']);
     
     if (!musicAudioRef.current) {
       musicAudioRef.current = new Audio(url);
@@ -139,7 +143,7 @@ export default function App() {
   const playSound = (soundKey: string, overridePack?: string) => {
     if (!isSoundOn) return;
     const pack = overridePack || user?.activeSoundPack || 'default';
-    const url = SOUND_PACKS[pack]?.[soundKey] || SOUND_PACKS['default'][soundKey];
+    const url = getProxiedUrl(SOUND_PACKS[pack]?.[soundKey] || SOUND_PACKS['default'][soundKey]);
     if (!url) return;
     const audio = new Audio(url);
     audio.volume = soundVolume / 100;
@@ -148,7 +152,7 @@ export default function App() {
 
   const playMusic = (trackKey: string) => {
     if (!musicAudioRef.current) return;
-    const url = MUSIC_TRACKS[trackKey] || MUSIC_TRACKS['music-ambient'];
+    const url = getProxiedUrl(MUSIC_TRACKS[trackKey] || MUSIC_TRACKS['music-ambient']);
     musicAudioRef.current.src = url;
     musicAudioRef.current.play().catch(() => {});
   };
@@ -292,7 +296,7 @@ export default function App() {
   };
 
   return (
-    <div className={cn("h-screen bg-[#0a0a0a] flex flex-col", isDiscord ? "pt-12" : "")}>
+    <div className={cn("h-screen bg-[#0a0a0a] flex flex-col bg-texture", isDiscord && isMobile ? "pt-12" : "")}>
       <UpdateBanner visible={updateAvailable} />
 
       {error && (
@@ -313,7 +317,7 @@ export default function App() {
             className="w-full max-w-md bg-[#1a1a1a] border border-[#222] rounded-3xl p-8 shadow-2xl text-center"
           >
             <div className="w-20 h-20 bg-[#141414] rounded-2xl flex items-center justify-center border border-white/40 mx-auto mb-6 overflow-hidden">
-              <img src="https://storage.googleapis.com/secretchancellor/SC.png" alt="The Assembly Logo" className="w-full h-full object-contain p-2" referrerPolicy="no-referrer" />
+              <img src={getProxiedUrl("https://storage.googleapis.com/secretchancellor/SC.png")} alt="The Assembly Logo" className="w-full h-full object-contain p-2" referrerPolicy="no-referrer" />
             </div>
             <h2 className="text-3xl font-thematic text-white tracking-wide uppercase mb-2">Welcome, {user.username}</h2>
             <div className="space-y-4 mb-8">
@@ -338,6 +342,7 @@ export default function App() {
             onLogout={handleLogout}
             onOpenProfile={() => setIsProfileOpen(true)}
             playSound={playSound}
+            uiScaleSetting={uiScaleSetting}
           />
           {isProfileOpen && (
             <Profile 
@@ -355,7 +360,8 @@ export default function App() {
                 soundVolume, setSoundVolume,
                 isFullscreen, setIsFullscreen,
                 ttsVoice, setTtsVoice,
-                isAiVoiceEnabled, setIsAiVoiceEnabled
+                isAiVoiceEnabled, setIsAiVoiceEnabled,
+                uiScaleSetting, setUiScaleSetting
               }}
               onJoinRoom={(roomId) => { setIsProfileOpen(false); handleJoinRoom(roomId); }}
             />
@@ -388,6 +394,7 @@ export default function App() {
             soundVolume={soundVolume}
             ttsVoice={ttsVoice}
             isAiVoiceEnabled={isAiVoiceEnabled}
+            uiScaleSetting={uiScaleSetting}
           />
           {isProfileOpen && (
             <Profile 
@@ -405,7 +412,8 @@ export default function App() {
                 soundVolume, setSoundVolume,
                 isFullscreen, setIsFullscreen,
                 ttsVoice, setTtsVoice,
-                isAiVoiceEnabled, setIsAiVoiceEnabled
+                isAiVoiceEnabled, setIsAiVoiceEnabled,
+                uiScaleSetting, setUiScaleSetting
               }}
               roomId={gameState?.roomId}
               mode={gameState?.mode}

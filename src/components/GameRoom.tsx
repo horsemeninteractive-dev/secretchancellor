@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { socket } from '../socket';
 import { GameState, Player, Role, Policy, User, PrivateInfo } from '../types';
 import { getBackgroundTexture } from '../lib/cosmetics';
-import { cn } from '../lib/utils';
+import { cn, getProxiedUrl } from '../lib/utils';
 import * as aiSpeech from '../services/aiSpeech';
 
 import { GameHeader } from './game/GameHeader';
@@ -44,6 +44,7 @@ interface GameRoomProps {
   soundVolume: number;
   ttsVoice: string;
   isAiVoiceEnabled: boolean;
+  uiScaleSetting: number;
 }
 
 export const GameRoom = ({
@@ -51,9 +52,41 @@ export const GameRoom = ({
   onLeaveRoom, onPlayAgain, onOpenProfile, onJoinRoom,
   setUser, setGameState, setPrivateInfo,
   updateAvailable,
-  playSound, soundVolume, ttsVoice, isAiVoiceEnabled
+  playSound, soundVolume, ttsVoice, isAiVoiceEnabled,
+  uiScaleSetting
 }: GameRoomProps) => {
   const me = gameState.players.find(p => p.id === socket.id);
+  const [uiScale, setUiScale] = useState(1);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (!containerRef.current) return;
+      const h = containerRef.current.clientHeight;
+      const w = containerRef.current.clientWidth;
+      
+      // Target height is around 850px for full desktop experience
+      // Target width is around 1200px
+      const scaleH = h / 850;
+      const scaleW = w / 1200;
+      
+      // On mobile we don't want to scale down too much as it's already small
+      const isMobile = w < 640;
+      const autoScale = isMobile ? 1 : Math.min(scaleH, scaleW, 1);
+      const finalScale = autoScale * uiScaleSetting;
+      setUiScale(Math.max(0.4, Math.min(finalScale, 2)));
+    };
+    
+    const observer = new ResizeObserver(handleResize);
+    if (containerRef.current) observer.observe(containerRef.current);
+    handleResize();
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [uiScaleSetting]);
 
   // ── UI panels ────────────────────────────────────────────────────────────
   const [isLogOpen, setIsLogOpen] = useState(false);
@@ -480,13 +513,14 @@ export const GameRoom = ({
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div
+      ref={containerRef}
       className={cn(
         'flex-1 w-full bg-texture text-[#e4e3e0] font-sans flex flex-col overflow-hidden transition-all duration-1000',
         gameState.stateDirectives >= 3 && gameState.phase !== 'GameOver' && 'danger-zone-pulse'
       )}
-      style={user?.activeBackground ? {
-        backgroundImage: `radial-gradient(circle at 50% 50%, rgba(20, 20, 20, 0.5) 0%, rgba(10, 10, 10, 0.8) 100%), url("${getBackgroundTexture(user.activeBackground)}")`
-      } : {}}
+      style={{
+        backgroundImage: `radial-gradient(circle at 50% 50%, rgba(20, 20, 20, 0.5) 0%, rgba(10, 10, 10, 0.8) 100%), url("${getProxiedUrl(getBackgroundTexture(user?.activeBackground))}")`
+      }}
     >
       <GameHeader
         gameState={gameState}
@@ -504,7 +538,14 @@ export const GameRoom = ({
         playSound={playSound}
       />
 
-      <main className="flex-1 flex flex-col min-h-0 relative">
+      <main 
+        className="flex-1 flex flex-col min-h-0 relative origin-top transition-all duration-300"
+        style={{ 
+          transform: uiScale < 1 ? `scale(${uiScale})` : 'none',
+          width: uiScale < 1 ? `${100 / uiScale}%` : '100%',
+          height: uiScale < 1 ? `${100 / uiScale}%` : '100%',
+        }}
+      >
         <PolicyTracks gameState={gameState} />
 
         <PlayerGrid

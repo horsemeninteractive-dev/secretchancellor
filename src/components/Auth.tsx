@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, User as UserIcon, Loader2, Chrome, MessageSquare } from 'lucide-react';
 import { User } from '../types';
-import { cn } from '../lib/utils';
+import { cn, getProxiedUrl } from '../lib/utils';
 import { discordSdk } from '../lib/discord';
 
 interface AuthProps {
@@ -50,7 +50,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
         console.log("Attempting Discord Activity authorization...");
         // Discord Activity authentication
         const { code } = await discordSdk.commands.authorize({
-          client_id: process.env.DISCORD_CLIENT_ID || "",
+          client_id: (import.meta as any).env?.VITE_DISCORD_CLIENT_ID || "",
           response_type: "code",
           state: "",
           prompt: "none",
@@ -167,7 +167,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
       >
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 bg-[#141414] rounded-2xl flex items-center justify-center border border-white/40 mb-4 overflow-hidden">
-            <img src="https://storage.googleapis.com/secretchancellor/SC.png" alt="Secret Chancellor Logo" className="w-full h-full object-contain p-2" referrerPolicy="no-referrer" />
+            <img src={getProxiedUrl("https://storage.googleapis.com/secretchancellor/SC.png")} alt="Secret Chancellor Logo" className="w-full h-full object-contain p-2" referrerPolicy="no-referrer" />
           </div>
           <h1 className="text-3xl font-thematic text-white tracking-wide uppercase">The Assembly</h1>
           <p className="text-[#666] text-sm mt-1">
@@ -220,7 +220,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                       avatarUrl === choice ? "border-red-500 scale-110" : "border-[#222] hover:border-[#333]"
                     )}
                   >
-                    <img src={choice} alt="Avatar" className="w-full h-full object-cover" />
+                    <img src={getProxiedUrl(choice)} alt="Avatar" className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>

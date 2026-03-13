@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { socket } from '../socket';
 import { User } from '../types';
-import { cn } from '../lib/utils';
+import { cn, getProxiedUrl } from '../lib/utils';
 import { UserPlus, Check, UserCheck, Users, Gamepad2, UserMinus } from 'lucide-react';
 
 interface FriendsListProps {
@@ -130,7 +130,7 @@ export const FriendsList: React.FC<FriendsListProps> = ({ user, token, playSound
               <div key={friend.id} className="flex items-center justify-between bg-[#141414] p-3 rounded-xl border border-[#222]">
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <img src={friend.avatarUrl || 'https://storage.googleapis.com/secretchancellor/SC.png'} alt={friend.username} className="w-8 h-8 rounded-full" />
+                    <img src={getProxiedUrl(friend.avatarUrl || 'https://storage.googleapis.com/secretchancellor/SC.png')} alt={friend.username} className="w-8 h-8 rounded-full" />
                     <div className={cn("absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-[#141414]", isOnline ? "bg-emerald-500" : "bg-gray-500")} />
                   </div>
                   <div>

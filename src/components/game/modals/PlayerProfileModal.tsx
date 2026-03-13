@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { motion } from 'motion/react';
 import { X, Trophy, User as UserIcon, UserPlus, UserMinus, Shield, Check, Zap } from 'lucide-react';
 import { User } from '../../../types';
-import { cn } from '../../../lib/utils';
+import { cn, getProxiedUrl } from '../../../lib/utils';
 import { getFrameStyles } from '../../../lib/cosmetics';
 import { socket } from '../../../socket';
 
@@ -109,17 +109,17 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({ userId, 
         className="relative w-full max-w-sm bg-[#1a1a1a] border border-[#222] rounded-[2rem] overflow-hidden shadow-2xl text-white"
       >
         {/* Header - Matching Profile.tsx */}
-        <div className="p-6 bg-[#141414] border-b border-[#222] flex flex-col items-center gap-4">
-          <button onClick={onClose} className="absolute top-6 right-6 text-[#444] hover:text-white transition-colors">
-            <X className="w-6 h-6" />
+        <div className="p-[3vh] bg-[#141414] border-b border-[#222] flex flex-col items-center gap-[2vh]">
+          <button onClick={onClose} className="absolute top-[3vh] right-[3vh] text-[#444] hover:text-white transition-colors">
+            <X className="w-[3vh] h-[3vh]" />
           </button>
 
           <div className="relative">
-            <div className="w-20 h-20 rounded-3xl bg-[#222] border border-[#333] flex items-center justify-center overflow-hidden relative">
+            <div className="w-[10vh] h-[10vh] rounded-3xl bg-[#222] border border-[#333] flex items-center justify-center overflow-hidden relative">
               {user.avatarUrl ? (
-                <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
+                <img src={getProxiedUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover" />
               ) : (
-                <UserIcon className="w-10 h-10 text-[#444]" />
+                <UserIcon className="w-[5vh] h-[5vh] text-[#444]" />
               )}
               {user.activeFrame && (
                 <div className={cn(
@@ -134,29 +134,29 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({ userId, 
           </div>
 
           <div className="text-center">
-            <h2 className="text-2xl font-thematic text-white tracking-wide mb-2">{user.username}</h2>
+            <h2 className="text-responsive-xl font-thematic text-white tracking-wide mb-2">{user.username}</h2>
             <div className="flex justify-center gap-2">
               <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#222] rounded-lg border border-[#333]">
-                <Trophy className="w-3.5 h-3.5 text-yellow-500" />
-                <span className="text-xs font-mono text-yellow-500">{user.stats.elo} ELO</span>
+                <Trophy className="w-[1.8vh] h-[1.8vh] text-yellow-500" />
+                <span className="text-responsive-xs font-mono text-yellow-500">{user.stats.elo} ELO</span>
               </div>
             </div>
           </div>
         </div>
         
-        <div className="p-6 space-y-6">
+        <div className="p-[3vh] space-y-[3vh]">
           <div className="grid grid-cols-2 gap-3">
-            <StatCard label="Wins" value={user.stats.wins} icon={<Trophy className="w-3 h-3" />} />
-            <StatCard label="Played" value={user.stats.gamesPlayed} icon={<Shield className="w-3 h-3" />} />
-            <StatCard label="Win Rate" value={`${winRate}%`} icon={<Check className="w-3 h-3" />} />
-            <StatCard label="Kills" icon={<Zap className="w-3 h-3 text-yellow-500" />} value={user.stats.kills} />
+            <StatCard label="Wins" value={user.stats.wins} icon={<Trophy className="w-[1.5vh] h-[1.5vh]" />} />
+            <StatCard label="Played" value={user.stats.gamesPlayed} icon={<Shield className="w-[1.5vh] h-[1.5vh]" />} />
+            <StatCard label="Win Rate" value={`${winRate}%`} icon={<Check className="w-[1.5vh] h-[1.5vh]" />} />
+            <StatCard label="Kills" icon={<Zap className="w-[1.5vh] h-[1.5vh] text-yellow-500" />} value={user.stats.kills} />
           </div>
 
           <button 
             onClick={toggleFriend}
             disabled={isPending}
             className={cn(
-              "w-full py-3 rounded-xl font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all border",
+              "w-full py-[1.5vh] rounded-xl font-mono text-responsive-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all border",
               isFriend 
                 ? "bg-[#222] text-white border-[#333] hover:bg-[#333]" 
                 : "bg-red-900 text-white border-red-700 hover:bg-red-800"

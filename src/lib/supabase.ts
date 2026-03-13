@@ -1,8 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
+// Helper to get environment variables safely in both browser and node
+const getEnv = (name: string) => {
+  try {
+    if (typeof window !== 'undefined') {
+      // Browser (Vite)
+      return (import.meta as any).env?.[`VITE_${name}`] || '';
+    }
+    // Node.js
+    return process.env[name] || '';
+  } catch (e) {
+    return '';
+  }
+};
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseUrl = getEnv('SUPABASE_URL');
+const supabaseAnonKey = getEnv('SUPABASE_ANON_KEY');
 
-export const isSupabaseConfigured = !!(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY);
+export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
+
+export const supabase = isSupabaseConfigured 
+  ? createClient(supabaseUrl, supabaseAnonKey) 
+  : null as any;

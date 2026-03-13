@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Quantico:wght@400;700&display=swap');
+@import url('/proxy?url=https%3A%2F%2Ffonts.googleapis.com%2Fcss2%3Ffamily%3DInter%3Awght%40400%3B500%3B600%26family%3DJetBrains%2BMono%3Awght%40400%3B500%26family%3DQuantico%3Awght%40400%3B700%26display%3Dswap');
 @import "tailwindcss";
 
 @theme {
@@ -6,9 +6,26 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   --font-thematic: "Quantico", sans-serif;
   --animate-spin-slow: spin 3s linear infinite;
+
+  /* Responsive Scaling Variables */
+  --font-size-xs: clamp(0.6rem, 0.5vw + 0.4rem, 0.75rem);
+  --font-size-sm: clamp(0.75rem, 0.6vw + 0.5rem, 0.875rem);
+  --font-size-base: clamp(0.875rem, 0.8vw + 0.6rem, 1rem);
+  --font-size-lg: clamp(1rem, 1vw + 0.8rem, 1.125rem);
+  --font-size-xl: clamp(1.125rem, 1.2vw + 1rem, 1.25rem);
+  --font-size-2xl: clamp(1.25rem, 1.5vw + 1.2rem, 1.5rem);
+  --font-size-3xl: clamp(1.5rem, 2vw + 1.5rem, 1.875rem);
 }
 
 @layer utilities {
+  .text-responsive-xs { font-size: var(--font-size-xs); }
+  .text-responsive-sm { font-size: var(--font-size-sm); }
+  .text-responsive-base { font-size: var(--font-size-base); }
+  .text-responsive-lg { font-size: var(--font-size-lg); }
+  .text-responsive-xl { font-size: var(--font-size-xl); }
+  .text-responsive-2xl { font-size: var(--font-size-2xl); }
+  .text-responsive-3xl { font-size: var(--font-size-3xl); }
+
   .custom-scrollbar::-webkit-scrollbar {
     width: 4px;
   }
@@ -48,7 +65,7 @@
 
   .bg-texture {
     background-color: #1a1a1a;
-    background-image: url("https://www.transparenttextures.com/patterns/carbon-fibre.png");
+    background-image: url("/proxy?url=https%3A%2F%2Fwww.transparenttextures.com%2Fpatterns%2Fcarbon-fibre.png");
   }
 
   .card-border {

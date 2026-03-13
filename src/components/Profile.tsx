@@ -4,7 +4,7 @@ import { X, Trophy, Coins, Shield, User as UserIcon, Check, ShoppingBag, ArrowLe
 import { User, CosmeticItem, Policy } from '../types';
 import { FriendsList } from './FriendsList';
 import { Inventory } from './Inventory';
-import { cn } from '../lib/utils';
+import { cn, getProxiedUrl } from '../lib/utils';
 import { getPolicyStyles, getVoteStyles, getFrameStyles, getRarity } from '../lib/cosmetics';
 import { DEFAULT_ITEMS, PASS_ITEM_LEVELS } from '../constants';
 
@@ -31,6 +31,8 @@ interface ProfileProps {
     setTtsVoice: React.Dispatch<React.SetStateAction<string>>;
     isAiVoiceEnabled: boolean;
     setIsAiVoiceEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+    uiScaleSetting: number;
+    setUiScaleSetting: React.Dispatch<React.SetStateAction<number>>;
   };
   roomId?: string;
   onJoinRoom?: (roomId: string) => void;
@@ -132,7 +134,16 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
   };
   
   // Settings props destructuring
-  const { isMusicOn, setIsMusicOn, isSoundOn, setIsSoundOn, musicVolume, setMusicVolume, soundVolume, setSoundVolume, isFullscreen, setIsFullscreen, ttsVoice, setTtsVoice, isAiVoiceEnabled, setIsAiVoiceEnabled } = settings;
+  const { 
+    isMusicOn, setIsMusicOn, 
+    isSoundOn, setIsSoundOn, 
+    musicVolume, setMusicVolume, 
+    soundVolume, setSoundVolume, 
+    isFullscreen, setIsFullscreen, 
+    ttsVoice, setTtsVoice, 
+    isAiVoiceEnabled, setIsAiVoiceEnabled,
+    uiScaleSetting, setUiScaleSetting
+  } = settings;
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -224,7 +235,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
           <div className="relative">
             <div className="w-24 h-24 rounded-3xl bg-[#222] border border-[#333] flex items-center justify-center relative">
               {user.avatarUrl ? (
-                <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
+                <img src={getProxiedUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover" />
               ) : (
                 <UserIcon className="w-12 h-12 text-[#444]" />
               )}
@@ -425,7 +436,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                                       </button>
                                     ) : item.type === 'frame' ? (
                                       <>
-                                        {user.avatarUrl ? <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" /> : <UserIcon className="w-5 h-5 text-[#444]" />}
+                                        {user.avatarUrl ? <img src={getProxiedUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover" /> : <UserIcon className="w-5 h-5 text-[#444]" />}
                                       </>
                                     ) : item.type === 'policy' ? (
                                       <div className={cn("w-full h-full flex flex-col items-center justify-center gap-0.5", getPolicyStyles(item.id, 'Civil'))}>
@@ -442,10 +453,10 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                                       </div>
                                     ) : item.type === 'background' ? (
                                       <div className="w-full h-full bg-[#141414] flex items-center justify-center">
-                                        <div className="w-full h-full opacity-50" style={{ backgroundImage: `url("${item.imageUrl}")` }} />
+                                        <div className="w-full h-full opacity-50" style={{ backgroundImage: `url("${getProxiedUrl(item.imageUrl!)}")` }} />
                                       </div>
                                     ) : (
-                                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                      <img src={getProxiedUrl(item.imageUrl!)} alt={item.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                     )}
                                   </div>
                                   {item.type === 'frame' && (
@@ -563,7 +574,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                       <div className="relative w-20 h-20 mb-4">
                         <div className="w-20 h-20 rounded-2xl bg-[#222] border border-[#333] flex items-center justify-center">
                           {item.type === 'frame' ? (
-                            user.avatarUrl ? <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" /> : <UserIcon className="w-10 h-10 text-[#444]" />
+                            user.avatarUrl ? <img src={getProxiedUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover" /> : <UserIcon className="w-10 h-10 text-[#444]" />
                           ) : item.type === 'music' || item.type === 'sound' ? (
                             <button onClick={() => playPreview(item)} className="w-full h-full flex items-center justify-center">
                               {playingItemId === item.id ? <Pause className="w-8 h-8 text-white" /> : <Play className="w-8 h-8 text-white" />}
@@ -580,7 +591,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                             </div>
                           ) : item.type === 'background' ? (
                             <div className="w-full h-full bg-[#141414] flex items-center justify-center">
-                              <div className="w-full h-full opacity-50" style={{ backgroundImage: `url("${item.imageUrl}")` }} />
+                              <div className="w-full h-full opacity-50" style={{ backgroundImage: `url("${getProxiedUrl(item.imageUrl!)}")` }} />
                             </div>
                           ) : (
                             <div className="w-full h-full flex flex-col items-center justify-center gap-1">
@@ -676,6 +687,22 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                 <button onClick={toggleFullscreen} className={cn("w-12 h-6 rounded-full transition-all relative", isFullscreen ? "bg-red-900" : "bg-[#333]")}>
                   <div className={cn("absolute top-1 w-4 h-4 rounded-full bg-white transition-all", isFullscreen ? "left-7" : "left-1")} />
                 </button>
+              </div>
+              <div className="p-4 bg-[#141414] border border-[#222] rounded-2xl space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-mono text-white">UI Scale</span>
+                  <span className="text-xs font-mono text-[#666]">{Math.round(uiScaleSetting * 100)}%</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0.5" 
+                  max="1.5" 
+                  step="0.05"
+                  value={uiScaleSetting} 
+                  onChange={(e) => setUiScaleSetting(parseFloat(e.target.value))} 
+                  className="w-full accent-red-900" 
+                />
+                <p className="text-[10px] font-mono text-[#444] uppercase">Adjusts the overall size of the interface</p>
               </div>
             </div>
           )}

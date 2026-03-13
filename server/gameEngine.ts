@@ -1162,6 +1162,8 @@ export class GameEngine {
     const chancellorDeclared = state.declarations.some(d => d.type === "Chancellor");
     if (!presidentDeclared || !chancellorDeclared) return;
 
+    this.checkAuditorTrigger(state);
+
     // Both have declared — capture round history now that we have all the data
     if (state.lastEnactedPolicy && !state.lastEnactedPolicy.historyCaptured) {
       this.captureRoundHistory(state, state.lastEnactedPolicy.type, false);
@@ -1292,6 +1294,7 @@ export class GameEngine {
     if (agree) {
       state.log.push(`${player.name} (President) agreed to the Veto. Both directives discarded.`);
       state.discard.push(...state.chancellorPolicies);
+      this.checkAuditorTrigger(state);
       state.chancellorPolicies = [];
       state.vetoRequested = false;
 
