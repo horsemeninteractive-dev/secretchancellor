@@ -202,13 +202,17 @@ export class GameEngine {
         // Note: triggerAIDeclarations is NOT called here. It will be called
         // by triggerPolicyEnactment after the chancellor plays their policy.
       }
+    } else if (s.titlePrompt) {
+      // A pending title ability must be resolved before any phase-level fallback.
+      // This handles Broker/Handler/Interdictor prompts that fire during Nomination_Review —
+      // the old ordering let Nomination_Review fire first, bypassing the ability entirely.
+      await this.handleTitleAbility(s, roomId, { use: false });
     } else if (s.phase === "Nomination_Review") {
+      // Only reached if there is no titlePrompt (i.e. the timer fired during a bare review window).
       s.phase = "Voting";
       s.log.push("[Timer] Nomination review time expired.");
       this.broadcastState(roomId);
       this.processAITurns(roomId);
-    } else if (s.titlePrompt) {
-      await this.handleTitleAbility(s, roomId, { use: false });
     } else if (s.phase === "Legislative_Chancellor") {
       const chancellor = s.players.find(p => p.isChancellor);
       if (chancellor && s.chancellorPolicies.length > 0) {
@@ -256,16 +260,23 @@ export class GameEngine {
       const s = this.rooms.get(roomId);
       if (!s || s.isPaused) return;
 
-      if (s.phase === "Election") {
-        this.aiNominateChancellor(s, roomId);
-      } else if (s.phase === "Voting") {
-        this.aiCastVotes(s, roomId);
-      } else if (s.phase === "Legislative_President") {
-        this.aiPresidentDiscard(s, roomId);
-      } else if (s.phase === "Legislative_Chancellor") {
-        this.aiChancellorPlay(s, roomId);
-      } else if (s.phase === "Executive_Action") {
-        await this.aiExecutiveAction(s, roomId);
+      // Phase-specific AI actions must not fire while a title ability is pending.
+      // The Strategist in particular sets titlePrompt and leaves drawnPolicies empty
+      // during Legislative_President — aiPresidentDiscard would splice an empty array,
+      // corrupting the hand. All phase actions are skipped and aiHandleTitleAbility
+      // resolves the prompt instead.
+      if (!s.titlePrompt) {
+        if (s.phase === "Election") {
+          this.aiNominateChancellor(s, roomId);
+        } else if (s.phase === "Voting") {
+          this.aiCastVotes(s, roomId);
+        } else if (s.phase === "Legislative_President") {
+          this.aiPresidentDiscard(s, roomId);
+        } else if (s.phase === "Legislative_Chancellor") {
+          this.aiChancellorPlay(s, roomId);
+        } else if (s.phase === "Executive_Action") {
+          await this.aiExecutiveAction(s, roomId);
+        }
       }
 
       // AI handle title ability
@@ -997,15 +1008,17 @@ export class GameEngine {
       state.titlePrompt = nextPrompt;
     } else {
       state.titlePrompt = undefined;
-      
+
       // Only transition phase if the ability didn't already change it (e.g. Broker to Election)
       // and if we have a nextPhase or are in a blocking title phase.
+      // Handler and Interdictor must NOT fire processAITurns here — startElection() below
+      // is their sole launcher. Calling both causes a double-fire that corrupts the nomination.
       if (state.phase === phaseBefore) {
-        if (nextPhase) {
+        if (nextPhase && role !== 'Handler' && role !== 'Interdictor') {
           state.phase = nextPhase;
           this.startActionTimer(roomId);
           this.processAITurns(roomId);
-        } else if (state.phase === 'Nomination_Review') {
+        } else if (state.phase === 'Nomination_Review' && role !== 'Handler' && role !== 'Interdictor') {
           state.phase = 'Voting';
           this.startActionTimer(roomId);
           this.processAITurns(roomId);
@@ -1013,7 +1026,8 @@ export class GameEngine {
       }
     }
 
-    // If we were waiting for Handler or Interdictor, we MUST start the election now if no more prompts are pending.
+    // Handler and Interdictor: startElection is the sole place that kicks off the round.
+    // Broker (used): same pattern — startElection handles everything.
     if ((role === 'Handler' || role === 'Interdictor') && !state.titlePrompt) {
       this.startElection(state, roomId);
       return;
@@ -1203,7 +1217,10 @@ export class GameEngine {
       state.lastGovernmentVotes = undefined; // safe to clear now
     }
 
-    if (state.titlePrompt && state.titlePrompt.nextPhase) return;
+    // Any pending title prompt (including Auditor, which has no nextPhase) must block
+    // all further round progression — the old guard only checked for nextPhase, so Auditor
+    // fell through and Executive_Action overwrote the prompt, hanging the UI.
+    if (state.titlePrompt) return;
 
     // Assassin power
     const president = state.players[state.presidentIdx];
