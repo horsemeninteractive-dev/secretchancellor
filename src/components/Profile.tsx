@@ -102,10 +102,18 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
 
   useEffect(() => {
     const loadVoices = () => {
-      setVoices(window.speechSynthesis.getVoices());
+      const v = window.speechSynthesis.getVoices();
+      if (v.length > 0) {
+        setVoices(v);
+      }
     };
     window.speechSynthesis.onvoiceschanged = loadVoices;
     loadVoices();
+    
+    // Retry for mobile browsers
+    for (let i = 1; i <= 5; i++) {
+      setTimeout(loadVoices, i * 500);
+    }
   }, []);
   
   const playPreview = (item: CosmeticItem) => {

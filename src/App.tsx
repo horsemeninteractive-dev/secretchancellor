@@ -106,7 +106,7 @@ export default function App() {
       const utterance = new SpeechSynthesisUtterance(`${data.role} power used`);
       utterance.volume = soundVolume / 100;
       const voices = window.speechSynthesis.getVoices();
-      const voice = voices.find(v => v.name === ttsVoice);
+      const voice = voices.find(v => v.name === ttsVoice) || voices.find(v => v.lang.startsWith('en'));
       if (voice) utterance.voice = voice;
       window.speechSynthesis.speak(utterance);
     });
