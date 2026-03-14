@@ -700,7 +700,10 @@ export class GameEngine {
   private enactPolicy(
     s: GameState, roomId: string, policy: Policy, isChaos: boolean, playerId?: string,
   ): void {
-    // Broadcast the played card for the animation — tracker not updated yet
+    // Set lastEnactedPolicy immediately so the client can start the reveal
+    // animation straight away. trackerReady=false signals that the tracker
+    // hasn't been updated yet — the client must not show declarations yet.
+    s.lastEnactedPolicy = { type: policy, timestamp: Date.now(), playerId, trackerReady: false };
     this.broadcastState(roomId);
 
     setTimeout(async () => {
@@ -716,9 +719,12 @@ export class GameEngine {
         if (st.stateDirectives >= 5) st.vetoUnlocked = true;
       }
 
-      // Set lastEnactedPolicy only after the tracker is updated so clients
-      // don't receive the declaration prompt until the directive is registered
-      st.lastEnactedPolicy = { type: policy, timestamp: Date.now(), playerId };
+      // Mark tracker as updated and refresh timestamp — clients use this
+      // timestamp transition to trigger the declaration prompt.
+      if (st.lastEnactedPolicy) {
+        st.lastEnactedPolicy.trackerReady = true;
+        st.lastEnactedPolicy.timestamp    = Date.now();
+      }
 
       updateSuspicionFromPolicy(st, policy);
       updateSuspicionFromPolicyExpectation(st, policy);
@@ -732,7 +738,7 @@ export class GameEngine {
         // Wait for both players to declare before running end-of-round logic
         this.scheduleAutoDeclarations(st, roomId);
       }
-    }, 6000);
+    }, 5000);
   }
 
   /** Public alias retained for server.ts compatibility */
@@ -1028,11 +1034,17 @@ export class GameEngine {
         if (s.presidentialOrder) {
           const curId = s.players[s.presidentIdx].id;
           const cur   = s.presidentialOrder.indexOf(curId);
-          const i1    = (cur + 1) % s.presidentialOrder.length;
-          const i2    = (cur + 2) % s.presidentialOrder.length;
-          [s.presidentialOrder[i1], s.presidentialOrder[i2]] =
-            [s.presidentialOrder[i2], s.presidentialOrder[i1]];
-          addLog(s, `${player.name} (Handler) swapped the next two players in presidential order.`);
+          const i1Id  = s.presidentialOrder[(cur + 1) % s.presidentialOrder.length];
+          const i2Id  = s.presidentialOrder[(cur + 2) % s.presidentialOrder.length];
+          const i2Idx = s.players.findIndex(p => p.id === i2Id);
+          // Store current president so nextRound restores here — advancePresidentIdx
+          // will then naturally land on i1 the round after the Handler round.
+          // presidentialOrder is NOT mutated, keeping the rotation intact.
+          s.lastPresidentIdx = s.presidentIdx;
+          if (i2Idx !== -1) s.presidentIdx = i2Idx;
+          const i1Name = s.players.find(p => p.id === i1Id)?.name ?? "?";
+          const i2Name = s.players.find(p => p.id === i2Id)?.name ?? "?";
+          addLog(s, `${player.name} (Handler) skipped ${i1Name} — ${i2Name} will be next President.`);
         }
         this.continuePostRoundAfter(s, roomId, "Handler");
         break;
@@ -1143,32 +1155,28 @@ export class GameEngine {
       this.investigatePlayer(s, roomId, target);
     } else if (action === "SpecialElection") {
       addLog(s, `Special Election: ${target.name} will be the next Presidential Candidate.`);
+
+      // Store the current president so that after the special round nextRound
+      // restores here and advancePresidentIdx lands on the player who would
+      // have been next in the normal rotation.
       s.lastPresidentIdx = s.presidentIdx;
-      s.presidentIdx     = s.players.indexOf(target);
 
-      // Set up nomination state directly for the special-elected president
-      this.resetPlayerActions(s);
-      s.players[s.presidentIdx].isPresidentialCandidate = true;
-      s.declarations       = [];
-      s.presidentTimedOut  = false;
-      s.chancellorTimedOut = false;
-      s.drawnPolicies      = [];
-      s.chancellorPolicies = [];
-      s.presidentSaw       = undefined;
-      s.chancellorSaw      = undefined;
-      s.lastEnactedPolicy  = undefined;
-
-      // Check for Interdictor before starting nomination
-      const interdictor = s.players.find(
-        p => p.titleRole === "Interdictor" && !p.titleUsed && p.isAlive &&
-             p.id !== s.players[s.presidentIdx].id,
-      );
-      if (interdictor) {
-        s.titlePrompt = { playerId: interdictor.id, role: "Interdictor", context: {}, nextPhase: "Nominate_Chancellor" };
-        this.enterPhase(s, roomId, "Nomination_Review");
+      // Point presidentIdx one step BEFORE the target in presidentialOrder so
+      // that advancePresidentIdx() inside nextRound() lands on the target.
+      if (s.presidentialOrder) {
+        const targetPos = s.presidentialOrder.indexOf(target.id);
+        const len       = s.presidentialOrder.length;
+        const beforeId  = s.presidentialOrder[(targetPos - 1 + len) % len];
+        const beforeIdx = s.players.findIndex(p => p.id === beforeId);
+        if (beforeIdx !== -1) s.presidentIdx = beforeIdx;
       } else {
-        this.enterPhase(s, roomId, "Nominate_Chancellor");
+        const targetIdx = s.players.indexOf(target);
+        s.presidentIdx  = (targetIdx - 1 + s.players.length) % s.players.length;
       }
+
+      // Route through nextRound — handles round counter, log separator,
+      // full state reset, and beginNomination (including Interdictor check).
+      this.nextRound(s, roomId, true);
     } else {
       this.nextRound(s, roomId, true);
     }

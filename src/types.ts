@@ -155,7 +155,7 @@ export interface GameState {
     round?: number;
   }[];
   investigationResult?: { targetName: string; role: Role };
-  lastEnactedPolicy?: { type: Policy; timestamp: number; playerId?: string; historyCaptured?: boolean };
+  lastEnactedPolicy?: { type: Policy; timestamp: number; playerId?: string; historyCaptured?: boolean; trackerReady?: boolean };
   round: number;
   presidentialOrder?: string[];
   rejectedChancellorId?: string;

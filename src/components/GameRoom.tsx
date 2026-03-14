@@ -199,7 +199,7 @@ export const GameRoom = ({
   const [declDrawCiv, setDeclDrawCiv] = useState(0);
   const [declDrawSta, setDeclDrawSta] = useState(3);
   const [showPolicyAnim, setShowPolicyAnim] = useState(false);
-  const [lastSeenPolicyTime, setLastSeenPolicyTime] = useState(0);
+
 
   const showPolicyAnimRef = useRef(false);
   const pendingDeclarationRef = useRef<'President' | 'Chancellor' | null>(null);
@@ -209,12 +209,18 @@ export const GameRoom = ({
 
   useEffect(() => { showPolicyAnimRef.current = showPolicyAnim; }, [showPolicyAnim]);
 
+  // Track the initial policy broadcast (trackerReady=false) separately for animation
+  const lastSeenPolicyIdRef = useRef<string>('');
+
   useEffect(() => {
-    if (gameState.lastEnactedPolicy && gameState.lastEnactedPolicy.timestamp > lastSeenPolicyTime) {
-      setLastSeenPolicyTime(gameState.lastEnactedPolicy.timestamp);
+    if (!gameState.lastEnactedPolicy) return;
+    // Use type+playerId+approximate-time as a unique key for this policy event
+    const key = `${gameState.lastEnactedPolicy.type}-${gameState.lastEnactedPolicy.playerId ?? ''}-${Math.floor(gameState.lastEnactedPolicy.timestamp / 10000)}`;
+    if (key !== lastSeenPolicyIdRef.current) {
+      lastSeenPolicyIdRef.current = key;
       setShowPolicyAnim(true);
     }
-  }, [gameState.lastEnactedPolicy, lastSeenPolicyTime]);
+  }, [gameState.lastEnactedPolicy]);
 
   useEffect(() => {
     if (showPolicyAnim) {
@@ -248,9 +254,12 @@ export const GameRoom = ({
     if (me.isChancellor && !wasChancellorRef.current) chancellorSinceRef.current = Date.now();
     wasChancellorRef.current = !!me.isChancellor;
 
-    const policyTimestamp = gameState.lastEnactedPolicy?.timestamp ?? 0;
-    const policyIsNew = policyTimestamp > prevLastEnactedTimestamp.current;
-    if (policyTimestamp > prevLastEnactedTimestamp.current) prevLastEnactedTimestamp.current = policyTimestamp;
+    // Only trigger declarations once the server has registered the directive on
+    // the tracker (trackerReady=true). The animation fires on the earlier broadcast.
+    const trackerReady = gameState.lastEnactedPolicy?.trackerReady === true;
+    const policyTimestamp = trackerReady ? (gameState.lastEnactedPolicy?.timestamp ?? 0) : 0;
+    const policyIsNew = trackerReady && policyTimestamp > prevLastEnactedTimestamp.current;
+    if (policyIsNew) prevLastEnactedTimestamp.current = policyTimestamp;
 
     let needed: 'President' | 'Chancellor' | null = null;
     if (policyIsNew && me.isPresident) needed = 'President';
@@ -274,7 +283,7 @@ export const GameRoom = ({
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameState.lastEnactedPolicy?.timestamp, gameState.declarations?.length, gameState.phase, showPolicyAnim]);
+  }, [gameState.lastEnactedPolicy?.timestamp, gameState.lastEnactedPolicy?.trackerReady, gameState.declarations?.length, gameState.phase, showPolicyAnim]);
 
   const handleSubmitDeclaration = () => {
     socket.emit('declarePolicies', {
