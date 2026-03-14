@@ -124,9 +124,9 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
               <div className="text-responsive-xs font-medium group-hover:text-red-500 transition-colors">{user.username}</div>
               <div className="text-responsive-xs uppercase tracking-widest text-[#666] font-mono">View Profile</div>
             </div>
-            <div className="w-[4vh] h-[4vh] sm:w-[5vh] sm:h-[5vh] rounded-xl bg-[#222] border border-[#333] flex items-center justify-center group-hover:border-red-900/50 transition-colors overflow-hidden relative">
+            <div className="w-[4vh] h-[4vh] sm:w-[5vh] sm:h-[5vh] rounded-xl bg-[#222] border border-[#333] flex items-center justify-center group-hover:border-red-900/50 transition-colors relative">
               {user.avatarUrl ? (
-                <img src={getProxiedUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover" />
+                <img src={getProxiedUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover rounded-xl" />
               ) : (
                 <UserIcon className="w-[2vh] h-[2vh] text-[#666]" />
               )}

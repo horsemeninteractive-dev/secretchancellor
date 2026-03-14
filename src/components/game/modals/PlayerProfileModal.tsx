@@ -6,6 +6,7 @@ import { User } from '../../../types';
 import { cn, getProxiedUrl } from '../../../lib/utils';
 import { getFrameStyles } from '../../../lib/cosmetics';
 import { socket } from '../../../socket';
+import { getLevelFromXp } from '../../../lib/xp';
 
 interface PlayerProfileModalProps {
   userId: string;
@@ -129,7 +130,7 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({ userId, 
               )}
             </div>
             <div className="absolute -bottom-2 -right-2 bg-red-900 border border-red-500 text-white text-[8px] font-mono px-2 py-0.5 rounded-lg shadow-lg">
-              LVL {Math.floor(user.stats.gamesPlayed / 5) + 1}
+              LVL {getLevelFromXp(user.stats.xp)}
             </div>
           </div>
 

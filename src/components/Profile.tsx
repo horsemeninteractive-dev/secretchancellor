@@ -7,6 +7,7 @@ import { Inventory } from './Inventory';
 import { cn, getProxiedUrl } from '../lib/utils';
 import { getPolicyStyles, getVoteStyles, getFrameStyles, getRarity } from '../lib/cosmetics';
 import { DEFAULT_ITEMS, PASS_ITEM_LEVELS } from '../constants';
+import { getLevelFromXp, getXpForNextLevel } from '../lib/xp';
 
 interface ProfileProps {
   user: User;
@@ -195,38 +196,54 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
         {/* Header */}
         <div className="p-8 bg-[#141414] border-b border-[#222] flex flex-col sm:flex-row items-center gap-8">
           <div className="relative">
-            <div className="w-24 h-24 rounded-3xl bg-[#222] border border-[#333] flex items-center justify-center relative">
-              {user.avatarUrl ? (
-                <img src={getProxiedUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover" />
-              ) : (
-                <UserIcon className="w-12 h-12 text-[#444]" />
-              )}
+            <div className="w-28 h-28 rounded-3xl bg-[#222] border border-[#333] flex items-center justify-center relative">
+              <div className="w-24 h-24 rounded-3xl overflow-hidden">
+                {user.avatarUrl ? (
+                  <img src={getProxiedUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover" />
+                ) : (
+                  <UserIcon className="w-12 h-12 text-[#444]" />
+                )}
+              </div>
               {user.activeFrame && (
                 <div className={cn(
-                  "absolute inset-0 border-4 rounded-3xl pointer-events-none",
+                  "absolute inset-2 border-4 rounded-3xl pointer-events-none",
                   getFrameStyles(user.activeFrame)
                 )} />
               )}
             </div>
             <div className="absolute -bottom-2 -right-2 bg-red-900 border border-red-500 text-white text-[10px] font-mono px-2 py-1 rounded-lg shadow-lg">
-              LVL {Math.floor(user.stats.gamesPlayed / 5) + 1}
+              LVL {getLevelFromXp(user.stats.xp)}
             </div>
           </div>
 
           <div className="flex-1 text-center sm:text-left">
             <h2 className="text-4xl font-thematic text-white tracking-wide mb-2">{user.username}</h2>
-            <div className="flex flex-wrap justify-center sm:justify-start gap-4">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-[#222] rounded-xl border border-[#333]">
-                <Trophy className="w-4 h-4 text-yellow-500" />
-                <span className="text-sm font-mono text-yellow-500">{user.stats.elo} ELO</span>
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-wrap justify-center sm:justify-start gap-4">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#222] rounded-xl border border-[#333]">
+                  <Trophy className="w-4 h-4 text-yellow-500" />
+                  <span className="text-sm font-mono text-yellow-500">{user.stats.elo} ELO</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#222] rounded-xl border border-[#333]">
+                  <Coins className="w-4 h-4 text-emerald-500" />
+                  <span className="text-sm font-mono text-emerald-500">{user.stats.points} IP</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#222] rounded-xl border border-[#333]">
+                  <Zap className="w-4 h-4 text-purple-500" />
+                  <span className="text-sm font-mono text-purple-500">{(user.cabinetPoints ?? 0)} CP</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-[#222] rounded-xl border border-[#333]">
-                <Coins className="w-4 h-4 text-emerald-500" />
-                <span className="text-sm font-mono text-emerald-500">{user.stats.points} IP</span>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-[#222] rounded-xl border border-[#333]">
-                <Zap className="w-4 h-4 text-purple-500" />
-                <span className="text-sm font-mono text-purple-500">{(user.cabinetPoints ?? 0)} CP</span>
+              <div className="w-full max-w-sm">
+                <div className="flex justify-between text-xs text-gray-400 mb-1">
+                  <span>XP</span>
+                  <span>{user.stats.xp} / {getXpForNextLevel(getLevelFromXp(user.stats.xp) + 1)}</span>
+                </div>
+                <div className="h-2 bg-[#222] rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-red-600" 
+                    style={{ width: `${(user.stats.xp / getXpForNextLevel(getLevelFromXp(user.stats.xp) + 1)) * 100}%` }} 
+                  />
+                </div>
               </div>
             </div>
           </div>

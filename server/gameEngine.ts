@@ -31,6 +31,7 @@ import {
   updateSuspicionFromPolicyExpectation,
 } from "./suspicion.ts";
 import { getUserById, saveUser, incrementGlobalWin } from "./supabaseService.ts";
+import { calculateXpGain } from "../src/lib/xp.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -1341,6 +1342,9 @@ export class GameEngine {
 
       const won = (winningSide === "Civil" && p.role === "Civil") ||
                   (winningSide === "State"  && (p.role === "State" || p.role === "Overseer"));
+
+      const xpGain = calculateXpGain({ win: won, kills: p.role === 'Overseer' ? p.stateEnactments || 0 : 0 }); // Simplified kill count
+      user.stats.xp += xpGain;
 
       if (won) {
         user.stats.wins++;

@@ -113,10 +113,10 @@ export const GameHeader = ({
         {/* Profile */}
         <button
           onClick={() => { playSound('click'); onOpenProfile(); }}
-          className="w-[4vh] h-[4vh] sm:w-[5vh] sm:h-[5vh] rounded-xl bg-[#222] border border-[#333] flex items-center justify-center hover:border-red-900/50 transition-colors overflow-hidden relative shrink-0"
+          className="w-[4vh] h-[4vh] sm:w-[5vh] sm:h-[5vh] rounded-xl bg-[#222] border border-[#333] flex items-center justify-center hover:border-red-900/50 transition-colors relative shrink-0"
         >
           {user?.avatarUrl
-            ? <img src={getProxiedUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover" />
+            ? <img src={getProxiedUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover rounded-xl" />
             : <UserIcon className="w-[1.8vh] h-[1.8vh] sm:w-[2vh] sm:h-[2vh] text-[#666]" />}
           {user?.activeFrame && (
             <div className={cn('absolute inset-0 rounded-xl pointer-events-none', getFrameStyles(user.activeFrame))} />

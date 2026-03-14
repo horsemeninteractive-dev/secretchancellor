@@ -42,6 +42,7 @@ export interface UserStats {
   deaths: number;
   elo: number;
   points: number;
+  xp: number;
 }
 
 export interface CosmeticItem {

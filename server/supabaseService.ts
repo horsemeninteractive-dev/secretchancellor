@@ -282,6 +282,7 @@ export function makeNewUser(overrides: Partial<any> = {}): any {
       deaths:       0,
       elo:          1000,
       points:       0,
+      xp:           0,
     },
     cabinetPoints: 0,
     claimedRewards: [],

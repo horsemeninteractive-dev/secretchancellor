@@ -99,12 +99,12 @@ export const PlayerGrid = ({ gameState, me, speakingPlayers, playSound, token, s
                       stream && isVideoActive && 'hidden'
                     )}>
                       <div className={cn(
-                        'bg-[#222] flex items-center justify-center relative overflow-hidden',
+                        'bg-[#222] flex items-center justify-center relative',
                         !p.activeFrame && 'border border-[#333]',
                         isManyPlayers ? 'w-6 h-6 sm:w-12 sm:h-12 rounded-lg' : 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl'
                       )}>
                         {p.avatarUrl
-                          ? <img src={getProxiedUrl(p.avatarUrl)} alt={p.name} className="w-full h-full object-cover" />
+                          ? <img src={getProxiedUrl(p.avatarUrl)} alt={p.name} className={cn("w-full h-full object-cover", isManyPlayers ? 'rounded-lg' : 'rounded-xl')} />
                           : <Users className={cn('text-[#666]', isManyPlayers ? 'w-3 h-3 sm:w-6 sm:h-6' : 'w-5 h-5 sm:w-6 sm:h-6')} />}
                         {p.activeFrame && (
                           <div className={cn('absolute inset-0 pointer-events-none', isManyPlayers ? 'rounded-lg' : 'rounded-xl', getFrameStyles(p.activeFrame))} />
