@@ -700,7 +700,7 @@ export class GameEngine {
   private enactPolicy(
     s: GameState, roomId: string, policy: Policy, isChaos: boolean, playerId?: string,
   ): void {
-    s.lastEnactedPolicy = { type: policy, timestamp: Date.now(), playerId };
+    // Broadcast the played card for the animation — tracker not updated yet
     this.broadcastState(roomId);
 
     setTimeout(async () => {
@@ -715,6 +715,10 @@ export class GameEngine {
         addLog(st, `A State directive was enacted. Total: ${st.stateDirectives}`);
         if (st.stateDirectives >= 5) st.vetoUnlocked = true;
       }
+
+      // Set lastEnactedPolicy only after the tracker is updated so clients
+      // don't receive the declaration prompt until the directive is registered
+      st.lastEnactedPolicy = { type: policy, timestamp: Date.now(), playerId };
 
       updateSuspicionFromPolicy(st, policy);
       updateSuspicionFromPolicyExpectation(st, policy);
@@ -953,16 +957,16 @@ export class GameEngine {
     const player = s.players.find(p => p.id === prompt.playerId);
     if (!player) { s.titlePrompt = undefined; return; }
 
-    // Mark consumed immediately — prevents re-triggering on timer expiry
-    player.titleUsed = true;
-    s.titlePrompt    = undefined;
-
-    this.io.to(roomId).emit("powerUsed", { role: prompt.role });
-    if (player.isAI) this.postAIChat(s, player, CHAT.powerUsage);
+    s.titlePrompt = undefined;
 
     if (abilityData.use) {
+      // Only mark used and fire events when the ability is actually activated
+      player.titleUsed = true;
+      this.io.to(roomId).emit("powerUsed", { role: prompt.role });
+      if (player.isAI) this.postAIChat(s, player, CHAT.powerUsage);
       await this.applyTitleAbility(s, roomId, player, prompt.role, abilityData);
     } else {
+      // Player declined — ability is preserved for a future round
       this.onTitleAbilityDeclined(s, roomId, player, prompt.role);
     }
 
