@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Users, MessageSquare, LogOut, User as UserIcon, Trophy, Coins, Settings } from 'lucide-react';
+import { Plus, Users, MessageSquare, LogOut, User as UserIcon, Trophy, Coins, Settings, Zap } from 'lucide-react';
 import { User, RoomInfo } from '../types';
 import { cn, getProxiedUrl } from '../lib/utils';
 import { getFrameStyles } from '../lib/cosmetics';
@@ -81,7 +81,7 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
     >
       {/* Header */}
       <header className="h-[8vh] sm:h-[10vh] border-b border-[#222] bg-[#1a1a1a]/50 backdrop-blur-xl px-[4vw] flex items-center justify-between sticky top-0 z-50">
-        <div className="flex items-center gap-[1vw] sm:gap-[2vw]">
+        <div className="flex items-center gap-[1vw] sm:gap-[2vw] min-w-0 flex-1">
           <div className="w-[4vh] h-[4vh] sm:w-[5vh] sm:h-[5vh] bg-[#141414] rounded-xl flex items-center justify-center border border-white/40 shrink-0 overflow-hidden">
             <img src={getProxiedUrl("https://storage.googleapis.com/secretchancellor/SC.png")} alt="The Assembly Logo" className="w-full h-full object-contain p-1" referrerPolicy="no-referrer" />
           </div>
@@ -94,29 +94,25 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
           </div>
         </div>
 
-        <div className="flex items-center gap-[2vw] sm:gap-[4vw]">
-          <div className="hidden sm:flex items-center gap-4 px-4 py-2 bg-[#141414] border border-[#222] rounded-2xl">
-            <div className="flex items-center gap-2">
-              <Trophy className="w-[1.8vh] h-[1.8vh] text-yellow-500" />
-              <span className="text-responsive-xs font-mono text-yellow-500">{user.stats.elo} ELO</span>
-            </div>
-            <div className="w-px h-4 bg-[#222]" />
-            <div className="flex items-center gap-2">
-              <Coins className="w-[1.8vh] h-[1.8vh] text-emerald-500" />
-              <span className="text-responsive-xs font-mono text-emerald-500">{user.stats.points} PTS</span>
-            </div>
+        {/* Centered Stats */}
+        <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-4 px-4 py-2 bg-[#141414] border border-[#222] rounded-2xl">
+          <div className="flex items-center gap-2">
+            <Trophy className="w-[1.8vh] h-[1.8vh] text-yellow-500" />
+            <span className="text-responsive-xs font-mono text-yellow-500">{user.stats.elo} ELO</span>
           </div>
+          <div className="w-px h-4 bg-[#222]" />
+          <div className="flex items-center gap-2">
+            <Coins className="w-[1.8vh] h-[1.8vh] text-emerald-500" />
+            <span className="text-responsive-xs font-mono text-emerald-500">{user.stats.points} PTS</span>
+          </div>
+          <div className="w-px h-4 bg-[#222]" />
+          <div className="flex items-center gap-2">
+            <Zap className="w-[1.8vh] h-[1.8vh] text-purple-500" />
+            <span className="text-responsive-xs font-mono text-purple-500">{user.cabinetPoints} CP</span>
+          </div>
+        </div>
 
-          <button 
-            onClick={() => {
-              playSound('click');
-              setIsLeaderboardOpen(true);
-            }}
-            className="w-[4vh] h-[4vh] sm:w-[5vh] sm:h-[5vh] rounded-xl bg-[#222] border border-[#333] flex items-center justify-center hover:border-yellow-900/50 transition-colors"
-          >
-            <Trophy className="w-[2vh] h-[2vh] text-yellow-500" />
-          </button>
-
+        <div className="flex items-center gap-[2vw] sm:gap-[3vw] flex-1 justify-end">
           <button 
             onClick={() => {
               playSound('click');
@@ -143,6 +139,16 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
           <button 
             onClick={() => {
               playSound('click');
+              setIsLeaderboardOpen(true);
+            }}
+            className="w-[4vh] h-[4vh] sm:w-[5vh] sm:h-[5vh] rounded-xl bg-[#222] border border-[#333] flex items-center justify-center hover:border-yellow-900/50 transition-colors"
+          >
+            <Trophy className="w-[2vh] h-[2vh] text-yellow-500" />
+          </button>
+
+          <button 
+            onClick={() => {
+              playSound('click');
               onLogout();
             }}
             className="p-[1vh] sm:p-[1.2vh] text-[#444] hover:text-red-500 transition-colors bg-[#141414] border border-[#222] rounded-xl"
@@ -153,11 +159,28 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
       </header>
 
       <main className="flex-1 max-w-6xl w-full mx-auto p-[4vw] flex flex-col gap-[4vh]">
-        {/* Actions (Header/Text) */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
+        {/* Actions (Header/Text) & Swing Meter */}
+        <div className="flex flex-col lg:flex-row items-stretch gap-4">
+          <div className="bg-[#1a1a1a] border border-[#222] rounded-3xl p-[2vh] flex flex-col justify-center text-center lg:text-left">
             <h2 className="text-responsive-2xl sm:text-responsive-3xl font-thematic text-white tracking-wide">Available Assemblies</h2>
             <p className="text-responsive-xs text-[#666] mt-1">Join an existing session or convene your own.</p>
+          </div>
+
+          {/* Swing Meter */}
+          <div className="flex-1 bg-[#1a1a1a] border border-[#222] rounded-3xl p-[2vh] flex flex-col justify-center">
+              <div className="flex items-center justify-between text-responsive-xs font-mono uppercase tracking-widest mb-2">
+                  <span className="text-blue-500">Civil</span>
+                  <span className="font-thematic text-responsive-xl">
+                      <span className="text-blue-500">{globalStats.civilWins}</span>
+                      <span className="text-white mx-2">v</span>
+                      <span className="text-red-500">{globalStats.stateWins}</span>
+                  </span>
+                  <span className="text-red-500">State</span>
+              </div>
+              <div className="w-full h-3 bg-[#141414] rounded-full overflow-hidden flex">
+                  <div className="bg-blue-600 h-full" style={{ width: `${(globalStats.civilWins / (globalStats.civilWins + globalStats.stateWins || 1)) * 100}%` }}></div>
+                  <div className="bg-red-600 h-full" style={{ width: `${(globalStats.stateWins / (globalStats.civilWins + globalStats.stateWins || 1)) * 100}%` }}></div>
+              </div>
           </div>
         </div>
 
@@ -172,23 +195,6 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
           <Plus className="w-[2vh] h-[2vh]" />
           Start New Assembly
         </button>
-
-        {/* Swing Meter */}
-        <div className="bg-[#1a1a1a] border border-[#222] rounded-3xl p-[2vh]">
-            <div className="flex items-center justify-between text-responsive-xs font-mono uppercase tracking-widest mb-2">
-                <span className="text-blue-500">Civil</span>
-                <span className="font-thematic text-responsive-2xl">
-                    <span className="text-blue-500">{globalStats.civilWins}</span>
-                    <span className="text-white">v</span>
-                    <span className="text-red-500">{globalStats.stateWins}</span>
-                </span>
-                <span className="text-red-500">State</span>
-            </div>
-            <div className="w-full h-4 bg-[#141414] rounded-full overflow-hidden flex">
-                <div className="bg-blue-600 h-full" style={{ width: `${(globalStats.civilWins / (globalStats.civilWins + globalStats.stateWins || 1)) * 100}%` }}></div>
-                <div className="bg-red-600 h-full" style={{ width: `${(globalStats.stateWins / (globalStats.civilWins + globalStats.stateWins || 1)) * 100}%` }}></div>
-            </div>
-        </div>
 
         {/* Rejoin Banner */}
         <AnimatePresence>

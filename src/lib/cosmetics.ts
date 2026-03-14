@@ -29,6 +29,12 @@ export const getPolicyStyles = (styleId: string | undefined, type: Policy) => {
       return isCivil ? "bg-blue-800 border-white/50 text-white font-mono" : "bg-blue-900 border-white/30 text-white/80 font-mono";
     case 'policy-blood':
       return isCivil ? "bg-gray-800 border-red-900 text-red-500" : "bg-black border-red-600 text-red-600 shadow-[0_0_10px_rgba(220,38,38,0.3)]";
+    case 'policy-gold':
+      return isCivil ? "bg-[#fcf3cf] border-[#b8860b] text-[#b8860b] shadow-[0_0_15px_rgba(218,165,32,0.4)]" : "bg-[#fef9e7] border-[#9c640c] text-[#9c640c] shadow-[0_0_15px_rgba(184,134,11,0.5)]";
+    case 'policy-neon':
+      return isCivil ? "bg-cyan-900/40 border-cyan-400 text-cyan-300 shadow-[0_0_20px_rgba(34,211,238,0.5)]" : "bg-pink-900/40 border-pink-400 text-pink-300 shadow-[0_0_20px_rgba(244,114,182,0.5)]";
+    case 'policy-animated':
+      return isCivil ? "bg-indigo-900/60 border-indigo-400 text-indigo-200 shadow-[0_0_25px_rgba(129,140,248,0.6)] animate-pulse" : "bg-purple-900/60 border-purple-400 text-purple-200 shadow-[0_0_25px_rgba(168,85,247,0.6)] animate-pulse";
     default:
       return isCivil ? "bg-blue-900 border-blue-500/50 text-blue-400" : "bg-red-900 border-red-500/50 text-red-500";
   }
@@ -43,6 +49,12 @@ export const getVoteStyles = (styleId: string | undefined, type: 'Aye' | 'Nay') 
       return isAye ? "bg-cyan-900/20 border-cyan-500 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]" : "bg-pink-900/20 border-pink-500 text-pink-400 shadow-[0_0_15px_rgba(236,72,153,0.4)]";
     case 'vote-ancient':
       return isAye ? "bg-[#d2b48c] border-[#8b4513] text-[#4a2c1d] font-serif" : "bg-[#c0c0c0] border-[#696969] text-[#2f4f4f] font-serif";
+    case 'vote-neon':
+      return isAye ? "bg-emerald-900/40 border-emerald-400 text-emerald-300 shadow-[0_0_20px_rgba(52,211,153,0.6)] animate-pulse" : "bg-red-900/40 border-red-400 text-red-300 shadow-[0_0_20px_rgba(248,113,113,0.6)] animate-pulse";
+    case 'vote-royal':
+      return isAye ? "bg-[#fef9e7] border-[#b8860b] text-[#b8860b] shadow-[0_0_15px_rgba(218,165,32,0.5)]" : "bg-[#1a1a1a] border-[#b8860b] text-[#b8860b]";
+    case 'vote-cyber':
+      return isAye ? "bg-blue-900/30 border-blue-400 text-blue-300 shadow-[0_0_10px_rgba(96,165,250,0.4)]" : "bg-gray-900/30 border-gray-400 text-gray-300 shadow-[0_0_10px_rgba(156,163,175,0.4)]";
     case 'vote-pass-0':
       return isAye ? "bg-purple-900/40 border-purple-500 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.4)] animate-pulse" : "bg-gray-900/40 border-gray-500 text-gray-400 shadow-[0_0_15px_rgba(107,114,128,0.4)]";
     default:

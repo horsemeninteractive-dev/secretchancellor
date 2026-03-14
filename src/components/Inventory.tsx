@@ -18,10 +18,17 @@ interface InventoryProps {
 
 export const Inventory: React.FC<InventoryProps> = ({ user, handleEquip, playSound, items, playPreview, playingItemId }) => {
   const [category, setCategory] = useState<'frame' | 'policy' | 'vote' | 'music' | 'sound' | 'background'>('frame');
-  const ownedItems = items.filter(item => {
+  const typeItems = DEFAULT_ITEMS.filter(item => {
+    if (item.type !== category) return false;
+    
+    // Always show defaults
+    if (item.id.endsWith('-default')) return true;
+    
+    // Show owned or unlocked items
     const isOwned = user.ownedCosmetics.includes(item.id) || item.id === 'music-ambient';
     const isPassItem = !!PASS_ITEM_LEVELS[item.id];
     const isUnlocked = isPassItem ? (Math.floor(user.stats.gamesPlayed / 5) + 1 >= PASS_ITEM_LEVELS[item.id]) : false;
+    
     return isOwned || isUnlocked;
   });
   
@@ -32,11 +39,6 @@ export const Inventory: React.FC<InventoryProps> = ({ user, handleEquip, playSou
     { id: 'music', label: 'Music' },
     { id: 'sound', label: 'Sounds' },
     { id: 'background', label: 'Backgrounds' }
-  ];
-
-  const typeItems = [
-    ...DEFAULT_ITEMS.filter(item => item.type === category),
-    ...ownedItems.filter(item => item.type === category)
   ];
 
   return (

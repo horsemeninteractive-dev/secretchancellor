@@ -41,59 +41,6 @@ interface ProfileProps {
   mode?: 'Casual' | 'Ranked';
 }
 
-const SHOP_ITEMS: CosmeticItem[] = [
-  // Frames
-  { id: 'frame-red', name: 'Iron Vanguard', price: 500, type: 'frame', description: 'A standard State-faction border.' },
-  { id: 'frame-gold', name: 'Golden Assembly', price: 1500, type: 'frame', description: 'For the most distinguished delegates.' },
-  { id: 'frame-blue', name: 'Civil Guard', price: 500, type: 'frame', description: 'A standard Civil-faction border.' },
-  { id: 'frame-rainbow', name: 'Spectrum Delegate', price: 3000, type: 'frame', description: 'A vibrant, shifting spectrum of colors.' },
-  { id: 'frame-neon', name: 'Neon Resistance', price: 2000, type: 'frame', description: 'Glows with the energy of the underground.' },
-  { id: 'frame-shadow', name: 'Shadow Cabal', price: 1000, type: 'frame', description: 'A dark, brooding frame for the secretive.' },
-  
-  // Decorative Frames (Discord-like)
-  { id: 'frame-thorns', name: 'Crown of Thorns', price: 2500, type: 'frame', description: 'Intricate thorny vines wrapping around your avatar.' },
-  { id: 'frame-cyber', name: 'Cybernetic Link', price: 3500, type: 'frame', description: 'High-tech circuitry and glowing data streams.' },
-  { id: 'frame-inferno', name: 'Eternal Inferno', price: 4000, type: 'frame', description: 'Animated flames licking the edges of your profile.' },
-  { id: 'frame-glitch', name: 'System Glitch', price: 3000, type: 'frame', description: 'Digital artifacts and chromatic aberration.' },
-  { id: 'frame-royal', name: 'Royal Crest', price: 5000, type: 'frame', description: 'Ornate silver and sapphire decorations.' },
-
-  // Policy Cards
-  { id: 'policy-vintage', name: 'Vintage Press', price: 1200, type: 'policy', description: 'A classic, weathered newspaper aesthetic.' },
-  { id: 'policy-modern', name: 'Modern Minimal', price: 1000, type: 'policy', description: 'Clean lines and bold typography.' },
-  { id: 'policy-blueprint', name: 'State Blueprint', price: 1500, type: 'policy', description: 'Technical drawings on blueprint paper.' },
-  { id: 'policy-blood', name: 'Blood & Iron', price: 2000, type: 'policy', description: 'Industrial metal with crimson accents.' },
-
-  // Voting Cards
-  { id: 'vote-classic', name: 'Classic Ballot', price: 800, type: 'vote', description: 'Traditional paper ballots.' },
-  { id: 'vote-wax', name: 'Wax Seal', price: 1800, type: 'vote', description: 'Official documents sealed with red wax.' },
-  { id: 'vote-digital', name: 'Digital Consensus', price: 1500, type: 'vote', description: 'Holographic voting interface.' },
-  { id: 'vote-ancient', name: 'Ancient Ostracon', price: 2500, type: 'vote', description: 'Pottery shards used in ancient democracy.' },
-
-  // Music
-  { id: 'music-ambient', name: 'Shadows Over Parliament', price: 0, type: 'music', description: 'Deep, atmospheric orchestral tension.' },
-  { id: 'music-fog', name: 'Fog In The Alley', price: 1500, type: 'music', description: 'Mysterious and low-profile noir vibes.' },
-  { id: 'music-tense', name: 'Final Countdown', price: 2500, type: 'music', description: 'High-stakes rhythmic tension for the endgame.' },
-  { id: 'music-victory', name: 'Triumph of the New Age', price: 4000, type: 'music', description: 'A grand orchestral anthem for the victors.' },
-
-  // Sound Packs
-  { id: 'sound-retro', name: 'Retro 8-bit', price: 1500, type: 'sound', description: 'Classic arcade sound effects.' },
-  { id: 'sound-industrial', name: 'Industrial Clang', price: 2500, type: 'sound', description: 'Heavy, metallic sound effects.' },
-  
-  // Backgrounds
-  { id: 'bg-leather', name: 'Dark Leather', price: 1000, type: 'background', description: 'A sophisticated dark leather texture.', imageUrl: 'https://www.transparenttextures.com/patterns/dark-leather.png' },
-  { id: 'bg-brushed', name: 'Brushed Metal', price: 1500, type: 'background', description: 'Cold, industrial brushed aluminum.', imageUrl: 'https://www.transparenttextures.com/patterns/brushed-alum.png' },
-  { id: 'bg-diamonds', name: 'Diamond Plate', price: 1200, type: 'background', description: 'Reinforced steel diamond pattern.', imageUrl: 'https://www.transparenttextures.com/patterns/diagmonds-light.png' },
-  { id: 'bg-wood', name: 'Dark Mahogany', price: 2000, type: 'background', description: 'Rich, polished dark wood grain.', imageUrl: 'https://www.transparenttextures.com/patterns/dark-wood.png' },
-  { id: 'bg-paper', name: 'Aged Parchment', price: 1800, type: 'background', description: 'Weathered, historical paper texture.', imageUrl: 'https://www.transparenttextures.com/patterns/old-mathematics.png' },
-  { id: 'bg-concrete', name: 'Urban Concrete', price: 1400, type: 'background', description: 'Rough, brutalist concrete wall.', imageUrl: 'https://www.transparenttextures.com/patterns/concrete-wall.png' },
-  
-  // Assembly Pass Rewards (Free Tier)
-  { id: 'bg-pass-0', name: 'Season 0: Geometric Grid', price: 0, type: 'background', description: 'Exclusive Season 0 background.', imageUrl: 'https://www.transparenttextures.com/patterns/gplay.png' },
-  { id: 'vote-pass-0', name: 'Season 0: Purple Rain', price: 0, type: 'vote', description: 'Exclusive Season 0 animated voting card.', imageUrl: 'https://www.transparenttextures.com/patterns/diagonal-striped-brick.png' },
-  { id: 'music-pass-0', name: 'Season 0: Static Noise', price: 0, type: 'music', description: 'Exclusive Season 0 music track.', imageUrl: 'https://www.transparenttextures.com/patterns/noise-lines-small.png' },
-  { id: 'frame-pass-0', name: 'Season 0: Purple Pill', price: 0, type: 'frame', description: 'Exclusive Season 0 animated avatar frame.', imageUrl: 'https://www.transparenttextures.com/patterns/circles-light.png' },
-];
-
 export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, token, playSound, playMusic, stopMusic, settings, roomId, onJoinRoom, mode }) => {
   const [activeTab, setActiveTab] = useState<'stats' | 'shop' | 'settings' | 'pass' | 'friends' | 'inventory'>('stats');
   const [shopCategory, setShopCategory] = useState<'frame' | 'policy' | 'vote' | 'music' | 'sound' | 'background'>('frame');
@@ -223,7 +170,11 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
     ? Math.round((user.stats.wins / user.stats.gamesPlayed) * 100) 
     : 0;
 
-  const filteredItems = SHOP_ITEMS.filter(item => item.type === shopCategory && !PASS_ITEM_LEVELS[item.id]);
+  const filteredItems = DEFAULT_ITEMS.filter(item => 
+    item.type === shopCategory && 
+    !PASS_ITEM_LEVELS[item.id] && 
+    !item.id.endsWith('-default')
+  );
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
@@ -412,7 +363,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                   const isFree = level % 10 === 0; // Only show rewards every 10 levels for Free Tier
                   const currentLevel = Math.floor(user.stats.gamesPlayed / 5) + 1;
                   const isUnlocked = currentLevel >= level;
-                  const item = isFree ? SHOP_ITEMS.find(i => (level === 10 && i.id === 'bg-pass-0') || (level === 20 && i.id === 'vote-pass-0') || (level === 40 && i.id === 'music-pass-0') || (level === 50 && i.id === 'frame-pass-0')) : null;
+                  const item = isFree ? DEFAULT_ITEMS.find(i => (level === 10 && i.id === 'bg-pass-0') || (level === 20 && i.id === 'vote-pass-0') || (level === 40 && i.id === 'music-pass-0') || (level === 50 && i.id === 'frame-pass-0')) : null;
 
                   return (
                     <div key={level} className="relative flex items-center justify-center">
@@ -507,7 +458,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
               token={token} 
               playSound={playSound} 
               handleEquip={handleEquip} 
-              items={SHOP_ITEMS}
+              items={DEFAULT_ITEMS}
               playPreview={playPreview}
               playingItemId={playingItemId}
             />

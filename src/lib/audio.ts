@@ -32,6 +32,9 @@ export const SOUND_PACKS: Record<string, Record<string, string>> = {
     'victory':         `${BASE}/Interface%20Sounds/confirmation_004.ogg`,
     // Heavy closing sound — the weight of a loss
     'defeat':          `${BASE}/Interface%20Sounds/close_004.ogg`,
+    // Team-specific win sounds
+    'win_civil':       'https://storage.googleapis.com/secretchancellor/CivilWin.mp3',
+    'win_state':       'https://storage.googleapis.com/secretchancellor/StateWin.mp3',
   },
 
   // ─── Retro ────────────────────────────────────────────────────────────────
@@ -49,6 +52,9 @@ export const SOUND_PACKS: Record<string, Record<string, string>> = {
     'victory':         `${BASE}/Retro%20Sounds%201/pickup3.ogg`,
     // Classic retro game-over fanfare — defeat
     'defeat':          `${BASE}/Retro%20Sounds%202/gameover1.ogg`,
+    // Team-specific win sounds
+    'win_civil':       `${BASE}/Retro%20Sounds%201/pickup3.ogg`,
+    'win_state':       `${BASE}/Retro%20Sounds%201/pickup2.ogg`,
   },
 
   // ─── Industrial ───────────────────────────────────────────────────────────
@@ -66,6 +72,9 @@ export const SOUND_PACKS: Record<string, Record<string, string>> = {
     'victory':         `${BASE}/Interface%20Sounds/maximize_001.ogg`,
     // Lowest, heaviest bell — the final toll of defeat
     'defeat':          `${BASE}/Impact%20Sounds/impactBell_heavy_004.ogg`,
+    // Team-specific win sounds
+    'win_civil':       `${BASE}/Interface%20Sounds/maximize_001.ogg`,
+    'win_state':       `${BASE}/Interface%20Sounds/maximize_002.ogg`,
   },
 
 };

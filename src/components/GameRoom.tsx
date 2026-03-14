@@ -342,8 +342,8 @@ export const GameRoom = ({
     prevStateDirectives.current = gameState.stateDirectives;
 
     if (prevPhase.current !== 'GameOver' && gameState.phase === 'GameOver') {
-      const myTeam = me?.role === 'Civil' ? 'Civil' : 'State';
-      playSound(gameState.winner === myTeam ? 'victory' : 'defeat');
+      if (gameState.winner === 'Civil') playSound('win_civil');
+      else if (gameState.winner === 'State') playSound('win_state');
     }
 
     prevPhase.current = gameState.phase;
