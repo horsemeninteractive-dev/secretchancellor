@@ -139,6 +139,8 @@ export interface GameState {
   winReason?: string;
   presidentIdx: number;
   lastPresidentIdx: number;
+  handlerSwapPending?: number;            // countdown: 3=i2 next, 2=i1 next, 1=i3 next (revert before advancing)
+  handlerSwapPositions?: [number, number]; // the two presidentialOrder positions to swap back
   chancellorId?: string;
   presidentId?: string;
   lobbyTimer?: number;

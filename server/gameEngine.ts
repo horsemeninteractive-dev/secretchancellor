@@ -271,8 +271,22 @@ export class GameEngine {
   }
 
   private async runAITurn(s: GameState, roomId: string): Promise<void> {
-    // Title ability prompt takes priority over everything else
+    // Title ability prompt takes priority — but only resolve it if we are in
+    // the correct phase for that ability. A stale scheduleAITurns call from a
+    // previous phase must not fire into a titlePrompt that belongs to the next
+    // phase (e.g. a lingering AI turn from Executive_Action firing during
+    // Nomination_Review and resolving the Interdictor before its time).
     if (s.titlePrompt) {
+      const expectedPhase: Record<string, string> = {
+        Interdictor: "Nomination_Review",
+        Broker:      "Nomination_Review",
+        Strategist:  "Legislative_President",
+        Auditor:     "Auditor_Action",
+        Assassin:    "Assassin_Action",
+        Handler:     "Handler_Action",
+      };
+      const expected = expectedPhase[s.titlePrompt.role];
+      if (expected && s.phase !== expected) return; // wrong phase — wait for the right one
       const holder = s.players.find(p => p.id === s.titlePrompt!.playerId);
       if (holder?.isAI) await this.aiDecideTitleAbility(s, roomId);
       return;
@@ -436,6 +450,20 @@ export class GameEngine {
       // lastPresidentIdx holds the pre-special-election origin so the round
       // AFTER the special round restores and advances correctly.
     } else {
+      // Handler swap countdown: swap was applied so order is [..., A, i2, i1, i3, ...].
+      // Decrement each round. When it hits 1 (i3's turn is about to start),
+      // swap the positions back before advancing — order restored for all future
+      // cycles regardless of player count.
+      if (state.handlerSwapPending !== undefined) {
+        state.handlerSwapPending--;
+        if (state.handlerSwapPending <= 0 && state.presidentialOrder && state.handlerSwapPositions) {
+          const [p1, p2] = state.handlerSwapPositions;
+          [state.presidentialOrder[p1], state.presidentialOrder[p2]] =
+            [state.presidentialOrder[p2], state.presidentialOrder[p1]];
+          state.handlerSwapPending   = undefined;
+          state.handlerSwapPositions = undefined;
+        }
+      }
       // If returning from a special election, restore the normal rotation origin
       if (state.lastPresidentIdx !== -1) {
         state.presidentIdx     = state.lastPresidentIdx;
@@ -541,6 +569,10 @@ export class GameEngine {
   }
 
   nominateChancellor(s: GameState, roomId: string, chancellorId: string, presidentSocketId: string): void {
+    // Reject if a title ability is still pending or the phase is wrong
+    if (s.titlePrompt) return;
+    if (s.phase !== "Nominate_Chancellor") return;
+
     const president = s.players[s.presidentIdx];
     if (president.id !== presidentSocketId || !president.isAlive || president.hasActed) return;
     president.hasActed = true;
@@ -1039,17 +1071,22 @@ export class GameEngine {
         if (s.presidentialOrder) {
           const curId = s.players[s.presidentIdx].id;
           const cur   = s.presidentialOrder.indexOf(curId);
-          const i1Id  = s.presidentialOrder[(cur + 1) % s.presidentialOrder.length];
-          const i2Id  = s.presidentialOrder[(cur + 2) % s.presidentialOrder.length];
-          const i2Idx = s.players.findIndex(p => p.id === i2Id);
-          // Store current president so nextRound restores here — advancePresidentIdx
-          // will then naturally land on i1 the round after the Handler round.
-          // presidentialOrder is NOT mutated, keeping the rotation intact.
-          s.lastPresidentIdx = s.presidentIdx;
-          if (i2Idx !== -1) s.presidentIdx = i2Idx;
+          const len   = s.presidentialOrder.length;
+          const i1Pos = (cur + 1) % len;
+          const i2Pos = (cur + 2) % len;
+          const i1Id   = s.presidentialOrder[i1Pos];
+          const i2Id   = s.presidentialOrder[i2Pos];
           const i1Name = s.players.find(p => p.id === i1Id)?.name ?? "?";
           const i2Name = s.players.find(p => p.id === i2Id)?.name ?? "?";
-          addLog(s, `${player.name} (Handler) skipped ${i1Name} — ${i2Name} will be next President.`);
+          // Swap i1 and i2 so advancePresidentIdx visits i2 first this cycle.
+          // We store i1's id and the swap positions so nextRound can revert the
+          // array and place i1 directly after i2's round — keeping all future
+          // cycles in the original order.
+          [s.presidentialOrder[i1Pos], s.presidentialOrder[i2Pos]] =
+            [s.presidentialOrder[i2Pos], s.presidentialOrder[i1Pos]];
+          s.handlerSwapPending   = 3;   // 3=i2 next, 2=i1 next, 1=revert before i3
+          s.handlerSwapPositions = [i1Pos, i2Pos];
+          addLog(s, `${player.name} (Handler) swapped ${i1Name} and ${i2Name} — ${i2Name} will be next President, followed by ${i1Name}.`);
         }
         this.continuePostRoundAfter(s, roomId, "Handler");
         break;
