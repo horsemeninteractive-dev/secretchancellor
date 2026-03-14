@@ -414,7 +414,7 @@ export class GameEngine {
    * End the current government, advance the president pointer, increment round,
    * then start the next nomination.
    */
-  private nextRound(state: GameState, roomId: string, successfulGovernment = false): void {
+  private nextRound(state: GameState, roomId: string, successfulGovernment = false, skipAdvance = false): void {
     if (state.phase === "GameOver") return;
 
     state.vetoRequested        = false;
@@ -431,13 +431,18 @@ export class GameEngine {
 
     this.resetPlayerActions(state);
 
-    // If returning from a special election, restore the normal rotation origin
-    if (state.lastPresidentIdx !== -1) {
-      state.presidentIdx     = state.lastPresidentIdx;
-      state.lastPresidentIdx = -1;
+    if (skipAdvance) {
+      // presidentIdx already points at the special-election target — use as-is.
+      // lastPresidentIdx holds the pre-special-election origin so the round
+      // AFTER the special round restores and advances correctly.
+    } else {
+      // If returning from a special election, restore the normal rotation origin
+      if (state.lastPresidentIdx !== -1) {
+        state.presidentIdx     = state.lastPresidentIdx;
+        state.lastPresidentIdx = -1;
+      }
+      this.advancePresidentIdx(state);
     }
-
-    this.advancePresidentIdx(state);
     state.round++;
     addLog(state, `--- Round ${state.round} Started ---`);
 
@@ -1156,27 +1161,18 @@ export class GameEngine {
     } else if (action === "SpecialElection") {
       addLog(s, `Special Election: ${target.name} will be the next Presidential Candidate.`);
 
-      // Store the current president so that after the special round nextRound
-      // restores here and advancePresidentIdx lands on the player who would
-      // have been next in the normal rotation.
+      // Store the current president's index so the round AFTER the special
+      // election restores here and advancePresidentIdx resumes normal rotation.
       s.lastPresidentIdx = s.presidentIdx;
 
-      // Point presidentIdx one step BEFORE the target in presidentialOrder so
-      // that advancePresidentIdx() inside nextRound() lands on the target.
-      if (s.presidentialOrder) {
-        const targetPos = s.presidentialOrder.indexOf(target.id);
-        const len       = s.presidentialOrder.length;
-        const beforeId  = s.presidentialOrder[(targetPos - 1 + len) % len];
-        const beforeIdx = s.players.findIndex(p => p.id === beforeId);
-        if (beforeIdx !== -1) s.presidentIdx = beforeIdx;
-      } else {
-        const targetIdx = s.players.indexOf(target);
-        s.presidentIdx  = (targetIdx - 1 + s.players.length) % s.players.length;
-      }
+      // Point presidentIdx directly at the target. skipAdvance=true tells
+      // nextRound to use this value as-is rather than restore-then-advance.
+      s.presidentIdx = s.players.indexOf(target);
 
-      // Route through nextRound — handles round counter, log separator,
+      // Route through nextRound with skipAdvance=true — presidentIdx is already
+      // the target, so no advance needed. Handles round counter, log separator,
       // full state reset, and beginNomination (including Interdictor check).
-      this.nextRound(s, roomId, true);
+      this.nextRound(s, roomId, true, true);
     } else {
       this.nextRound(s, roomId, true);
     }
