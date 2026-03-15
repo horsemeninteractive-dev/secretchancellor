@@ -49,7 +49,7 @@ export const getVoteStyles = (styleId: string | undefined, type: 'Aye' | 'Nay') 
   const isAye = type === 'Aye';
   switch(styleId) {
     case 'vote-wax':
-      return isAye ? "bg-[#8b0000] border-[#5a0000] text-white shadow-[0_4px_0_#5a0000]" : "bg-[#1a1a1a] border-[#333] text-[#666]";
+      return isAye ? "bg-[#8b0000] border-[#5a0000] text-white shadow-[0_4px_0_#5a0000]" : "bg-surface border-default text-muted";
     case 'vote-digital':
       return isAye ? "bg-cyan-900/20 border-cyan-500 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]" : "bg-pink-900/20 border-pink-500 text-pink-400 shadow-[0_0_15px_rgba(236,72,153,0.4)]";
     case 'vote-ancient':
@@ -57,13 +57,13 @@ export const getVoteStyles = (styleId: string | undefined, type: 'Aye' | 'Nay') 
     case 'vote-neon':
       return isAye ? "bg-emerald-900/40 border-emerald-400 text-emerald-300 shadow-[0_0_20px_rgba(52,211,153,0.6)] animate-pulse" : "bg-red-900/40 border-red-400 text-red-300 shadow-[0_0_20px_rgba(248,113,113,0.6)] animate-pulse";
     case 'vote-royal':
-      return isAye ? "bg-[#fef9e7] border-[#b8860b] text-[#b8860b] shadow-[0_0_15px_rgba(218,165,32,0.5)]" : "bg-[#1a1a1a] border-[#b8860b] text-[#b8860b]";
+      return isAye ? "bg-[#fef9e7] border-[#b8860b] text-[#b8860b] shadow-[0_0_15px_rgba(218,165,32,0.5)]" : "bg-surface border-[#b8860b] text-[#b8860b]";
     case 'vote-cyber':
       return isAye ? "bg-blue-900/30 border-blue-400 text-blue-300 shadow-[0_0_10px_rgba(96,165,250,0.4)]" : "bg-gray-900/30 border-gray-400 text-gray-300 shadow-[0_0_10px_rgba(156,163,175,0.4)]";
     case 'vote-pass-0':
       return isAye ? "bg-purple-900/40 border-purple-500 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.4)] animate-pulse" : "bg-gray-900/40 border-gray-500 text-gray-400 shadow-[0_0_15px_rgba(107,114,128,0.4)]";
     default:
-      return isAye ? "bg-white border-white text-black" : "bg-black border-[#333] text-white";
+      return isAye ? "bg-white border-white text-black" : "bg-black border-default text-white";
   }
 };
 

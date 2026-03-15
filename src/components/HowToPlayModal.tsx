@@ -23,32 +23,32 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
 const TabContent: React.FC<{ tab: TabId }> = ({ tab }) => {
   if (tab === 'overview') return (
     <div className="space-y-4">
-      <p className="text-[#aaa] leading-relaxed text-sm">
-        The Assembly is a <strong className="text-white">social deduction game</strong> for 5–10 players. Each player is secretly assigned a faction — Civil or State — and must work with or against the others to achieve their faction's win condition.
+      <p className="text-secondary leading-relaxed text-sm">
+        The Assembly is a <strong className="text-primary">social deduction game</strong> for 5–10 players. Each player is secretly assigned a faction — Civil or State — and must work with or against the others to achieve their faction's win condition.
       </p>
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-blue-900/15 border border-blue-500/20 rounded-xl p-3">
           <div className="text-blue-400 font-bold text-xs uppercase tracking-widest mb-1">Civil wins by</div>
-          <ul className="text-[#888] text-xs space-y-1">
+          <ul className="text-tertiary text-xs space-y-1">
             <li>Enacting 5 Civil directives</li>
             <li>Executing the Overseer</li>
           </ul>
         </div>
         <div className="bg-red-900/15 border border-red-500/20 rounded-xl p-3">
           <div className="text-red-400 font-bold text-xs uppercase tracking-widest mb-1">State wins by</div>
-          <ul className="text-[#888] text-xs space-y-1">
+          <ul className="text-tertiary text-xs space-y-1">
             <li>Enacting 6 State directives</li>
             <li>Electing Overseer Chancellor (after 3 State)</li>
           </ul>
         </div>
       </div>
-      <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl p-4 space-y-3">
-        <div className="text-[#666] text-xs font-mono uppercase tracking-widest">Policy Deck</div>
-        <p className="text-[#888] text-sm">The deck contains <span className="text-blue-400">6 Civil</span> and <span className="text-red-400">11 State</span> policy cards. The deck is stacked against Civil — deduction and coordination are essential.</p>
+      <div className="bg-surface border border-default rounded-xl p-4 space-y-3">
+        <div className="text-muted text-xs font-mono uppercase tracking-widest">Policy Deck</div>
+        <p className="text-tertiary text-sm">The deck contains <span className="text-blue-400">6 Civil</span> and <span className="text-red-400">11 State</span> policy cards. The deck is stacked against Civil — deduction and coordination are essential.</p>
       </div>
-      <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl p-4 space-y-2">
-        <div className="text-[#666] text-xs font-mono uppercase tracking-widest">Election Tracker</div>
-        <p className="text-[#888] text-sm">If three elections fail in a row, a <span className="text-orange-400">chaos policy</span> is drawn from the top of the deck and enacted automatically without a vote.</p>
+      <div className="bg-surface border border-default rounded-xl p-4 space-y-2">
+        <div className="text-muted text-xs font-mono uppercase tracking-widest">Election Tracker</div>
+        <p className="text-tertiary text-sm">If three elections fail in a row, a <span className="text-orange-400">chaos policy</span> is drawn from the top of the deck and enacted automatically without a vote.</p>
       </div>
     </div>
   );
@@ -60,25 +60,25 @@ const TabContent: React.FC<{ tab: TabId }> = ({ tab }) => {
           <Scale className="w-5 h-5 text-blue-400" />
           <div className="text-blue-400 font-bold uppercase tracking-wider text-sm">Civil</div>
         </div>
-        <p className="text-[#888] text-sm leading-relaxed">The majority. You don't know who your allies are. Use declarations, voting patterns, and nominations to find the State agents and stop them.</p>
+        <p className="text-tertiary text-sm leading-relaxed">The majority. You don't know who your allies are. Use declarations, voting patterns, and nominations to find the State agents and stop them.</p>
       </div>
       <div className="bg-red-900/15 border border-red-500/25 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-2">
           <Eye className="w-5 h-5 text-red-400" />
           <div className="text-red-400 font-bold uppercase tracking-wider text-sm">State</div>
         </div>
-        <p className="text-[#888] text-sm leading-relaxed">The minority. You know who your State allies are. Secretly coordinate to enact State directives or get the Overseer elected as Chancellor.</p>
+        <p className="text-tertiary text-sm leading-relaxed">The minority. You know who your State allies are. Secretly coordinate to enact State directives or get the Overseer elected as Chancellor.</p>
       </div>
       <div className="bg-red-900/25 border border-red-600/40 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-2">
           <OverseerIcon className="w-5 h-5 text-red-500" />
           <div className="text-red-500 font-bold uppercase tracking-wider text-sm">The Overseer</div>
         </div>
-        <p className="text-[#888] text-sm leading-relaxed">A State agent who doesn't know the other State players. Wins with State. If elected Chancellor after 3 State directives are enacted, State wins immediately.</p>
-        <p className="text-[#555] text-xs italic mt-2">At 5–6 players, the Overseer knows the other State agents.</p>
+        <p className="text-tertiary text-sm leading-relaxed">A State agent who doesn't know the other State players. Wins with State. If elected Chancellor after 3 State directives are enacted, State wins immediately.</p>
+        <p className="text-faint text-xs italic mt-2">At 5–6 players, the Overseer knows the other State agents.</p>
       </div>
-      <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl p-3">
-        <div className="text-[#666] text-xs font-mono uppercase tracking-widest mb-2">Role Distribution</div>
+      <div className="bg-surface border border-default rounded-xl p-3">
+        <div className="text-muted text-xs font-mono uppercase tracking-widest mb-2">Role Distribution</div>
         <div className="grid grid-cols-3 gap-2 text-xs text-center">
           {[
             ['5p', '3C', '1S+O'],
@@ -88,8 +88,8 @@ const TabContent: React.FC<{ tab: TabId }> = ({ tab }) => {
             ['9p', '5C', '3S+O'],
             ['10p', '6C', '3S+O'],
           ].map(([players, civil, state]) => (
-            <div key={players} className="bg-[#252525] rounded-lg p-2">
-              <div className="text-[#666] mb-1">{players}</div>
+            <div key={players} className="bg-card rounded-lg p-2">
+              <div className="text-muted mb-1">{players}</div>
               <div className="text-blue-400">{civil}</div>
               <div className="text-red-400">{state}</div>
             </div>
@@ -115,7 +115,7 @@ const TabContent: React.FC<{ tab: TabId }> = ({ tab }) => {
             </div>
             <span className="font-medium text-sm">{step.label}</span>
           </div>
-          <p className="text-[#888] text-xs leading-relaxed pl-7">{step.desc}</p>
+          <p className="text-tertiary text-xs leading-relaxed pl-7">{step.desc}</p>
         </div>
       ))}
     </div>
@@ -123,7 +123,7 @@ const TabContent: React.FC<{ tab: TabId }> = ({ tab }) => {
 
   if (tab === 'titles') return (
     <div className="space-y-3">
-      <p className="text-[#888] text-sm leading-relaxed">
+      <p className="text-tertiary text-sm leading-relaxed">
         Title Roles are assigned randomly at game start. Each is single-use and fires at a specific point in the round. Check your Dossier to see if you have one.
       </p>
       {[
@@ -134,12 +134,12 @@ const TabContent: React.FC<{ tab: TabId }> = ({ tab }) => {
         { name: 'Assassin', when: 'After enactment (as President)', desc: 'When you\'re President, secretly execute any living player after the round ends. Once used.' },
         { name: 'Handler', when: 'After enactment', desc: 'Swap the next two players in the presidential rotation. The second becomes President before the first. Once used.' },
       ].map(role => (
-        <div key={role.name} className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl p-3">
+        <div key={role.name} className="bg-surface border border-default rounded-xl p-3">
           <div className="flex items-start justify-between gap-2 mb-1">
             <div className="text-yellow-400 font-bold text-sm">{role.name}</div>
-            <div className="text-[#555] text-[10px] font-mono uppercase tracking-widest shrink-0">{role.when}</div>
+            <div className="text-faint text-[10px] font-mono uppercase tracking-widest shrink-0">{role.when}</div>
           </div>
-          <p className="text-[#888] text-xs leading-relaxed">{role.desc}</p>
+          <p className="text-tertiary text-xs leading-relaxed">{role.desc}</p>
         </div>
       ))}
     </div>
@@ -147,8 +147,8 @@ const TabContent: React.FC<{ tab: TabId }> = ({ tab }) => {
 
   if (tab === 'agendas') return (
     <div className="space-y-4">
-      <p className="text-[#aaa] text-sm leading-relaxed">
-        Every player receives a hidden <span className="text-emerald-400 font-medium">Personal Agenda</span> at the start of each game. Completing it earns <strong className="text-white">+100 XP and bonus IP</strong> — equal to winning with your faction — regardless of the game result.
+      <p className="text-secondary text-sm leading-relaxed">
+        Every player receives a hidden <span className="text-emerald-400 font-medium">Personal Agenda</span> at the start of each game. Completing it earns <strong className="text-primary">+100 XP and bonus IP</strong> — equal to winning with your faction — regardless of the game result.
       </p>
       <div className="bg-emerald-900/10 border border-emerald-500/20 rounded-xl p-4 space-y-3">
         <div className="text-emerald-400 text-xs font-mono uppercase tracking-widest">All 20 Agendas</div>
@@ -178,8 +178,8 @@ const TabContent: React.FC<{ tab: TabId }> = ({ tab }) => {
             <div key={name} className="flex gap-2 items-start">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/30 shrink-0 mt-1.5" />
               <div>
-                <span className="text-white text-xs font-medium">{name}</span>
-                <span className="text-[#555] text-xs"> — {desc}</span>
+                <span className="text-primary text-xs font-medium">{name}</span>
+                <span className="text-faint text-xs"> — {desc}</span>
               </div>
             </div>
           ))}
@@ -215,8 +215,8 @@ const TabContent: React.FC<{ tab: TabId }> = ({ tab }) => {
         },
         {
           faction: 'General',
-          color: 'text-[#aaa]',
-          bg: 'bg-[#1e1e1e] border-[#2a2a2a]',
+          color: 'text-secondary',
+          bg: 'bg-surface border-default',
           tips: [
             'Use the chat and declarations together. What players say matters.',
             'Your personal agenda might conflict with your faction\'s best play. That tension is intentional.',
@@ -228,8 +228,8 @@ const TabContent: React.FC<{ tab: TabId }> = ({ tab }) => {
           <div className={cn('font-bold text-sm mb-2 uppercase tracking-wider', section.color)}>{section.faction}</div>
           <ul className="space-y-1.5">
             {section.tips.map((tip, i) => (
-              <li key={i} className="flex gap-2 items-start text-[#888] text-xs leading-relaxed">
-                <span className="text-[#555] shrink-0 mt-0.5">—</span>
+              <li key={i} className="flex gap-2 items-start text-tertiary text-xs leading-relaxed">
+                <span className="text-faint shrink-0 mt-0.5">—</span>
                 <span>{tip}</span>
               </li>
             ))}
@@ -252,28 +252,28 @@ export const HowToPlayModal: React.FC<HowToPlayModalProps> = ({ isOpen, onClose 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-[150] bg-backdrop backdrop-blur-sm flex items-center justify-center p-4"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            className="w-full max-w-lg bg-[#141414] border border-[#2a2a2a] rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+            className="w-full max-w-lg bg-elevated border border-default rounded-3xl overflow-hidden shadow-2xl flex flex-col"
             style={{ maxHeight: '88dvh' }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-[#222] shrink-0">
+            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-subtle shrink-0">
               <div>
-                <h2 className="text-lg font-thematic text-white tracking-wide uppercase">How to Play</h2>
-                <p className="text-[#555] text-xs font-mono">The Assembly — Rules Reference</p>
+                <h2 className="text-lg font-thematic text-primary tracking-wide uppercase">How to Play</h2>
+                <p className="text-faint text-xs font-mono">The Assembly — Rules Reference</p>
               </div>
-              <button onClick={onClose} className="text-[#444] hover:text-white transition-colors p-1">
+              <button onClick={onClose} className="text-ghost hover:text-white transition-colors p-1">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Tab grid - 2 rows of 3 */}
-            <div className="grid grid-cols-3 gap-1 border-b border-[#222] shrink-0 px-4 pt-3 pb-0">
+            <div className="grid grid-cols-3 gap-1 border-b border-subtle shrink-0 px-4 pt-3 pb-0">
               {TABS.map(tab => (
                 <button
                   key={tab.id}
@@ -281,8 +281,8 @@ export const HowToPlayModal: React.FC<HowToPlayModalProps> = ({ isOpen, onClose 
                   className={cn(
                     'flex items-center justify-center gap-1.5 px-2 py-2 rounded-t-lg text-xs font-mono uppercase tracking-widest transition-all',
                     activeTab === tab.id
-                      ? 'bg-[#1e1e1e] text-white border-t border-l border-r border-[#2a2a2a]'
-                      : 'text-[#555] hover:text-[#888]'
+                      ? 'bg-surface text-primary border-t border-l border-r border-default'
+                      : 'text-faint hover:text-tertiary'
                   )}
                 >
                   {tab.icon}
@@ -307,10 +307,10 @@ export const HowToPlayModal: React.FC<HowToPlayModalProps> = ({ isOpen, onClose 
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-[#222] shrink-0">
+            <div className="px-6 py-4 border-t border-subtle shrink-0">
               <button
                 onClick={onClose}
-                className="w-full py-2.5 bg-[#222] text-white rounded-xl hover:bg-[#2a2a2a] transition-all font-thematic text-sm uppercase tracking-widest border border-[#333]"
+                className="w-full py-2.5 bg-card text-primary rounded-xl hover:bg-hover transition-all font-thematic text-sm uppercase tracking-widest border border-default"
               >
                 Back to Lobby
               </button>

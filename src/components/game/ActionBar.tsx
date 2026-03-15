@@ -86,15 +86,15 @@ export const ActionBar = ({ gameState, me, user, showDebug, onOpenLog, onPlayAga
   };
 
   return (
-    <div className="shrink-0 bg-[#1a1a1a] border-t border-[#222] flex flex-col">
+    <div className="shrink-0 bg-surface border-t border-subtle flex flex-col">
       {/* Phase status */}
-      <div className="px-[2vw] py-[1.5vh] bg-white/5 border-b border-[#222] flex justify-between items-center">
+      <div className="px-[2vw] py-[1.5vh] bg-white/5 border-b border-subtle flex justify-between items-center">
         <div className="min-w-0 flex-1 mr-2">
-          <div className="text-responsive-xs uppercase tracking-[0.2em] text-[#666] font-mono mb-1">Current Phase</div>
-          <div className="text-responsive-sm font-serif italic text-white">{phaseLabel()}</div>
+          <div className="text-responsive-xs uppercase tracking-[0.2em] text-muted font-mono mb-1">Current Phase</div>
+          <div className="text-responsive-sm font-serif italic text-primary">{phaseLabel()}</div>
           {/* Phase hints — shown for players with fewer than 5 games */}
           {user && (user.stats?.gamesPlayed ?? 0) < 5 && phaseHint() && (
-            <div className="text-responsive-xs text-[#555] font-mono mt-1 leading-tight truncate">
+            <div className="text-responsive-xs text-faint font-mono mt-1 leading-tight truncate">
               {phaseHint()}
             </div>
           )}
@@ -103,7 +103,7 @@ export const ActionBar = ({ gameState, me, user, showDebug, onOpenLog, onPlayAga
           <Tooltip content={isVoiceActive ? "Mute Mic" : "Unmute Mic"}>
             <button
               onClick={() => { playSound('click'); setIsVoiceActive(!isVoiceActive); }}
-              className={cn("p-[1vh] rounded-full transition-colors", isVoiceActive ? "bg-red-900/40 text-red-500" : "bg-[#222] text-[#666]")}
+              className={cn("p-[1vh] rounded-full transition-colors", isVoiceActive ? "bg-red-900/40 text-red-500" : "bg-card text-muted")}
             >
               {isVoiceActive ? <Mic className="w-[2vh] h-[2vh]" /> : <MicOff className="w-[2vh] h-[2vh]" />}
             </button>
@@ -111,7 +111,7 @@ export const ActionBar = ({ gameState, me, user, showDebug, onOpenLog, onPlayAga
           <Tooltip content={isVideoActive ? "Stop Video" : "Start Video"}>
             <button
               onClick={() => { playSound('click'); setIsVideoActive(!isVideoActive); }}
-              className={cn("p-[1vh] rounded-full transition-colors", isVideoActive ? "bg-red-900/40 text-red-500" : "bg-[#222] text-[#666]")}
+              className={cn("p-[1vh] rounded-full transition-colors", isVideoActive ? "bg-red-900/40 text-red-500" : "bg-card text-muted")}
             >
               {isVideoActive ? <Video className="w-[2vh] h-[2vh]" /> : <VideoOff className="w-[2vh] h-[2vh]" />}
             </button>
@@ -194,11 +194,11 @@ export const ActionBar = ({ gameState, me, user, showDebug, onOpenLog, onPlayAga
         {/* GameOver summary */}
         {gameState.phase === 'GameOver' && (
           <div className="flex flex-col gap-[1vh] w-full max-w-xs h-full justify-center">
-            <div className="text-center p-[1vh] sm:p-[2vh] rounded-2xl border-2 mb-2 bg-[#222] border-[#333] text-[#666]">
+            <div className="text-center p-[1vh] sm:p-[2vh] rounded-2xl border-2 mb-2 bg-card border-default text-muted">
               <div className="text-responsive-xl font-thematic tracking-wide uppercase">Game Over</div>
               <div className="text-responsive-xs font-mono uppercase tracking-widest">See Assembly Results</div>
             </div>
-            <button onClick={onPlayAgain} className="py-[1vh] sm:py-[1.5vh] bg-white text-black font-thematic text-responsive-xl rounded-xl hover:bg-gray-200 transition-all shadow-xl shadow-white/5">
+            <button onClick={onPlayAgain} className="py-[1vh] sm:py-[1.5vh] btn-primary font-thematic text-responsive-xl rounded-xl hover:bg-subtle transition-all shadow-xl shadow-white/5">
               Play Again
             </button>
           </div>
@@ -209,12 +209,12 @@ export const ActionBar = ({ gameState, me, user, showDebug, onOpenLog, onPlayAga
           <div className="flex flex-col gap-[1vh] w-full max-w-xs h-full justify-center">
             <button
               onClick={() => { playSound('click'); socket.emit('toggleReady'); }}
-              className={cn('py-[1.5vh] font-thematic text-responsive-xl rounded-lg shadow-xl transition-all active:scale-95', me?.isReady ? 'bg-emerald-500 text-white shadow-emerald-500/10' : 'bg-white text-black shadow-white/5')}
+              className={cn('py-[1.5vh] font-thematic text-responsive-xl rounded-lg shadow-xl transition-all active:scale-95', me?.isReady ? 'bg-emerald-500 text-white shadow-emerald-500/10' : 'btn-primary shadow-white/5')}
             >
               {me?.isReady ? 'Ready!' : 'Ready Up'}
             </button>
             <div className="text-center">
-              <span className="text-responsive-xs uppercase tracking-widest text-[#666]">
+              <span className="text-responsive-xs uppercase tracking-widest text-muted">
                 {gameState.players.filter(p => !p.isAI && p.isReady).length} / {gameState.players.filter(p => !p.isAI).length} Players Ready
               </span>
             </div>
@@ -225,13 +225,13 @@ export const ActionBar = ({ gameState, me, user, showDebug, onOpenLog, onPlayAga
       {/* Log bar */}
       <button
         onClick={() => { playSound('click'); onOpenLog(); }}
-        className="h-[5vh] sm:h-[6vh] px-[2vw] flex items-center gap-3 bg-[#141414] hover:bg-[#1a1a1a] transition-colors border-t border-[#222] group"
+        className="h-[5vh] sm:h-[6vh] px-[2vw] flex items-center gap-3 bg-elevated hover:bg-surface transition-colors border-t border-subtle group"
       >
-        <Scroll className="w-[2vh] h-[2vh] text-white group-hover:text-red-500 transition-colors" />
-        <div className="flex-1 text-responsive-xs text-[#666] truncate text-left italic">
+        <Scroll className="w-[2vh] h-[2vh] text-primary group-hover:text-red-500 transition-colors" />
+        <div className="flex-1 text-responsive-xs text-muted truncate text-left italic">
           {lastEntry}
         </div>
-        <div className="text-responsive-xs uppercase tracking-widest text-[#444] font-mono">Log</div>
+        <div className="text-responsive-xs uppercase tracking-widest text-ghost font-mono">Log</div>
       </button>
     </div>
   );

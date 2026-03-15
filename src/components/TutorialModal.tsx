@@ -28,18 +28,18 @@ const STEPS: TutorialStep[] = [
     title: 'The Assembly',
     subtitle: 'A game of hidden loyalty',
     icon: <Shield className="w-8 h-8" />,
-    accentColor: 'text-white',
+    accentColor: 'text-primary',
     content: (
       <div className="space-y-4">
-        <p className="text-[#aaa] leading-relaxed">
-          The world ended with <span className="text-white font-medium">The Crisis</span>. What remains is The Assembly — a council of delegates trying to govern the ruins.
+        <p className="text-secondary leading-relaxed">
+          The world ended with <span className="text-primary font-medium">The Crisis</span>. What remains is The Assembly — a council of delegates trying to govern the ruins.
         </p>
-        <p className="text-[#aaa] leading-relaxed">
+        <p className="text-secondary leading-relaxed">
           But not everyone wants to restore order. Some want to build a new State — and one among them, the <span className="text-red-400 font-medium">Overseer</span>, is waiting to seize total power.
         </p>
-        <div className="bg-[#222] rounded-xl p-4 border border-[#333]">
-          <p className="text-[#888] text-sm font-mono uppercase tracking-widest mb-2">The Assembly is</p>
-          <p className="text-white text-sm leading-relaxed">A <strong>social deduction game</strong> for 5–10 players. You are given a secret role. Use it, lie with it, or die by it.</p>
+        <div className="bg-card rounded-xl p-4 border border-default">
+          <p className="text-tertiary text-sm font-mono uppercase tracking-widest mb-2">The Assembly is</p>
+          <p className="text-primary text-sm leading-relaxed">A <strong>social deduction game</strong> for 5–10 players. You are given a secret role. Use it, lie with it, or die by it.</p>
         </div>
       </div>
     ),
@@ -49,28 +49,28 @@ const STEPS: TutorialStep[] = [
     title: 'Secret Roles',
     subtitle: 'Three factions, one truth',
     icon: <Eye className="w-8 h-8" />,
-    accentColor: 'text-white',
+    accentColor: 'text-primary',
     content: (
       <div className="space-y-3">
         <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4 flex gap-4 items-start">
           <Scale className="w-6 h-6 text-blue-400 shrink-0 mt-0.5" />
           <div>
             <div className="text-blue-400 font-bold uppercase tracking-wider text-sm mb-1">Civil</div>
-            <p className="text-[#aaa] text-sm leading-relaxed">The majority faction. You know nothing about who else is Civil. Enact <strong>5 Civil directives</strong> to win — or execute the Overseer.</p>
+            <p className="text-secondary text-sm leading-relaxed">The majority faction. You know nothing about who else is Civil. Enact <strong>5 Civil directives</strong> to win — or execute the Overseer.</p>
           </div>
         </div>
         <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-4 flex gap-4 items-start">
           <Eye className="w-6 h-6 text-red-400 shrink-0 mt-0.5" />
           <div>
             <div className="text-red-400 font-bold uppercase tracking-wider text-sm mb-1">State</div>
-            <p className="text-[#aaa] text-sm leading-relaxed">The minority faction. You know who your allies are. Enact <strong>6 State directives</strong> to win — or get the Overseer elected Chancellor.</p>
+            <p className="text-secondary text-sm leading-relaxed">The minority faction. You know who your allies are. Enact <strong>6 State directives</strong> to win — or get the Overseer elected Chancellor.</p>
           </div>
         </div>
         <div className="bg-red-900/30 border border-red-600/50 rounded-xl p-4 flex gap-4 items-start">
           <OverseerIcon className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
           <div>
             <div className="text-red-500 font-bold uppercase tracking-wider text-sm mb-1">The Overseer</div>
-            <p className="text-[#aaa] text-sm leading-relaxed">A State agent. You win if State wins. If you are <strong>elected Chancellor after 3 State directives</strong>, the game ends immediately.</p>
+            <p className="text-secondary text-sm leading-relaxed">A State agent. You win if State wins. If you are <strong>elected Chancellor after 3 State directives</strong>, the game ends immediately.</p>
           </div>
         </div>
       </div>
@@ -95,13 +95,13 @@ const STEPS: TutorialStep[] = [
               <span className="text-yellow-400 text-xs font-bold">{step.num}</span>
             </div>
             <div>
-              <div className="text-white text-sm font-medium">{step.label}</div>
-              <div className="text-[#888] text-xs leading-relaxed mt-0.5">{step.desc}</div>
+              <div className="text-primary text-sm font-medium">{step.label}</div>
+              <div className="text-tertiary text-xs leading-relaxed mt-0.5">{step.desc}</div>
             </div>
           </div>
         ))}
-        <div className="bg-[#222] rounded-xl p-3 border border-[#333] mt-2">
-          <p className="text-[#666] text-xs font-mono">If 3 elections fail in a row, a <span className="text-orange-400">chaos policy</span> is drawn automatically and enacted without a vote.</p>
+        <div className="bg-card rounded-xl p-3 border border-default mt-2">
+          <p className="text-muted text-xs font-mono">If 3 elections fail in a row, a <span className="text-orange-400">chaos policy</span> is drawn automatically and enacted without a vote.</p>
         </div>
       </div>
     ),
@@ -114,25 +114,25 @@ const STEPS: TutorialStep[] = [
     accentColor: 'text-purple-400',
     content: (
       <div className="space-y-4">
-        <p className="text-[#aaa] leading-relaxed text-sm">
-          Votes are <strong className="text-white">simultaneous and hidden</strong> until revealed. You can't see how others voted before you cast yours.
+        <p className="text-secondary leading-relaxed text-sm">
+          Votes are <strong className="text-primary">simultaneous and hidden</strong> until revealed. You can't see how others voted before you cast yours.
         </p>
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-xl p-3 text-center">
             <div className="text-emerald-400 font-bold text-lg font-thematic">AYE</div>
-            <p className="text-[#888] text-xs mt-1">Support this government</p>
+            <p className="text-tertiary text-xs mt-1">Support this government</p>
           </div>
           <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-3 text-center">
             <div className="text-red-400 font-bold text-lg font-thematic">NAY</div>
-            <p className="text-[#888] text-xs mt-1">Block this government</p>
+            <p className="text-tertiary text-xs mt-1">Block this government</p>
           </div>
         </div>
-        <div className="bg-[#222] rounded-xl p-4 border border-[#333] space-y-2">
-          <div className="text-[#888] text-xs font-mono uppercase tracking-widest">Declarations</div>
-          <p className="text-[#aaa] text-sm leading-relaxed">
+        <div className="bg-card rounded-xl p-4 border border-default space-y-2">
+          <div className="text-tertiary text-xs font-mono uppercase tracking-widest">Declarations</div>
+          <p className="text-secondary text-sm leading-relaxed">
             After a policy is enacted, the President and Chancellor publicly declare what cards they drew and passed. These claims can be <span className="text-yellow-400">true or false</span> — the table must decide who to believe.
           </p>
-          <p className="text-[#666] text-xs italic">Contradictions between the President's and Chancellor's declarations are your most important clue.</p>
+          <p className="text-muted text-xs italic">Contradictions between the President's and Chancellor's declarations are your most important clue.</p>
         </div>
       </div>
     ),
@@ -145,7 +145,7 @@ const STEPS: TutorialStep[] = [
     accentColor: 'text-orange-400',
     content: (
       <div className="space-y-3">
-        <p className="text-[#aaa] text-sm leading-relaxed">
+        <p className="text-secondary text-sm leading-relaxed">
           Each time a State directive is enacted, the President may unlock a special executive power. These grow more dangerous as State advances.
         </p>
         {[
@@ -154,15 +154,15 @@ const STEPS: TutorialStep[] = [
           { name: 'Special Election', desc: 'Choose who will be the next President, skipping normal rotation.' },
           { name: 'Execution', desc: 'Permanently eliminate a player. If it\'s the Overseer, Civil wins instantly.' },
         ].map(action => (
-          <div key={action.name} className="flex gap-3 items-start bg-[#222] rounded-lg p-3 border border-[#2a2a2a]">
+          <div key={action.name} className="flex gap-3 items-start bg-card rounded-lg p-3 border border-default">
             <Zap className="w-4 h-4 text-orange-400 shrink-0 mt-0.5" />
             <div>
               <div className="text-orange-400 text-sm font-medium">{action.name}</div>
-              <div className="text-[#888] text-xs mt-0.5">{action.desc}</div>
+              <div className="text-tertiary text-xs mt-0.5">{action.desc}</div>
             </div>
           </div>
         ))}
-        <p className="text-[#555] text-xs italic">Executive actions are given to the current President and must be used before the next round begins.</p>
+        <p className="text-faint text-xs italic">Executive actions are given to the current President and must be used before the next round begins.</p>
       </div>
     ),
   },
@@ -174,7 +174,7 @@ const STEPS: TutorialStep[] = [
     accentColor: 'text-yellow-400',
     content: (
       <div className="space-y-3">
-        <p className="text-[#aaa] text-sm leading-relaxed">
+        <p className="text-secondary text-sm leading-relaxed">
           At the start of each game, some players are secretly assigned a <span className="text-yellow-400 font-medium">Title Role</span> — a one-time ability that fires at a specific moment.
         </p>
         <div className="grid grid-cols-1 gap-2">
@@ -190,13 +190,13 @@ const STEPS: TutorialStep[] = [
               <div className="w-2 h-2 rounded-full bg-yellow-500/50 shrink-0 mt-1.5" />
               <div>
                 <span className="text-yellow-400 text-sm font-medium">{role.name}</span>
-                <span className="text-[#555] text-xs font-mono ml-2">({role.when})</span>
-                <p className="text-[#888] text-xs mt-0.5">{role.desc}</p>
+                <span className="text-faint text-xs font-mono ml-2">({role.when})</span>
+                <p className="text-tertiary text-xs mt-0.5">{role.desc}</p>
               </div>
             </div>
           ))}
         </div>
-        <p className="text-[#555] text-xs italic">Title abilities are single-use. Check your Dossier to see if you have one.</p>
+        <p className="text-faint text-xs italic">Title abilities are single-use. Check your Dossier to see if you have one.</p>
       </div>
     ),
   },
@@ -208,7 +208,7 @@ const STEPS: TutorialStep[] = [
     accentColor: 'text-emerald-400',
     content: (
       <div className="space-y-4">
-        <p className="text-[#aaa] text-sm leading-relaxed">
+        <p className="text-secondary text-sm leading-relaxed">
           Every player is secretly assigned a <span className="text-emerald-400 font-medium">Personal Agenda</span> — a hidden objective that earns bonus XP and IP if completed, regardless of whether your faction wins or loses.
         </p>
         <div className="bg-emerald-900/15 border border-emerald-500/25 rounded-xl p-4 space-y-2">
@@ -220,19 +220,19 @@ const STEPS: TutorialStep[] = [
               'The game must end before round (player count + 3)',
               'No chaos policy is enacted during the game',
             ].map(a => (
-              <div key={a} className="flex gap-2 items-start text-[#aaa]">
+              <div key={a} className="flex gap-2 items-start text-secondary">
                 <CheckCircle className="w-3.5 h-3.5 text-emerald-500/50 shrink-0 mt-0.5" />
                 <span>{a}</span>
               </div>
             ))}
           </div>
         </div>
-        <div className="bg-[#222] rounded-xl p-3 border border-[#333]">
-          <p className="text-[#666] text-xs leading-relaxed">
+        <div className="bg-card rounded-xl p-3 border border-default">
+          <p className="text-muted text-xs leading-relaxed">
             Completing your agenda awards <span className="text-emerald-400">+100 XP</span> and bonus IP — the same as winning with your faction. Win <em>and</em> complete your agenda for double rewards.
           </p>
         </div>
-        <p className="text-[#555] text-xs italic">Your agenda is visible in your Dossier at all times. Others can't see it.</p>
+        <p className="text-faint text-xs italic">Your agenda is visible in your Dossier at all times. Others can't see it.</p>
       </div>
     ),
   },
@@ -272,7 +272,7 @@ const STEPS: TutorialStep[] = [
         ].map(tip => (
           <div key={tip.heading} className={cn('rounded-xl p-3 border', tip.bg)}>
             <div className={cn('text-sm font-medium mb-1', tip.color)}>{tip.heading}</div>
-            <p className="text-[#888] text-xs leading-relaxed">{tip.body}</p>
+            <p className="text-tertiary text-xs leading-relaxed">{tip.body}</p>
           </div>
         ))}
       </div>
@@ -306,31 +306,31 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onComplete
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-[200] bg-backdrop-heavy backdrop-blur-sm flex items-center justify-center p-4"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="w-full max-w-md bg-[#141414] border border-[#2a2a2a] rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+            className="w-full max-w-md bg-elevated border border-default rounded-3xl overflow-hidden shadow-2xl flex flex-col"
             style={{ maxHeight: '90dvh' }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-[#222] shrink-0">
+            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-subtle shrink-0">
               <div className="flex items-center gap-3">
-                <div className="text-[#666]">{current.icon}</div>
+                <div className="text-muted">{current.icon}</div>
                 <div>
                   <div className={cn('text-lg font-thematic tracking-wide uppercase leading-none', current.accentColor)}>
                     {current.title}
                   </div>
                   {current.subtitle && (
-                    <div className="text-[#555] text-xs font-mono mt-0.5">{current.subtitle}</div>
+                    <div className="text-faint text-xs font-mono mt-0.5">{current.subtitle}</div>
                   )}
                 </div>
               </div>
               <button
                 onClick={onSkip}
-                className="text-[#444] hover:text-[#888] transition-colors p-1"
+                className="text-ghost hover:text-tertiary transition-colors p-1"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -352,7 +352,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onComplete
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-5 border-t border-[#222] shrink-0 space-y-4">
+            <div className="px-6 py-5 border-t border-subtle shrink-0 space-y-4">
               {/* Step indicators */}
               <div className="flex items-center justify-center gap-1.5">
                 {STEPS.map((_, i) => (
@@ -361,7 +361,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onComplete
                     onClick={() => { setDirection(i > step ? 1 : -1); setStep(i); }}
                     className={cn(
                       'rounded-full transition-all',
-                      i === step ? 'w-6 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-[#333] hover:bg-[#555]'
+                      i === step ? 'w-6 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-subtle hover:bg-strong'
                     )}
                   />
                 ))}
@@ -372,7 +372,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onComplete
                 {!isFirst && (
                   <button
                     onClick={goPrev}
-                    className="flex items-center gap-1.5 px-4 py-2.5 bg-[#222] text-[#888] rounded-xl border border-[#333] hover:bg-[#2a2a2a] hover:text-white transition-all text-sm font-mono"
+                    className="flex items-center gap-1.5 px-4 py-2.5 bg-card text-tertiary rounded-xl border border-default hover:bg-hover hover:text-white transition-all text-sm font-mono"
                   >
                     <ChevronLeft className="w-4 h-4" />
                     Back
@@ -384,7 +384,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onComplete
                     'flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-thematic uppercase tracking-widest transition-all',
                     isLast
                       ? 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-900/20'
-                      : 'bg-white text-black hover:bg-gray-200'
+                      : 'btn-primary hover:bg-subtle'
                   )}
                 >
                   {isLast ? (
@@ -398,7 +398,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onComplete
               {/* Skip */}
               <button
                 onClick={onSkip}
-                className="w-full text-center text-[#444] hover:text-[#666] text-xs font-mono uppercase tracking-widest transition-colors"
+                className="w-full text-center text-ghost hover:text-muted text-xs font-mono uppercase tracking-widest transition-colors"
               >
                 Skip tutorial
               </button>

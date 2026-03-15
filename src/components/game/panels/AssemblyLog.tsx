@@ -17,7 +17,7 @@ const getLogColor = (entry: string) => {
   if (entry.includes('executed') || entry.includes('killed') || entry.includes('Eliminated')) return 'text-red-600 font-bold border-red-900/50';
   if (entry.includes('elected') || entry.includes('nominated')) return 'text-yellow-500 border-yellow-900/30';
   if (entry.includes('veto') || entry.includes('Veto')) return 'text-purple-400 border-purple-900/30';
-  return 'text-[#aaa] border-[#333]';
+  return 'text-secondary border-default';
 };
 
 export const AssemblyLog = ({ log, isOpen, onClose, showDebug }: AssemblyLogProps) => {
@@ -38,27 +38,27 @@ export const AssemblyLog = ({ log, isOpen, onClose, showDebug }: AssemblyLogProp
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="fixed inset-0 z-[150] bg-[#1a1a1a] flex flex-col"
+          className="fixed inset-0 z-[150] bg-surface flex flex-col"
         >
-          <div className="h-14 px-4 flex items-center justify-between border-b border-[#222] shrink-0 bg-[#1a1a1a]">
+          <div className="h-14 px-4 flex items-center justify-between border-b border-subtle shrink-0 bg-surface">
             <div className="flex items-center gap-3">
-              <Scroll className="w-4 h-4 text-white" />
-              <h3 className="font-thematic text-lg uppercase tracking-wider text-white">Assembly Log</h3>
+              <Scroll className="w-4 h-4 text-primary" />
+              <h3 className="font-thematic text-lg uppercase tracking-wider text-primary">Assembly Log</h3>
             </div>
-            <button onClick={onClose} className="p-2 text-[#666] hover:text-white transition-colors bg-[#222] rounded-xl">
+            <button onClick={onClose} className="p-2 text-muted hover:text-white transition-colors bg-card rounded-xl">
               <X className="w-5 h-5" />
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar overscroll-contain bg-[#141414]">
+          <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar overscroll-contain bg-elevated">
             {log.filter(entry => showDebug || !entry.includes('DEBUG:')).map((entry, i) => {
               if (entry.startsWith('--- Round')) {
                 return (
                   <div key={i} className="w-full py-6 flex items-center justify-center">
                     <div className="flex items-center gap-4">
                       <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#333]" />
-                      <div className="px-4 py-1.5 rounded-full bg-[#1a1a1a] border border-[#333] flex items-center gap-2 shadow-xl">
+                      <div className="px-4 py-1.5 rounded-full bg-surface border border-default flex items-center gap-2 shadow-xl">
                         <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                        <span className="text-[10px] font-thematic uppercase tracking-[0.2em] text-white">
+                        <span className="text-[10px] font-thematic uppercase tracking-[0.2em] text-primary">
                           {entry.replace(/---/g, '').trim()}
                         </span>
                       </div>

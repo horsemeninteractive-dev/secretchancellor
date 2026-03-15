@@ -46,7 +46,7 @@ export const Inventory: React.FC<InventoryProps> = ({ user, handleEquip, playSou
       {/* Categories */}
       <div className="flex flex-col gap-2 w-full max-w-lg mx-auto mb-8">
         {/* Row 1 */}
-        <div className="flex gap-1 sm:gap-2 p-1 bg-[#141414] rounded-2xl border border-[#222]">
+        <div className="flex gap-1 sm:gap-2 p-1 bg-elevated rounded-2xl border border-subtle">
           {categories.slice(0, 3).map((cat) => (
             <button
               key={cat.id}
@@ -56,7 +56,7 @@ export const Inventory: React.FC<InventoryProps> = ({ user, handleEquip, playSou
               }}
               className={cn(
                 "flex-1 px-3 sm:px-6 py-2 rounded-xl text-[9px] sm:text-[10px] font-mono uppercase tracking-widest transition-all whitespace-nowrap",
-                category === cat.id ? "bg-red-900 text-white" : "text-[#444] hover:text-[#666]"
+                category === cat.id ? "bg-red-900 text-white" : "text-ghost hover:text-muted"
               )}
             >
               {cat.label}
@@ -64,7 +64,7 @@ export const Inventory: React.FC<InventoryProps> = ({ user, handleEquip, playSou
           ))}
         </div>
         {/* Row 2 */}
-        <div className="flex gap-1 sm:gap-2 p-1 bg-[#141414] rounded-2xl border border-[#222]">
+        <div className="flex gap-1 sm:gap-2 p-1 bg-elevated rounded-2xl border border-subtle">
           {categories.slice(3, 6).map((cat) => (
             <button
               key={cat.id}
@@ -74,7 +74,7 @@ export const Inventory: React.FC<InventoryProps> = ({ user, handleEquip, playSou
               }}
               className={cn(
                 "flex-1 px-3 sm:px-6 py-2 rounded-xl text-[9px] sm:text-[10px] font-mono uppercase tracking-widest transition-all whitespace-nowrap",
-                category === cat.id ? "bg-red-900 text-white" : "text-[#444] hover:text-[#666]"
+                category === cat.id ? "bg-red-900 text-white" : "text-ghost hover:text-muted"
               )}
             >
               {cat.label}
@@ -94,15 +94,15 @@ export const Inventory: React.FC<InventoryProps> = ({ user, handleEquip, playSou
             (item.type === 'background' && (user.activeBackground === item.id || (!user.activeBackground && item.id === 'background-default')));
 
           return (
-            <div key={item.id} className="bg-[#141414] border border-[#222] rounded-3xl p-6 flex flex-col items-center text-center">
-              <div className="relative w-20 h-20 rounded-2xl bg-[#222] border border-[#333] mb-4 flex items-center justify-center">
+            <div key={item.id} className="bg-elevated border border-subtle rounded-3xl p-6 flex flex-col items-center text-center">
+              <div className="relative w-20 h-20 rounded-2xl bg-card border border-default mb-4 flex items-center justify-center">
                   {item.type === 'music' ? (
                       <button onClick={() => playPreview(item)} className="w-full h-full flex items-center justify-center">
-                          {playingItemId === item.id ? <Pause className="w-8 h-8 text-white" /> : <Play className="w-8 h-8 text-white" />}
+                          {playingItemId === item.id ? <Pause className="w-8 h-8 text-primary" /> : <Play className="w-8 h-8 text-primary" />}
                       </button>
                   ) : item.type === 'frame' ? (
                       <>
-                        {user.avatarUrl ? <img src={getProxiedUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover" /> : <UserIcon className="w-10 h-10 text-[#444]" />}
+                        {user.avatarUrl ? <img src={getProxiedUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover" /> : <UserIcon className="w-10 h-10 text-ghost" />}
                         <div className={cn(
                           "absolute inset-0 border-4 rounded-2xl pointer-events-none",
                           getFrameStyles(item.id)
@@ -123,8 +123,8 @@ export const Inventory: React.FC<InventoryProps> = ({ user, handleEquip, playSou
                       <div className="text-[8px] font-mono uppercase">{item.type}</div>
                   )}
               </div>
-              <h4 className="font-serif italic text-lg mb-1 text-white">{item.name}</h4>
-              <p className="text-[10px] text-[#666] font-mono uppercase mb-1">{item.type === 'policy' ? 'Directive Style' : item.type}</p>
+              <h4 className="font-serif italic text-lg mb-1 text-primary">{item.name}</h4>
+              <p className="text-[10px] text-muted font-mono uppercase mb-1">{item.type === 'policy' ? 'Directive Style' : item.type}</p>
               <p className={cn("text-[9px] font-mono uppercase mb-4", getRarity(item.price).color)}>{getRarity(item.price).name}</p>
               <button 
                 onClick={() => {
@@ -134,7 +134,7 @@ export const Inventory: React.FC<InventoryProps> = ({ user, handleEquip, playSou
                 disabled={isEquipped}
                 className={cn(
                   "w-full py-2 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-all",
-                  isEquipped ? "bg-emerald-900/20 text-emerald-500 border border-emerald-900/50" : "bg-[#222] text-white hover:bg-[#333]"
+                  isEquipped ? "bg-emerald-900/20 text-emerald-500 border border-emerald-900/50" : "bg-card text-white hover:bg-subtle"
                 )}
               >
                 {isEquipped ? 'Equipped' : 'Equip'}

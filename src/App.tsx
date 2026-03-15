@@ -90,6 +90,7 @@ export default function App() {
   const [ttsEngine, setTtsEngine] = useState<string>(localStorage.getItem('ttsEngine') || 'browser');
   const [isAiVoiceEnabled, setIsAiVoiceEnabled] = useState(() => localStorage.getItem('isAiVoiceEnabled') !== 'false');
   const [uiScaleSetting, setUiScaleSetting] = useState(() => parseFloat(localStorage.getItem('uiScaleSetting') || '1'));
+  const [isLightMode, setIsLightMode] = useState(() => localStorage.getItem('isLightMode') === 'true');
   const musicAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Persist settings
@@ -102,7 +103,13 @@ export default function App() {
     localStorage.setItem('ttsEngine', ttsEngine);
     localStorage.setItem('isAiVoiceEnabled', String(isAiVoiceEnabled));
     localStorage.setItem('uiScaleSetting', String(uiScaleSetting));
-  }, [isMusicOn, isSoundOn, musicVolume, soundVolume, ttsVoice, isAiVoiceEnabled, uiScaleSetting]);
+    localStorage.setItem('isLightMode', String(isLightMode));
+  }, [isMusicOn, isSoundOn, musicVolume, soundVolume, ttsVoice, isAiVoiceEnabled, uiScaleSetting, isLightMode]);
+
+  // Apply theme to document root so portals (ReactDOM.createPortal) inherit it
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isLightMode ? 'light' : 'dark');
+  }, [isLightMode]);
 
   // Power Used TTS
   useEffect(() => {
@@ -352,7 +359,10 @@ export default function App() {
   };
 
   return (
-    <div className={cn("h-[100dvh] bg-[#0a0a0a] flex flex-col bg-texture", isDiscord && isMobile ? "pt-12" : "")}>
+    <div
+      className={cn("h-[100dvh] bg-base flex flex-col bg-texture", isDiscord && isMobile ? "pt-12" : "")}
+      data-theme={isLightMode ? "light" : "dark"}
+    >
       <UpdateBanner visible={updateAvailable} />
 
       {error && (
@@ -362,7 +372,7 @@ export default function App() {
       )}
 
       {loading ? (
-        <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white font-mono">Loading...</div>
+        <div className="min-h-screen bg-base flex items-center justify-center text-primary font-mono">Loading...</div>
       ) : !token || !user ? (
         <Auth onAuthSuccess={handleAuthSuccess} />
       ) : !isInteracted && !document.fullscreenElement ? (
@@ -370,21 +380,21 @@ export default function App() {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-md bg-[#1a1a1a] border border-[#222] rounded-3xl p-8 shadow-2xl text-center"
+            className="w-full max-w-md bg-surface border border-subtle rounded-3xl p-8 shadow-2xl text-center"
           >
-            <div className="w-20 h-20 bg-[#141414] rounded-2xl flex items-center justify-center border border-white/40 mx-auto mb-6 overflow-hidden">
+            <div className="w-20 h-20 bg-elevated rounded-2xl flex items-center justify-center border border-white/40 mx-auto mb-6 overflow-hidden">
               <img src={getProxiedUrl("https://storage.googleapis.com/secretchancellor/SC.png")} alt="The Assembly Logo" className="w-full h-full object-contain p-2" referrerPolicy="no-referrer" />
             </div>
-            <h2 className="text-3xl font-thematic text-white tracking-wide uppercase mb-2">Welcome, {user.username}</h2>
+            <h2 className="text-3xl font-thematic text-primary tracking-wide uppercase mb-2">Welcome, {user.username}</h2>
             <div className="space-y-4 mb-8">
-              <p className="text-[#888] text-xs font-serif italic leading-relaxed px-4">
+              <p className="text-tertiary text-xs font-serif italic leading-relaxed px-4">
                 "The old world ended with The Crisis. Now, only The Assembly stands between us and total collapse. Will you defend the Civil Charter, or will you build the new State?"
               </p>
-              <p className="text-[#666] text-[10px] font-mono uppercase tracking-[0.2em]">The Assembly awaits your assessment.</p>
+              <p className="text-muted text-[10px] font-mono uppercase tracking-[0.2em]">The Assembly awaits your assessment.</p>
             </div>
             <button
               onClick={handleEnterAssembly}
-              className="w-full bg-white text-black font-thematic text-2xl py-4 rounded-xl hover:bg-gray-200 transition-all shadow-xl shadow-white/5 uppercase tracking-widest"
+              className="w-full btn-primary font-thematic text-2xl py-4 rounded-xl hover:bg-subtle transition-all shadow-xl shadow-white/5 uppercase tracking-widest"
             >
               Enter Assembly
             </button>
@@ -419,7 +429,8 @@ export default function App() {
                 ttsVoice, setTtsVoice,
                 ttsEngine, setTtsEngine,
                 isAiVoiceEnabled, setIsAiVoiceEnabled,
-                uiScaleSetting, setUiScaleSetting
+                uiScaleSetting, setUiScaleSetting,
+                isLightMode, setIsLightMode
               }}
               onJoinRoom={(roomId) => { setIsProfileOpen(false); handleJoinRoom(roomId); }}
             />
@@ -473,7 +484,8 @@ export default function App() {
                 ttsVoice, setTtsVoice,
                 ttsEngine, setTtsEngine,
                 isAiVoiceEnabled, setIsAiVoiceEnabled,
-                uiScaleSetting, setUiScaleSetting
+                uiScaleSetting, setUiScaleSetting,
+                isLightMode, setIsLightMode
               }}
               roomId={gameState?.roomId}
               mode={gameState?.mode}

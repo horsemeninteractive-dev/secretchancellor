@@ -75,17 +75,17 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({ userId, 
 
   if (loading) {
     return (
-      <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-        <div className="text-white font-mono">Loading profile...</div>
+      <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-backdrop-sm backdrop-blur-sm">
+        <div className="text-primary font-mono">Loading profile...</div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-        <div className="text-white font-mono">Failed to load profile.</div>
-        <button onClick={onClose} className="ml-4 text-white underline">Close</button>
+      <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-backdrop-sm backdrop-blur-sm">
+        <div className="text-primary font-mono">Failed to load profile.</div>
+        <button onClick={onClose} className="ml-4 text-primary underline">Close</button>
       </div>
     );
   }
@@ -101,26 +101,26 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({ userId, 
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0 bg-black/90 backdrop-blur-md"
+        className="absolute inset-0 bg-backdrop-heavy backdrop-blur-md"
       />
       <motion.div 
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className="relative w-full max-w-sm bg-[#1a1a1a] border border-[#222] rounded-[2rem] overflow-hidden shadow-2xl text-white"
+        className="relative w-full max-w-sm bg-surface border border-subtle rounded-[2rem] overflow-hidden shadow-2xl text-primary"
       >
         {/* Header - Matching Profile.tsx */}
-        <div className="p-[3vh] bg-[#141414] border-b border-[#222] flex flex-col items-center gap-[2vh]">
-          <button onClick={onClose} className="absolute top-[3vh] right-[3vh] text-[#444] hover:text-white transition-colors">
+        <div className="p-[3vh] bg-elevated border-b border-subtle flex flex-col items-center gap-[2vh]">
+          <button onClick={onClose} className="absolute top-[3vh] right-[3vh] text-ghost hover:text-white transition-colors">
             <X className="w-[3vh] h-[3vh]" />
           </button>
 
           <div className="relative">
-            <div className="w-[10vh] h-[10vh] rounded-3xl bg-[#222] border border-[#333] flex items-center justify-center overflow-hidden relative">
+            <div className="w-[10vh] h-[10vh] rounded-3xl bg-card border border-default flex items-center justify-center overflow-hidden relative">
               {user.avatarUrl ? (
                 <img src={getProxiedUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover" />
               ) : (
-                <UserIcon className="w-[5vh] h-[5vh] text-[#444]" />
+                <UserIcon className="w-[5vh] h-[5vh] text-ghost" />
               )}
               {user.activeFrame && (
                 <div className={cn(
@@ -135,9 +135,9 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({ userId, 
           </div>
 
           <div className="text-center">
-            <h2 className="text-responsive-xl font-thematic text-white tracking-wide mb-2">{user.username}</h2>
+            <h2 className="text-responsive-xl font-thematic text-primary tracking-wide mb-2">{user.username}</h2>
             <div className="flex justify-center gap-2">
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#222] rounded-lg border border-[#333]">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-card rounded-lg border border-default">
                 <Trophy className="w-[1.8vh] h-[1.8vh] text-yellow-500" />
                 <span className="text-responsive-xs font-mono text-yellow-500">{user.stats.elo} ELO</span>
               </div>
@@ -159,7 +159,7 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({ userId, 
             className={cn(
               "w-full py-[1.5vh] rounded-xl font-mono text-responsive-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all border",
               isFriend 
-                ? "bg-[#222] text-white border-[#333] hover:bg-[#333]" 
+                ? "bg-card text-primary border-default hover:bg-subtle" 
                 : "bg-red-900 text-white border-red-700 hover:bg-red-800"
             )}
           >
@@ -173,11 +173,11 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({ userId, 
 };
 
 const StatCard = ({ label, value, icon }: { label: string; value: string | number; icon?: React.ReactNode }) => (
-  <div className="bg-[#141414] p-3 rounded-xl border border-[#222] flex flex-col gap-1">
-    <div className="flex items-center gap-1.5 text-[#444]">
+  <div className="bg-elevated p-3 rounded-xl border border-subtle flex flex-col gap-1">
+    <div className="flex items-center gap-1.5 text-ghost">
       {icon}
       <div className="text-[9px] uppercase tracking-wider font-mono">{label}</div>
     </div>
-    <div className="text-lg font-serif italic text-white leading-none">{value}</div>
+    <div className="text-lg font-serif italic text-primary leading-none">{value}</div>
   </div>
 );

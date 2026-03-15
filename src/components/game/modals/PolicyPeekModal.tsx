@@ -17,19 +17,19 @@ export const PolicyPeekModal = ({ policies, title, onClose }: PolicyPeekModalPro
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[250] bg-black/90 backdrop-blur-md flex items-center justify-center p-6"
+        className="fixed inset-0 z-[250] bg-backdrop-heavy backdrop-blur-md flex items-center justify-center p-6"
       >
         <motion.div
           initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
-          className="max-w-md w-full bg-[#1a1a1a] border border-[#333] rounded-3xl p-8 text-center space-y-8 shadow-2xl"
+          className="max-w-md w-full bg-surface border border-default rounded-3xl p-8 text-center space-y-8 shadow-2xl"
         >
           <div className="space-y-2">
             <div className="w-12 h-12 bg-yellow-900/20 rounded-full flex items-center justify-center mx-auto border border-yellow-900/50 mb-4">
               <Eye className="w-6 h-6 text-yellow-500" />
             </div>
-            <h3 className="text-[10px] uppercase tracking-[0.2em] text-[#666] font-mono">Directive Preview</h3>
-            <p className="text-lg font-serif italic text-white">{title || "Top 3 directives in the deck:"}</p>
+            <h3 className="text-[10px] uppercase tracking-[0.2em] text-muted font-mono">Directive Preview</h3>
+            <p className="text-lg font-serif italic text-primary">{title || "Top 3 directives in the deck:"}</p>
           </div>
           <div className="flex justify-center gap-4">
             {policies.length > 0 ? policies.map((p, i) => (
@@ -51,14 +51,14 @@ export const PolicyPeekModal = ({ policies, title, onClose }: PolicyPeekModalPro
                 </span>
               </motion.div>
             )) : (
-              <div className="text-[#444] font-mono text-xs italic py-8">
+              <div className="text-ghost font-mono text-xs italic py-8">
                 The pile is currently empty.
               </div>
             )}
           </div>
           <button
             onClick={onClose}
-            className="w-full py-3 bg-[#222] text-white rounded-xl hover:bg-[#333] transition-all text-sm font-serif italic border border-[#333]"
+            className="w-full py-3 bg-card text-primary rounded-xl hover:bg-subtle transition-all text-sm font-serif italic border border-default"
           >
             End Peek
           </button>

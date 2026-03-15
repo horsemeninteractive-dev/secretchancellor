@@ -34,7 +34,7 @@ const AgendaStatusBadge = ({ status }: { status: AgendaStatus }) => {
     </div>
   );
   return (
-    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#333] border border-[#444] text-[#888] text-[10px] font-mono uppercase tracking-widest shrink-0">
+    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-subtle border border-strong text-tertiary text-[10px] font-mono uppercase tracking-widest shrink-0">
       <Clock className="w-3 h-3" />
       <span>Active</span>
     </div>
@@ -48,13 +48,13 @@ export const DossierModal = ({ isOpen, onClose, privateInfo }: DossierModalProps
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6"
+        className="fixed inset-0 z-[100] bg-backdrop backdrop-blur-sm flex items-center justify-center p-6"
       >
-        <div className="max-w-sm w-full bg-[#1a1a1a] border border-[#333] rounded-3xl overflow-hidden shadow-2xl max-h-[95vh] flex flex-col">
+        <div className="max-w-sm w-full bg-surface border border-default rounded-3xl overflow-hidden shadow-2xl max-h-[95vh] flex flex-col">
           <div className="p-[3vh] space-y-[2vh] flex-1 flex flex-col min-h-0">
             <div className="flex items-center justify-between shrink-0">
-              <h3 className="text-responsive-xs uppercase tracking-[0.2em] text-[#666] font-mono">Your Secret Dossier</h3>
-              <button onClick={onClose} className="text-[#444] hover:text-white">
+              <h3 className="text-responsive-xs uppercase tracking-[0.2em] text-muted font-mono">Your Secret Dossier</h3>
+              <button onClick={onClose} className="text-ghost hover:text-white">
                 <X className="w-[2.5vh] h-[2.5vh]" />
               </button>
             </div>
@@ -66,7 +66,7 @@ export const DossierModal = ({ isOpen, onClose, privateInfo }: DossierModalProps
                   'p-[2vh] rounded-2xl border-2 text-center space-y-[1vh] shrink-0',
                   privateInfo.role === 'Civil' ? 'bg-blue-900/10 border-blue-500/30' : 'bg-red-900/10 border-red-500/30'
                 )}>
-                  <div className="text-responsive-xs text-[#888] uppercase tracking-[0.2em] font-mono">Secret Identity</div>
+                  <div className="text-responsive-xs text-tertiary uppercase tracking-[0.2em] font-mono">Secret Identity</div>
                   <div className="flex justify-center">
                     {privateInfo.role === 'Civil'
                       ? <Scale className="w-[6vh] h-[6vh] text-blue-400" />
@@ -80,7 +80,7 @@ export const DossierModal = ({ isOpen, onClose, privateInfo }: DossierModalProps
                   )}>
                     {privateInfo.role === 'Civil' ? 'CIVIL' : privateInfo.role === 'Overseer' ? 'OVERSEER' : 'STATE'}
                   </div>
-                  <div className="text-responsive-xs text-[#666] italic leading-tight">
+                  <div className="text-responsive-xs text-muted italic leading-tight">
                     {privateInfo.role === 'Civil'
                       ? 'Defend the Charter. The Crisis must not consume the Secretariat.'
                       : privateInfo.role === 'Overseer'
@@ -91,14 +91,14 @@ export const DossierModal = ({ isOpen, onClose, privateInfo }: DossierModalProps
 
                 {/* Personal Agenda */}
                 <div className="space-y-[1vh] shrink-0">
-                  <div className="text-responsive-xs uppercase tracking-widest text-[#666] border-b border-[#222] pb-1">Personal Agenda</div>
+                  <div className="text-responsive-xs uppercase tracking-widest text-muted border-b border-subtle pb-1">Personal Agenda</div>
                   <div className={cn(
                     'p-[1.5vh] rounded-xl border',
                     privateInfo.personalAgenda?.status === 'completed'
                       ? 'bg-emerald-900/10 border-emerald-500/20'
                       : privateInfo.personalAgenda?.status === 'failed'
                         ? 'bg-red-900/10 border-red-500/20'
-                        : 'bg-[#222] border-[#333]'
+                        : 'bg-card border-default'
                   )}>
                     {privateInfo.personalAgenda ? (
                       <div className="space-y-[1vh]">
@@ -108,40 +108,40 @@ export const DossierModal = ({ isOpen, onClose, privateInfo }: DossierModalProps
                               'w-[2vh] h-[2vh] shrink-0 mt-0.5',
                               privateInfo.personalAgenda.status === 'completed' ? 'text-emerald-400'
                               : privateInfo.personalAgenda.status === 'failed' ? 'text-red-400'
-                              : 'text-[#888]'
+                              : 'text-tertiary'
                             )} />
-                            <span className="text-responsive-sm font-bold text-white uppercase tracking-wider">
+                            <span className="text-responsive-sm font-bold text-primary uppercase tracking-wider">
                               {privateInfo.personalAgenda.name}
                             </span>
                           </div>
                           <AgendaStatusBadge status={privateInfo.personalAgenda.status} />
                         </div>
-                        <p className="text-responsive-xs text-[#888] leading-relaxed pl-[2.5vh]">
+                        <p className="text-responsive-xs text-tertiary leading-relaxed pl-[2.5vh]">
                           {privateInfo.personalAgenda.description}
                         </p>
                         {privateInfo.personalAgenda.status === 'unresolved' && (
-                          <p className="text-[10px] text-[#555] italic pl-[2.5vh]">
+                          <p className="text-[10px] text-faint italic pl-[2.5vh]">
                             Completing this awards bonus XP and IP equal to a faction win.
                           </p>
                         )}
                       </div>
                     ) : (
-                      <div className="text-responsive-sm text-[#666] italic">No agenda assigned.</div>
+                      <div className="text-responsive-sm text-muted italic">No agenda assigned.</div>
                     )}
                   </div>
                 </div>
 
                 {/* Title Role */}
                 <div className="space-y-[1vh] shrink-0">
-                  <div className="text-responsive-xs uppercase tracking-widest text-[#666] border-b border-[#222] pb-1">Title Role</div>
-                  <div className="bg-[#222] p-[1.5vh] rounded-xl">
+                  <div className="text-responsive-xs uppercase tracking-widest text-muted border-b border-subtle pb-1">Title Role</div>
+                  <div className="bg-card p-[1.5vh] rounded-xl">
                     {privateInfo.titleRole ? (
                       <div className="space-y-0.5">
-                        <div className="text-responsive-sm font-bold text-white uppercase tracking-wider">{privateInfo.titleRole}</div>
-                        <div className="text-responsive-xs text-[#888] leading-tight">{TITLE_ROLE_DESCRIPTIONS[privateInfo.titleRole]}</div>
+                        <div className="text-responsive-sm font-bold text-primary uppercase tracking-wider">{privateInfo.titleRole}</div>
+                        <div className="text-responsive-xs text-tertiary leading-tight">{TITLE_ROLE_DESCRIPTIONS[privateInfo.titleRole]}</div>
                       </div>
                     ) : (
-                      <div className="text-responsive-sm text-[#666] italic">No title role assigned.</div>
+                      <div className="text-responsive-sm text-muted italic">No title role assigned.</div>
                     )}
                   </div>
                 </div>
@@ -149,7 +149,7 @@ export const DossierModal = ({ isOpen, onClose, privateInfo }: DossierModalProps
                 {/* State faction */}
                 {privateInfo.stateAgents && (
                   <div className="space-y-[1vh] shrink-0">
-                    <div className="text-responsive-xs uppercase tracking-widest text-[#666] border-b border-[#222] pb-1">State Faction</div>
+                    <div className="text-responsive-xs uppercase tracking-widest text-muted border-b border-subtle pb-1">State Faction</div>
                     <div className="space-y-1">
                       {privateInfo.stateAgents.map(f => (
                         <div key={f.id} className="flex items-center justify-between py-0.5">
@@ -157,13 +157,13 @@ export const DossierModal = ({ isOpen, onClose, privateInfo }: DossierModalProps
                             {f.role === 'Overseer'
                               ? <OverseerIcon className="w-[1.8vh] h-[1.8vh] text-red-500" />
                               : <Eye className="w-[1.8vh] h-[1.8vh] text-red-500" />}
-                            <span className="text-responsive-sm text-[#aaa] truncate max-w-[120px]">{f.name}</span>
+                            <span className="text-responsive-sm text-secondary truncate max-w-[120px]">{f.name}</span>
                           </div>
                           <span className={cn(
                             'text-[8px] font-mono uppercase px-1.5 py-0.5 rounded shrink-0',
                             f.role === 'Overseer'
                               ? 'bg-red-900/40 text-red-500 border border-red-900/50'
-                              : 'bg-[#222] text-[#666]'
+                              : 'bg-card text-muted'
                           )}>
                             {f.role === 'Overseer' ? 'Overseer' : 'State'}
                           </span>
@@ -174,14 +174,14 @@ export const DossierModal = ({ isOpen, onClose, privateInfo }: DossierModalProps
                 )}
               </div>
             ) : (
-              <div className="h-[15vh] flex items-center justify-center text-[#444] italic text-responsive-sm">
+              <div className="h-[15vh] flex items-center justify-center text-ghost italic text-responsive-sm">
                 Awaiting role assignment...
               </div>
             )}
 
             <button
               onClick={onClose}
-              className="w-full py-[1.2vh] bg-[#222] text-white rounded-xl hover:bg-[#333] transition-all text-responsive-sm font-serif italic shrink-0"
+              className="w-full py-[1.2vh] bg-card text-primary rounded-xl hover:bg-subtle transition-all text-responsive-sm font-serif italic shrink-0"
             >
               Close Dossier
             </button>

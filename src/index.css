@@ -7,7 +7,6 @@
   --font-thematic: "Quantico", sans-serif;
   --animate-spin-slow: spin 3s linear infinite;
 
-  /* Responsive Scaling Variables */
   --font-size-xs: clamp(0.6rem, 0.5vw + 0.4rem, 0.75rem);
   --font-size-sm: clamp(0.75rem, 0.6vw + 0.5rem, 0.875rem);
   --font-size-base: clamp(0.875rem, 0.8vw + 0.6rem, 1rem);
@@ -17,29 +16,178 @@
   --font-size-3xl: clamp(1.5rem, 2vw + 1.5rem, 1.875rem);
 }
 
-@layer utilities {
-  .text-responsive-xs { font-size: var(--font-size-xs); }
-  .text-responsive-sm { font-size: var(--font-size-sm); }
-  .text-responsive-base { font-size: var(--font-size-base); }
-  .text-responsive-lg { font-size: var(--font-size-lg); }
-  .text-responsive-xl { font-size: var(--font-size-xl); }
-  .text-responsive-2xl { font-size: var(--font-size-2xl); }
-  .text-responsive-3xl { font-size: var(--font-size-3xl); }
+/* ─── Design Tokens — Dark Mode (default) ─────────────────────────────── */
+:root {
+  --color-base:      #0a0a0a;
+  --color-elevated:  #141414;
+  --color-surface:   #1a1a1a;
+  --color-card:      #222222;
+  --color-hover:     #2a2a2a;
+  --color-subtle:    #333333;
+  --color-muted-bg:  #444444;
 
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
+  --color-border-deep:    #1a1a1a;
+  --color-border-subtle:  #222222;
+  --color-border-default: #333333;
+  --color-border-strong:  #444444;
+
+  --color-text-primary:   #ffffff;
+  --color-text-secondary: #aaaaaa;
+  --color-text-tertiary:  #888888;
+  --color-text-muted:     #666666;
+  --color-text-faint:     #555555;
+  --color-text-ghost:     #444444;
+  --color-text-whisper:   #333333;
+
+  --color-scrollbar:       #333333;
+  --color-scrollbar-hover: #444444;
+
+  --texture-color: #1a1a1a;
+}
+
+/* ─── Design Tokens — Light Mode ──────────────────────────────────────── */
+[data-theme="light"] {
+  --color-base:      #f0eeec;
+  --color-elevated:  #e8e6e4;
+  --color-surface:   #ffffff;
+  --color-card:      #f5f3f1;
+  --color-hover:     #ebe9e7;
+  --color-subtle:    #dbd9d7;
+  --color-muted-bg:  #c8c6c4;
+
+  --color-border-deep:    #dbd9d7;
+  --color-border-subtle:  #d4d2d0;
+  --color-border-default: #c0bebe;
+  --color-border-strong:  #a8a6a4;
+
+  --color-text-primary:   #111111;
+  --color-text-secondary: #555555;
+  --color-text-tertiary:  #666666;
+  --color-text-muted:     #777777;
+  --color-text-faint:     #888888;
+  --color-text-ghost:     #999999;
+  --color-text-whisper:   #aaaaaa;
+
+  --color-scrollbar:       #c0bebe;
+  --color-scrollbar-hover: #a8a6a4;
+
+  --texture-color: #e8e6e4;
+}
+
+@layer utilities {
+  .text-responsive-xs   { font-size: var(--font-size-xs); }
+  .text-responsive-sm   { font-size: var(--font-size-sm); }
+  .text-responsive-base { font-size: var(--font-size-base); }
+  .text-responsive-lg   { font-size: var(--font-size-lg); }
+  .text-responsive-xl   { font-size: var(--font-size-xl); }
+  .text-responsive-2xl  { font-size: var(--font-size-2xl); }
+  .text-responsive-3xl  { font-size: var(--font-size-3xl); }
+
+  /* ─── Background tokens ───────────────────────────────────────────── */
+  .bg-base     { background-color: var(--color-base); }
+  .bg-elevated { background-color: var(--color-elevated); }
+  .bg-surface  { background-color: var(--color-surface); }
+  .bg-card     { background-color: var(--color-card); }
+  .bg-hover    { background-color: var(--color-hover); }
+  .bg-subtle   { background-color: var(--color-subtle); }
+  .bg-muted-bg { background-color: var(--color-muted-bg); }
+
+  .hover\:bg-elevated:hover { background-color: var(--color-elevated); }
+  .hover\:bg-surface:hover  { background-color: var(--color-surface); }
+  .hover\:bg-card:hover     { background-color: var(--color-card); }
+  .hover\:bg-hover:hover    { background-color: var(--color-hover); }
+  .hover\:bg-subtle:hover   { background-color: var(--color-subtle); }
+
+  /* ─── Border tokens ───────────────────────────────────────────────── */
+  .border-deep    { border-color: var(--color-border-deep); }
+  .border-subtle  { border-color: var(--color-border-subtle); }
+  .border-default { border-color: var(--color-border-default); }
+  .border-strong  { border-color: var(--color-border-strong); }
+
+  /* ─── Text tokens ─────────────────────────────────────────────────── */
+  .text-primary   { color: var(--color-text-primary); }
+  .text-secondary { color: var(--color-text-secondary); }
+  .text-tertiary  { color: var(--color-text-tertiary); }
+  .text-muted     { color: var(--color-text-muted); }
+  .text-faint     { color: var(--color-text-faint); }
+  .text-ghost     { color: var(--color-text-ghost); }
+  .text-whisper   { color: var(--color-text-whisper); }
+
+  .hover\:text-primary:hover   { color: var(--color-text-primary); }
+  .hover\:text-secondary:hover { color: var(--color-text-secondary); }
+
+  /* ─── Placeholder tokens ──────────────────────────────────────────── */
+  .placeholder-ghost::placeholder { color: var(--color-text-ghost); }
+  .placeholder-muted::placeholder { color: var(--color-text-muted); }
+
+  /* ─── Primary action button ───────────────────────────────────────── */
+  .btn-primary {
+    background-color: var(--color-text-primary);
+    color: var(--color-base);
   }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
+  .btn-primary:hover {
+    background-color: var(--color-text-secondary);
   }
+
+  /* ─── Modal backdrops ─────────────────────────────────────────────── */
+  .bg-backdrop       { background-color: rgba(0,   0,   0,   0.80); }
+  .bg-backdrop-md    { background-color: rgba(0,   0,   0,   0.60); }
+  .bg-backdrop-sm    { background-color: rgba(0,   0,   0,   0.50); }
+  .bg-backdrop-heavy { background-color: rgba(0,   0,   0,   0.90); }
+  [data-theme="light"] .bg-backdrop       { background-color: rgba(180, 175, 170, 0.75); }
+  [data-theme="light"] .bg-backdrop-md    { background-color: rgba(180, 175, 170, 0.55); }
+  [data-theme="light"] .bg-backdrop-sm    { background-color: rgba(180, 175, 170, 0.45); }
+  [data-theme="light"] .bg-backdrop-heavy { background-color: rgba(150, 145, 140, 0.85); }
+
+
+  /* Semi-transparent card surface — sits over bg-texture */
+  .bg-surface-card {
+    background-color: rgba(26, 26, 26, 0.80);
+    backdrop-filter: blur(4px);
+  }
+  [data-theme="light"] .bg-surface-card {
+    background-color: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(4px);
+  }
+
+  /* ─── Sticky glass header ─────────────────────────────────────────── */
+  .bg-surface-glass {
+    background-color: rgba(26, 26, 26, 0.75);
+    backdrop-filter: blur(20px);
+  }
+  [data-theme="light"] .bg-surface-glass {
+    background-color: rgba(255, 255, 255, 0.80);
+    backdrop-filter: blur(20px);
+  }
+
+  /* ─── Textured background ─────────────────────────────────────────── */
+  /*
+   * Dark mode:  dark base + carbon fibre overlay (blend: overlay)
+   *             = dark dots on slightly lighter dark — the classic look
+   * Light mode: light base + same carbon fibre (blend: screen)
+   *             screen inverts dark pixels → light dots on light bg
+   */
+  .bg-texture {
+    background-color: var(--texture-color);
+    background-image: url("/proxy?url=https%3A%2F%2Fwww.transparenttextures.com%2Fpatterns%2Fcarbon-fibre.png");
+    background-blend-mode: overlay;
+  }
+  [data-theme="light"] .bg-texture {
+    background-blend-mode: screen;
+  }
+
+  /* ─── Scrollbar ───────────────────────────────────────────────────── */
+  .custom-scrollbar::-webkit-scrollbar       { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #333;
+    background: var(--color-scrollbar);
     border-radius: 10px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #444;
+    background: var(--color-scrollbar-hover);
   }
 
+  /* ─── Animations ──────────────────────────────────────────────────── */
   .danger-zone-pulse::after {
     content: '';
     position: fixed;
@@ -51,57 +199,35 @@
 
   @keyframes danger-pulse {
     0%, 100% { box-shadow: inset 0 0 30px rgba(220, 38, 38, 0.3); }
-    50% { box-shadow: inset 0 0 100px rgba(220, 38, 38, 0.6); }
+    50%       { box-shadow: inset 0 0 100px rgba(220, 38, 38, 0.6); }
   }
 
   @keyframes purple-rain {
-    0% { transform: translateY(-100%); opacity: 0; }
-    50% { opacity: 1; }
-    100% { transform: translateY(100%); opacity: 0; }
+    0%   { transform: translateY(-100%); opacity: 0; }
+    50%  { opacity: 1; }
+    100% { transform: translateY(100%);  opacity: 0; }
   }
-  .animate-purple-rain {
-    animation: purple-rain 2s linear infinite;
-  }
+  .animate-purple-rain { animation: purple-rain 2s linear infinite; }
 
   @keyframes spin-reverse {
     from { transform: rotate(0deg); }
-    to { transform: rotate(-360deg); }
+    to   { transform: rotate(-360deg); }
   }
-  .animate-spin-reverse {
-    animation: spin-reverse 4s linear infinite;
-  }
+  .animate-spin-reverse { animation: spin-reverse 4s linear infinite; }
 
   @keyframes shine {
-    0% { transform: translateX(-100%); }
+    0%   { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
   }
-  .animate-shine {
-    animation: shine 3s ease-in-out infinite;
-  }
-
-  .bg-texture {
-    background-color: #1a1a1a;
-    background-image: url("/proxy?url=https%3A%2F%2Fwww.transparenttextures.com%2Fpatterns%2Fcarbon-fibre.png");
-  }
+  .animate-shine { animation: shine 3s ease-in-out infinite; }
 
   .card-border {
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--color-border-subtle);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   }
 }
 
-.perspective-1000 {
-  perspective: 1000px;
-}
-
-.preserve-3d {
-  transform-style: preserve-3d;
-}
-
-.backface-hidden {
-  backface-visibility: hidden;
-}
-
-.rotate-y-180 {
-  transform: rotateY(180deg);
-}
+.perspective-1000  { perspective: 1000px; }
+.preserve-3d       { transform-style: preserve-3d; }
+.backface-hidden   { backface-visibility: hidden; }
+.rotate-y-180      { transform: rotateY(180deg); }

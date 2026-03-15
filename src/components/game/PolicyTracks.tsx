@@ -30,7 +30,7 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
   };
 
   return (
-    <div className="p-[1.5vh] grid grid-cols-[1fr_auto_1fr] gap-[1.5vh] bg-[#1a1a1a]/50 border-b border-[#222] shrink-0 items-start">
+    <div className="p-[1.5vh] grid grid-cols-[1fr_auto_1fr] gap-[1.5vh] bg-surface/50 border-b border-subtle shrink-0 items-start">
       {/* Civil Track */}
       <div className="space-y-[0.5vh]">
         <div className="flex items-center justify-between text-responsive-xs uppercase tracking-widest font-mono text-blue-400/70">
@@ -48,7 +48,7 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
                 'flex-1 h-[3vh] rounded-sm border transition-all duration-500',
                 i < gameState.civilDirectives
                   ? 'bg-blue-900/40 border-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.2)]'
-                  : 'bg-[#141414] border-[#222]'
+                  : 'bg-elevated border-subtle'
               )}
             />
           ))}
@@ -56,18 +56,18 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
       </div>
 
       {/* Deck / Discard Counter */}
-      <div className="flex flex-col items-center justify-center gap-[0.8vh] px-[1vh] border-x border-[#222]/50 h-[5vh] self-center">
+      <div className="flex flex-col items-center justify-center gap-[0.8vh] px-[1vh] border-x border-subtle/50 h-[5vh] self-center">
         <div className="flex flex-col items-center gap-0.5 group relative">
-          <Layers className="w-[1.2vh] h-[1.2vh] text-[#666]" />
-          <span className="text-[9px] font-mono text-white leading-none">{gameState.deck.length}</span>
+          <Layers className="w-[1.2vh] h-[1.2vh] text-muted" />
+          <span className="text-[9px] font-mono text-primary leading-none">{gameState.deck.length}</span>
           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-[8px] font-mono text-white rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
             DECK
           </div>
         </div>
-        <div className="w-[1.5vh] h-px bg-[#222]" />
+        <div className="w-[1.5vh] h-px bg-card" />
         <div className="flex flex-col items-center gap-0.5 group relative">
-          <Trash2 className="w-[1.2vh] h-[1.2vh] text-[#666]" />
-          <span className="text-[9px] font-mono text-[#666] leading-none">{gameState.discard.length}</span>
+          <Trash2 className="w-[1.2vh] h-[1.2vh] text-muted" />
+          <span className="text-[9px] font-mono text-muted leading-none">{gameState.discard.length}</span>
           <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-1 bg-black text-[8px] font-mono text-white rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
             DISCARD
           </div>
@@ -97,7 +97,7 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
                     ? 'bg-red-900/40 border-red-500 shadow-[0_0_8px_rgba(239,68,68,0.2)]'
                     : i >= 3
                       ? 'bg-red-900/10 border-red-900/30'
-                      : 'bg-[#141414] border-[#222]'
+                      : 'bg-elevated border-subtle'
                 )}
                 onClick={(e) => slot && e.currentTarget.classList.toggle('tooltip-open')}
               >
@@ -107,9 +107,9 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
                   </div>
                 )}
                 {slot && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-32 p-2 bg-[#1a1a1a] border border-[#333] rounded-lg opacity-0 group-hover:opacity-100 group-[.tooltip-open]:opacity-100 pointer-events-none transition-opacity z-50 shadow-2xl">
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-32 p-2 bg-surface border border-default rounded-lg opacity-0 group-hover:opacity-100 group-[.tooltip-open]:opacity-100 pointer-events-none transition-opacity z-50 shadow-2xl">
                     <div className="text-responsive-xs font-mono text-red-500 uppercase mb-1">{slot.power}</div>
-                    <div className="text-[7px] text-[#888] leading-tight">{slot.description}</div>
+                    <div className="text-[7px] text-tertiary leading-tight">{slot.description}</div>
                   </div>
                 )}
               </div>
@@ -122,20 +122,20 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
       {gameState.spectators.length > 0 && (
         <div className="col-span-3 h-[2.5vh] flex items-center gap-3 overflow-x-auto no-scrollbar">
           <div className="flex items-center gap-1.5 shrink-0">
-            <Eye className="w-[1.2vh] h-[1.2vh] text-[#444]" />
-            <span className="text-responsive-xs font-mono uppercase tracking-widest text-[#444]">
+            <Eye className="w-[1.2vh] h-[1.2vh] text-ghost" />
+            <span className="text-responsive-xs font-mono uppercase tracking-widest text-ghost">
               Spectators ({gameState.spectators.length})
             </span>
           </div>
           <div className="flex items-center gap-2">
             {gameState.spectators.map(s => (
               <div key={s.id} className="flex items-center gap-1 shrink-0">
-                <div className="w-[1.5vh] h-[1.5vh] rounded-full bg-[#222] overflow-hidden border border-[#333]">
+                <div className="w-[1.5vh] h-[1.5vh] rounded-full bg-card overflow-hidden border border-default">
                   {s.avatarUrl
                     ? <img src={getProxiedUrl(s.avatarUrl)} alt={s.name} className="w-full h-full object-cover" />
-                    : <UserIcon className="w-[1vh] h-[1vh] text-[#444] m-auto" />}
+                    : <UserIcon className="w-[1vh] h-[1vh] text-ghost m-auto" />}
                 </div>
-                <span className="text-responsive-xs text-[#666]">{s.name}</span>
+                <span className="text-responsive-xs text-muted">{s.name}</span>
               </div>
             ))}
           </div>
@@ -143,8 +143,8 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
       )}
 
       {/* Election Tracker */}
-      <div className="col-span-3 h-[3vh] flex items-center justify-center gap-3 bg-[#141414] -mx-4 -mb-4 px-4 border-t border-[#222]">
-        <span className="text-responsive-xs uppercase tracking-[0.2em] text-[#444] font-mono">Election Tracker</span>
+      <div className="col-span-3 h-[3vh] flex items-center justify-center gap-3 bg-elevated -mx-4 -mb-4 px-4 border-t border-subtle">
+        <span className="text-responsive-xs uppercase tracking-[0.2em] text-ghost font-mono">Election Tracker</span>
         <div className="flex gap-2">
           {[0, 1, 2, 3].map(i => (
             <div
@@ -153,7 +153,7 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
                 'w-[0.8vh] h-[0.8vh] rounded-full border transition-all duration-300',
                 gameState.electionTracker === i
                   ? 'bg-white border-white scale-125 shadow-[0_0_5px_white]'
-                  : 'border-[#333] bg-transparent'
+                  : 'border-default bg-transparent'
               )}
             />
           ))}

@@ -62,11 +62,11 @@ export const Tooltip = ({ content, children, className, position = 'bottom' }: T
       {children}
       {isVisible && (
         <div className={cn(
-          "absolute z-[100] px-2 py-1 bg-[#1a1a1a] border border-[#333] rounded-lg shadow-2xl pointer-events-none transition-opacity duration-200 min-w-[80px] text-center",
+          "absolute z-[100] px-2 py-1 bg-surface border border-default rounded-lg shadow-2xl pointer-events-none transition-opacity duration-200 min-w-[80px] text-center",
           positionClasses[position],
           className
         )}>
-          <div className="text-[10px] font-mono text-white uppercase tracking-wider whitespace-nowrap">
+          <div className="text-[10px] font-mono text-primary uppercase tracking-wider whitespace-nowrap">
             {content}
           </div>
         </div>

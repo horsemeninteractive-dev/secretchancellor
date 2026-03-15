@@ -16,12 +16,12 @@ export const FriendRequestModal: React.FC<FriendRequestModalProps> = ({ fromUser
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-backdrop backdrop-blur-sm"
       />
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative w-full max-w-xs bg-[#1a1a1a] border border-[#222] rounded-2xl p-6 shadow-2xl text-white"
+        className="relative w-full max-w-xs bg-surface border border-subtle rounded-2xl p-6 shadow-2xl text-primary"
       >
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="w-12 h-12 bg-red-900/20 rounded-full flex items-center justify-center border border-red-900/50">
@@ -29,14 +29,14 @@ export const FriendRequestModal: React.FC<FriendRequestModalProps> = ({ fromUser
           </div>
           <div>
             <h3 className="text-lg font-thematic">Friend Request</h3>
-            <p className="text-sm text-[#666] mt-1">
-              <span className="text-white font-bold">{fromUsername}</span> wants to be friends.
+            <p className="text-sm text-muted mt-1">
+              <span className="text-primary font-bold">{fromUsername}</span> wants to be friends.
             </p>
           </div>
           <div className="flex gap-3 w-full mt-2">
             <button 
               onClick={onDeny}
-              className="flex-1 py-2 rounded-lg bg-[#222] hover:bg-[#333] text-xs font-mono uppercase tracking-widest transition-colors"
+              className="flex-1 py-2 rounded-lg bg-card hover:bg-subtle text-xs font-mono uppercase tracking-widest transition-colors"
             >
               Deny
             </button>

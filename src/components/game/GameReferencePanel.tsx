@@ -162,7 +162,7 @@ export const GameReferencePanel: React.FC<GameReferenceProps> = ({ isOpen, onClo
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
+          className="fixed inset-0 z-[120] bg-backdrop-md backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
           onClick={onClose}
         >
           <motion.div
@@ -170,15 +170,15 @@ export const GameReferencePanel: React.FC<GameReferenceProps> = ({ isOpen, onClo
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             onClick={e => e.stopPropagation()}
-            className="w-full max-w-sm bg-[#141414] border border-[#2a2a2a] rounded-3xl overflow-hidden shadow-2xl"
+            className="w-full max-w-sm bg-elevated border border-default rounded-3xl overflow-hidden shadow-2xl"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-[#222]">
+            <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-subtle">
               <div className="flex items-center gap-2">
-                <HelpCircle className="w-4 h-4 text-[#666]" />
-                <span className="text-[#666] text-xs font-mono uppercase tracking-widest">Phase Reference</span>
+                <HelpCircle className="w-4 h-4 text-muted" />
+                <span className="text-muted text-xs font-mono uppercase tracking-widest">Phase Reference</span>
               </div>
-              <button onClick={onClose} className="text-[#444] hover:text-white transition-colors">
+              <button onClick={onClose} className="text-ghost hover:text-white transition-colors">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -186,26 +186,26 @@ export const GameReferencePanel: React.FC<GameReferenceProps> = ({ isOpen, onClo
             <div className="p-5 space-y-4">
               {/* Phase title */}
               <div>
-                <h3 className="text-white font-thematic text-lg uppercase tracking-wide">{help.title}</h3>
+                <h3 className="text-primary font-thematic text-lg uppercase tracking-wide">{help.title}</h3>
               </div>
 
               {/* What's happening */}
               <div className="space-y-1">
-                <div className="text-[#555] text-[10px] font-mono uppercase tracking-widest">What's happening</div>
-                <p className="text-[#aaa] text-sm leading-relaxed">{help.what}</p>
+                <div className="text-faint text-[10px] font-mono uppercase tracking-widest">What's happening</div>
+                <p className="text-secondary text-sm leading-relaxed">{help.what}</p>
               </div>
 
               {/* What you should do */}
               <div className="bg-white/5 rounded-xl p-3 border border-white/10">
-                <div className="text-[#555] text-[10px] font-mono uppercase tracking-widest mb-1">What you should do</div>
-                <p className="text-white text-sm leading-relaxed">{help.youShouldDo}</p>
+                <div className="text-faint text-[10px] font-mono uppercase tracking-widest mb-1">What you should do</div>
+                <p className="text-primary text-sm leading-relaxed">{help.youShouldDo}</p>
               </div>
 
               {/* Tip */}
               {help.tip && (
                 <div className="bg-yellow-900/10 border border-yellow-500/20 rounded-xl p-3">
                   <div className="text-yellow-500/70 text-[10px] font-mono uppercase tracking-widest mb-1">Tip</div>
-                  <p className="text-[#aaa] text-xs leading-relaxed">{help.tip}</p>
+                  <p className="text-secondary text-xs leading-relaxed">{help.tip}</p>
                 </div>
               )}
             </div>
@@ -213,7 +213,7 @@ export const GameReferencePanel: React.FC<GameReferenceProps> = ({ isOpen, onClo
             <div className="px-5 pb-5">
               <button
                 onClick={onClose}
-                className="w-full py-2.5 bg-[#222] text-[#888] rounded-xl hover:bg-[#2a2a2a] hover:text-white transition-all text-xs font-mono uppercase tracking-widest border border-[#333]"
+                className="w-full py-2.5 bg-card text-tertiary rounded-xl hover:bg-hover hover:text-white transition-all text-xs font-mono uppercase tracking-widest border border-default"
               >
                 Dismiss
               </button>

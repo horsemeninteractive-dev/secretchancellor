@@ -163,28 +163,28 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-[#1a1a1a] border border-[#222] rounded-3xl p-8 shadow-2xl"
+        className="w-full max-w-md bg-surface border border-subtle rounded-3xl p-8 shadow-2xl"
       >
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-[#141414] rounded-2xl flex items-center justify-center border border-white/40 mb-4 overflow-hidden">
+          <div className="w-16 h-16 bg-elevated rounded-2xl flex items-center justify-center border border-white/40 mb-4 overflow-hidden">
             <img src={getProxiedUrl("https://storage.googleapis.com/secretchancellor/SC.png")} alt="Secret Chancellor Logo" className="w-full h-full object-contain p-2" referrerPolicy="no-referrer" />
           </div>
-          <h1 className="text-3xl font-thematic text-white tracking-wide uppercase">The Assembly</h1>
-          <p className="text-[#666] text-sm mt-1">
+          <h1 className="text-3xl font-thematic text-primary tracking-wide uppercase">The Assembly</h1>
+          <p className="text-muted text-sm mt-1">
             {isLogin ? 'Welcome back, Delegate' : 'Register for the Assembly'}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-widest text-[#444] font-mono ml-1">Username</label>
+            <label className="text-[10px] uppercase tracking-widest text-ghost font-mono ml-1">Username</label>
             <div className="relative">
-              <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#444]" />
+              <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ghost" />
               <input 
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full bg-[#141414] border border-[#222] rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-red-900/50 transition-colors"
+                className="w-full bg-elevated border border-subtle rounded-xl py-3 pl-10 pr-4 text-sm text-primary focus:outline-none focus:border-red-900/50 transition-colors"
                 placeholder="Enter username"
                 required
               />
@@ -192,14 +192,14 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-widest text-[#444] font-mono ml-1">Password</label>
+            <label className="text-[10px] uppercase tracking-widest text-ghost font-mono ml-1">Password</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#444]" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ghost" />
               <input 
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[#141414] border border-[#222] rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-red-900/50 transition-colors"
+                className="w-full bg-elevated border border-subtle rounded-xl py-3 pl-10 pr-4 text-sm text-primary focus:outline-none focus:border-red-900/50 transition-colors"
                 placeholder="Enter password"
                 required
               />
@@ -208,7 +208,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
 
           {!isLogin && (
             <div className="space-y-3">
-              <label className="text-[10px] uppercase tracking-widest text-[#444] font-mono ml-1">Choose Avatar</label>
+              <label className="text-[10px] uppercase tracking-widest text-ghost font-mono ml-1">Choose Avatar</label>
               <div className="grid grid-cols-6 gap-2">
                 {avatarChoices.map((choice) => (
                   <button
@@ -217,7 +217,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                     onClick={() => setAvatarUrl(choice)}
                     className={cn(
                       "w-full aspect-square rounded-lg border-2 overflow-hidden transition-all",
-                      avatarUrl === choice ? "border-red-500 scale-110" : "border-[#222] hover:border-[#333]"
+                      avatarUrl === choice ? "border-red-500 scale-110" : "border-subtle hover:border-default"
                     )}
                   >
                     <img src={getProxiedUrl(choice)} alt="Avatar" className="w-full h-full object-cover" />
@@ -236,7 +236,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
           <button 
             type="submit"
             disabled={isLoading}
-            className="w-full bg-white text-black font-thematic text-xl py-3 rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full btn-primary font-thematic text-xl py-3 rounded-xl hover:bg-subtle transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (isLogin ? 'Sign In' : 'Create Account')}
           </button>
@@ -245,22 +245,22 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
         <div className="mt-6 space-y-3">
           <div className="relative flex items-center justify-center">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#222]"></div>
+              <div className="w-full border-t border-subtle"></div>
             </div>
-            <span className="relative px-4 bg-[#1a1a1a] text-[10px] uppercase tracking-widest text-[#444] font-mono">Or continue with</span>
+            <span className="relative px-4 bg-surface text-[10px] uppercase tracking-widest text-ghost font-mono">Or continue with</span>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <button 
               onClick={() => handleSocialLogin('google')}
-              className="flex items-center justify-center gap-2 py-2.5 bg-[#141414] border border-[#222] rounded-xl text-xs text-[#aaa] hover:text-white hover:border-[#333] transition-all"
+              className="flex items-center justify-center gap-2 py-2.5 bg-elevated border border-subtle rounded-xl text-xs text-secondary hover:text-white hover:border-default transition-all"
             >
               <Chrome className="w-4 h-4" />
               <span>Google</span>
             </button>
             <button 
               onClick={() => handleSocialLogin('discord')}
-              className="flex items-center justify-center gap-2 py-2.5 bg-[#141414] border border-[#222] rounded-xl text-xs text-[#aaa] hover:text-white hover:border-[#333] transition-all"
+              className="flex items-center justify-center gap-2 py-2.5 bg-elevated border border-subtle rounded-xl text-xs text-secondary hover:text-white hover:border-default transition-all"
             >
               <MessageSquare className="w-4 h-4" />
               <span>Discord</span>
@@ -271,7 +271,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
         <div className="mt-6 text-center">
           <button 
             onClick={() => setIsLogin(!isLogin)}
-            className="text-[11px] text-[#666] hover:text-white transition-colors font-mono uppercase tracking-widest"
+            className="text-[11px] text-muted hover:text-white transition-colors font-mono uppercase tracking-widest"
           >
             {isLogin ? "Don't have an account? Register" : "Already have an account? Login"}
           </button>

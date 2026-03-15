@@ -28,25 +28,25 @@ export const DeclarationModal = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-md flex items-center justify-center p-6"
+        className="fixed inset-0 z-[300] bg-backdrop-heavy backdrop-blur-md flex items-center justify-center p-6"
       >
         <motion.div
           initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
-          className="max-w-sm w-full bg-[#1a1a1a] border border-[#333] rounded-3xl overflow-hidden shadow-2xl p-8 space-y-6"
+          className="max-w-sm w-full bg-surface border border-default rounded-3xl overflow-hidden shadow-2xl p-8 space-y-6"
         >
           <div className="text-center space-y-2">
-            <h3 className="text-[10px] uppercase tracking-[0.2em] text-[#666] font-mono">Directive Declaration</h3>
-            <p className="text-xl font-thematic text-white tracking-wide uppercase">What will you declare?</p>
-            <p className="text-[10px] text-[#444] italic">You may report truthfully or mislead the Assembly.</p>
+            <h3 className="text-[10px] uppercase tracking-[0.2em] text-muted font-mono">Directive Declaration</h3>
+            <p className="text-xl font-thematic text-primary tracking-wide uppercase">What will you declare?</p>
+            <p className="text-[10px] text-ghost italic">You may report truthfully or mislead the Assembly.</p>
           </div>
 
           <div className="space-y-5">
             {/* President only: what they drew (3 cards) */}
             {declarationType === 'President' && (
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest text-[#666] font-mono ml-1">
-                  What you drew <span className="normal-case text-[#444]">(3 cards)</span>
+                <label className="text-[10px] uppercase tracking-widest text-muted font-mono ml-1">
+                  What you drew <span className="normal-case text-ghost">(3 cards)</span>
                 </label>
                 <div className="flex gap-2">
                   {[0, 1, 2, 3].map(n => (
@@ -57,14 +57,14 @@ export const DeclarationModal = ({
                         'flex-1 py-3 rounded-xl border transition-all font-mono text-sm',
                         declDrawCiv === n
                           ? 'bg-blue-900/40 border-blue-500 text-blue-400'
-                          : 'bg-[#141414] border-[#222] text-[#444]'
+                          : 'bg-elevated border-subtle text-ghost'
                       )}
                     >
                       {n}C
                     </button>
                   ))}
                 </div>
-                <div className="text-[9px] text-center text-[#555] font-mono">
+                <div className="text-[9px] text-center text-faint font-mono">
                   Drew: <span className="text-blue-400">{declDrawCiv} Civil</span> / <span className="text-red-500">{declDrawSta} State</span>
                 </div>
               </div>
@@ -72,10 +72,10 @@ export const DeclarationModal = ({
 
             {/* Passed (president) or Received (chancellor) — 2 cards */}
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest text-[#666] font-mono ml-1">
+              <label className="text-[10px] uppercase tracking-widest text-muted font-mono ml-1">
                 {declarationType === 'President'
-                  ? <span>What you passed <span className="normal-case text-[#444]">(2 cards)</span></span>
-                  : <span>What you received <span className="normal-case text-[#444]">(2 cards)</span></span>}
+                  ? <span>What you passed <span className="normal-case text-ghost">(2 cards)</span></span>
+                  : <span>What you received <span className="normal-case text-ghost">(2 cards)</span></span>}
               </label>
               <div className="flex gap-2">
                 {[0, 1, 2].map(n => (
@@ -86,14 +86,14 @@ export const DeclarationModal = ({
                       'flex-1 py-3 rounded-xl border transition-all font-mono text-sm',
                       declCiv === n
                         ? 'bg-blue-900/40 border-blue-500 text-blue-400'
-                        : 'bg-[#141414] border-[#222] text-[#444]'
+                        : 'bg-elevated border-subtle text-ghost'
                     )}
                   >
                     {n}C
                   </button>
                 ))}
               </div>
-              <div className="text-[9px] text-center text-[#555] font-mono">
+              <div className="text-[9px] text-center text-faint font-mono">
                 {declarationType === 'President' ? 'Passed' : 'Received'}:{' '}
                 <span className="text-blue-400">{declCiv} Civil</span> /{' '}
                 <span className="text-red-500">{declSta} State</span>
@@ -103,7 +103,7 @@ export const DeclarationModal = ({
 
           <button
             onClick={onSubmit}
-            className="w-full py-4 bg-white text-black rounded-xl hover:bg-gray-200 transition-all font-thematic text-xl uppercase tracking-wide"
+            className="w-full py-4 btn-primary rounded-xl hover:bg-subtle transition-all font-thematic text-xl uppercase tracking-wide"
           >
             Submit Declaration
           </button>

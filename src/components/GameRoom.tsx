@@ -528,11 +528,11 @@ export const GameRoom = ({
     <div
       ref={containerRef}
       className={cn(
-        'flex-1 w-full bg-texture text-[#e4e3e0] font-sans grid grid-rows-[auto_1fr] overflow-hidden transition-all duration-1000',
+        'flex-1 w-full bg-texture text-primary font-sans grid grid-rows-[auto_1fr] overflow-hidden transition-all duration-1000',
         gameState.stateDirectives >= 3 && gameState.phase !== 'GameOver' && 'danger-zone-pulse'
       )}
       style={{
-        backgroundImage: `radial-gradient(circle at 50% 50%, rgba(20, 20, 20, 0.5) 0%, rgba(10, 10, 10, 0.8) 100%), url("${getProxiedUrl(getBackgroundTexture(user?.activeBackground))}")`
+        backgroundImage: `url("${getProxiedUrl(getBackgroundTexture(user?.activeBackground))}")`
       }}
     >
       <GameHeader

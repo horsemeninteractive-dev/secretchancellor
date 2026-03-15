@@ -37,14 +37,14 @@ export const ChatPanel = ({
         initial={{ opacity: 0, x: 300 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: 300 }}
-        className="fixed inset-y-0 right-0 z-[110] w-full sm:w-80 bg-[#1a1a1a] border-l border-[#222] shadow-2xl flex flex-col"
+        className="fixed inset-y-0 right-0 z-[110] w-full sm:w-80 bg-surface border-l border-subtle shadow-2xl flex flex-col"
       >
-        <div className="h-14 px-4 flex items-center justify-between border-b border-[#222]">
+        <div className="h-14 px-4 flex items-center justify-between border-b border-subtle">
           <div className="flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-white" />
+            <MessageSquare className="w-4 h-4 text-primary" />
             <h3 className="font-thematic text-sm uppercase tracking-wider">Assembly Chat</h3>
           </div>
-          <button onClick={() => { playSound('click'); onClose(); }} className="p-2 text-[#666] hover:text-white">
+          <button onClick={() => { playSound('click'); onClose(); }} className="p-2 text-muted hover:text-white">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -61,9 +61,9 @@ export const ChatPanel = ({
                 <div key={i} className="w-full py-8 flex items-center justify-center">
                   <div className="flex items-center gap-4">
                     <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#333]" />
-                    <div className="px-4 py-1.5 rounded-full bg-[#1a1a1a] border border-[#333] flex items-center gap-2 shadow-xl">
+                    <div className="px-4 py-1.5 rounded-full bg-surface border border-default flex items-center gap-2 shadow-xl">
                       <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                      <span className="text-[10px] font-thematic uppercase tracking-[0.2em] text-white">Round {item.round}</span>
+                      <span className="text-[10px] font-thematic uppercase tracking-[0.2em] text-primary">Round {item.round}</span>
                     </div>
                     <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#333]" />
                   </div>
@@ -73,20 +73,20 @@ export const ChatPanel = ({
 
             return (
               <div key={i} className={cn('flex w-full gap-2', item.sender === me?.name ? 'flex-row-reverse' : 'flex-row')}>
-                <div className="w-8 h-8 rounded-full bg-[#222] border border-[#333] shrink-0 overflow-hidden">
+                <div className="w-8 h-8 rounded-full bg-card border border-default shrink-0 overflow-hidden">
                   {senderPlayer?.avatarUrl
                     ? <img src={getProxiedUrl(senderPlayer.avatarUrl)} alt={item.sender} className="w-full h-full object-cover" />
-                    : <UserIcon className="w-4 h-4 text-[#444] m-2" />}
+                    : <UserIcon className="w-4 h-4 text-ghost m-2" />}
                 </div>
                 <div className={cn('flex flex-col min-w-0', item.sender === me?.name ? 'items-end' : 'items-start')}>
-                  <div className="text-[9px] text-[#444] font-mono mb-1 whitespace-nowrap">
+                  <div className="text-[9px] text-ghost font-mono mb-1 whitespace-nowrap">
                     {item.sender.replace(' (AI)', '')}
                   </div>
                   <div className={cn(
                     'px-3 py-2 rounded-2xl text-xs max-w-[85%] break-words whitespace-pre-wrap leading-relaxed',
                     item.sender === me?.name
                       ? 'bg-red-900/20 text-red-100 rounded-tr-none'
-                      : 'bg-[#222] text-[#aaa] rounded-tl-none'
+                      : 'bg-card text-secondary rounded-tl-none'
                   )}>
                     <EmojiRenderer text={item.text} />
                   </div>
@@ -97,7 +97,7 @@ export const ChatPanel = ({
           <div ref={chatEndRef} />
         </div>
 
-        <form onSubmit={onSend} className="p-4 border-t border-[#222] bg-[#141414] relative">
+        <form onSubmit={onSend} className="p-4 border-t border-subtle bg-elevated relative">
           {showEmojiPicker && (
             <div className="absolute bottom-full right-0 mb-2 z-[120]">
               <div className="fixed inset-0" onClick={() => setShowEmojiPicker(false)} />
@@ -125,7 +125,7 @@ export const ChatPanel = ({
                 )}
               >
                 {chatText === '' ? (
-                  <span className="text-[#444]">
+                  <span className="text-ghost">
                     {((me ? !me.isAlive : false) && gameState.phase !== 'GameOver') ? 'Dead players cannot speak...' : 'Type a message...'}
                   </span>
                 ) : (
@@ -143,7 +143,7 @@ export const ChatPanel = ({
                 placeholder={((me ? !me.isAlive : false) && gameState.phase !== 'GameOver') ? 'Dead players cannot speak...' : 'Type a message...'}
                 disabled={(me ? !me.isAlive : false) && gameState.phase !== 'GameOver'}
                 className={cn(
-                  'w-full bg-[#1a1a1a] border border-[#333] rounded-full pl-4 pr-20 py-2 text-xs focus:outline-none focus:border-red-900/50 text-transparent caret-white selection:bg-red-900/30',
+                  'w-full bg-surface border border-default rounded-full pl-4 pr-20 py-2 text-xs focus:outline-none focus:border-red-900/50 text-transparent caret-white selection:bg-red-900/30',
                   ((me ? !me.isAlive : false) && gameState.phase !== 'GameOver') && 'opacity-50 cursor-not-allowed'
                 )}
               />
@@ -151,14 +151,14 @@ export const ChatPanel = ({
                 type="button"
                 onClick={() => { playSound('click'); setShowEmojiPicker(!showEmojiPicker); }}
                 disabled={!me?.isAlive && gameState.phase !== 'GameOver'}
-                className="absolute right-10 top-1/2 -translate-y-1/2 p-1 text-[#666] hover:text-white disabled:opacity-50"
+                className="absolute right-10 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-white disabled:opacity-50"
               >
                 <Smile className="w-4 h-4" />
               </button>
               <button
                 type="submit"
                 disabled={!me?.isAlive && gameState.phase !== 'GameOver'}
-                className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-red-500 hover:text-red-400 disabled:text-[#333]"
+                className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-red-500 hover:text-red-400 disabled:text-whisper"
               >
                 <Send className="w-4 h-4" />
               </button>

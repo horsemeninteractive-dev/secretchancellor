@@ -62,7 +62,7 @@ export const PlayerGrid = ({ gameState, me, speakingPlayers, playSound, token, s
               }}
               className={cn(
                 'relative p-[0.5vh] sm:p-[1vh] rounded-xl border transition-all duration-300 flex flex-col items-center justify-center min-h-0 cursor-pointer overflow-hidden',
-                p.isAlive ? 'bg-[#1a1a1a]/80 backdrop-blur-sm border-[#222]' : 'bg-[#111]/50 border-transparent opacity-50 grayscale',
+                p.isAlive ? 'bg-surface-card backdrop-blur-sm border-subtle' : 'bg-base/50 border-transparent opacity-50 grayscale',
                 p.isPresidentialCandidate && 'border-yellow-500/50 ring-1 ring-yellow-500/20',
                 p.isChancellorCandidate && 'border-blue-500/50 ring-1 ring-blue-500/20',
                 p.isPresident && 'bg-yellow-900/20 border-yellow-500 shadow-lg shadow-yellow-500/10',
@@ -99,24 +99,24 @@ export const PlayerGrid = ({ gameState, me, speakingPlayers, playSound, token, s
                       stream && isVideoActive && 'hidden'
                     )}>
                       <div className={cn(
-                        'bg-[#222] flex items-center justify-center relative',
-                        !p.activeFrame && 'border border-[#333]',
+                        'bg-card flex items-center justify-center relative',
+                        !p.activeFrame && 'border border-default',
                         isManyPlayers ? 'w-6 h-6 sm:w-12 sm:h-12 rounded-lg' : 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl'
                       )}>
                         {p.avatarUrl
                           ? <img src={getProxiedUrl(p.avatarUrl)} alt={p.name} className={cn("w-full h-full object-cover", isManyPlayers ? 'rounded-lg' : 'rounded-xl')} />
-                          : <Users className={cn('text-[#666]', isManyPlayers ? 'w-3 h-3 sm:w-6 sm:h-6' : 'w-5 h-5 sm:w-6 sm:h-6')} />}
+                          : <Users className={cn('text-muted', isManyPlayers ? 'w-3 h-3 sm:w-6 sm:h-6' : 'w-5 h-5 sm:w-6 sm:h-6')} />}
                         {p.activeFrame && (
                           <div className={cn('absolute inset-0 pointer-events-none', isManyPlayers ? 'rounded-lg' : 'rounded-xl', getFrameStyles(p.activeFrame))} />
                         )}
                         {!p.isAlive && (
-                          <div className={cn("absolute inset-0 flex items-center justify-center bg-black/40", isManyPlayers ? 'rounded-lg' : 'rounded-xl')}>
+                          <div className={cn("absolute inset-0 flex items-center justify-center bg-backdrop-sm", isManyPlayers ? 'rounded-lg' : 'rounded-xl')}>
                             <Eye className={cn('text-red-600 drop-shadow-[0_0_5px_rgba(220,38,38,0.8)]', isManyPlayers ? 'w-4 h-4 sm:w-8 sm:h-8' : 'w-6 h-6 sm:w-8 sm:h-8')} />
                           </div>
                         )}
                         {(gameState.phase === 'Voting' || gameState.phase === 'Voting_Reveal') && p.vote && (
                           <div className={cn("sm:hidden absolute inset-0 flex items-center justify-center bg-green-500/40 backdrop-blur-[1px]", isManyPlayers ? 'rounded-lg' : 'rounded-xl')}>
-                            <Check className="w-4 h-4 text-white drop-shadow-[0_0_3px_rgba(0,0,0,0.5)]" />
+                            <Check className="w-4 h-4 text-primary drop-shadow-[0_0_3px_rgba(0,0,0,0.5)]" />
                           </div>
                         )}
                       </div>
@@ -124,13 +124,13 @@ export const PlayerGrid = ({ gameState, me, speakingPlayers, playSound, token, s
                       {/* Mobile role badges */}
                       <div className="sm:hidden absolute top-0 -right-1 flex flex-col gap-0.5 z-10">
                         {(p.isPresident || p.isPresidentialCandidate) && (
-                          <div className="w-3 h-3 bg-yellow-500 rounded-sm border border-[#1a1a1a] flex items-center justify-center shadow-sm">
+                          <div className="w-3 h-3 bg-yellow-500 rounded-sm border border-deep flex items-center justify-center shadow-sm">
                             <span className="text-[7px] font-bold text-black leading-none">P</span>
                           </div>
                         )}
                         {(p.isChancellor || p.isChancellorCandidate) && (
-                          <div className="w-3 h-3 bg-blue-500 rounded-sm border border-[#1a1a1a] flex items-center justify-center shadow-sm">
-                            <span className="text-[7px] font-bold text-white leading-none">C</span>
+                          <div className="w-3 h-3 bg-blue-500 rounded-sm border border-deep flex items-center justify-center shadow-sm">
+                            <span className="text-[7px] font-bold text-primary leading-none">C</span>
                           </div>
                         )}
                       </div>
@@ -156,8 +156,8 @@ export const PlayerGrid = ({ gameState, me, speakingPlayers, playSound, token, s
 
                     <div className={cn(
                       'font-thematic tracking-wide truncate px-1 leading-tight',
-                      stream && isVideoActive ? 'text-[7px] sm:text-[9px] bg-black/50 rounded px-1' : 'text-[9px] sm:text-[11px]',
-                      p.isAlive ? 'text-white/90' : 'text-[#444]'
+                      stream && isVideoActive ? 'text-[7px] sm:text-[9px] bg-backdrop-sm rounded px-1' : 'text-[9px] sm:text-[11px]',
+                      p.isAlive ? 'text-primary/90' : 'text-ghost'
                     )}>
                       {p.name.replace(' (AI)', '')} {p.id === socket.id && '(You)'}
                     </div>

@@ -29,14 +29,14 @@ export const TitleAbilityModal = ({ role, gameState, onClose }: TitleAbilityModa
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#1a1a1a] border border-[#333] rounded-2xl p-6 max-w-md w-full shadow-2xl">
-        <h2 className="text-2xl font-thematic text-white mb-4">Title Ability: {role}</h2>
+    <div className="fixed inset-0 bg-backdrop flex items-center justify-center z-50 p-4">
+      <div className="bg-surface border border-default rounded-2xl p-6 max-w-md w-full shadow-2xl">
+        <h2 className="text-2xl font-thematic text-primary mb-4">Title Ability: {role}</h2>
         <div className="text-gray-300 mb-6">
           {role === 'Broker' && (
             <>
               Do you want to force a re-nomination?
-              <div className="mt-4 p-3 bg-[#222] rounded-lg text-sm border border-[#333]">
+              <div className="mt-4 p-3 bg-card rounded-lg text-sm border border-default">
                 <p><strong>President:</strong> {gameState.players[gameState.presidentIdx]?.name}</p>
                 <p><strong>Nominated Chancellor:</strong> {gameState.players.find(p => p.isChancellorCandidate)?.name || 'None'}</p>
               </div>
@@ -51,7 +51,7 @@ export const TitleAbilityModal = ({ role, gameState, onClose }: TitleAbilityModa
         
         {(role === 'Assassin' || role === 'Interdictor') && (
           <select 
-            className="w-full bg-[#222] text-white p-3 rounded-xl mb-6"
+            className="w-full bg-card text-primary p-3 rounded-xl mb-6"
             value={targetId}
             onChange={(e) => setTargetId(e.target.value)}
           >
@@ -61,8 +61,8 @@ export const TitleAbilityModal = ({ role, gameState, onClose }: TitleAbilityModa
         )}
 
         <div className="flex gap-4">
-          <button onClick={handleUse} className="flex-1 bg-white text-black py-3 rounded-xl font-bold hover:bg-gray-200 transition-all">Yes</button>
-          <button onClick={handleSkip} className="flex-1 bg-[#333] text-white py-3 rounded-xl font-bold hover:bg-[#444] transition-all">No</button>
+          <button onClick={handleUse} className="flex-1 btn-primary py-3 rounded-xl font-bold hover:bg-subtle transition-all">Yes</button>
+          <button onClick={handleSkip} className="flex-1 bg-subtle text-primary py-3 rounded-xl font-bold hover:bg-muted-bg transition-all">No</button>
         </div>
       </div>
     </div>

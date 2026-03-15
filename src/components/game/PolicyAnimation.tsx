@@ -26,8 +26,8 @@ export const PolicyAnimation = ({ gameState, show }: PolicyAnimationProps) => (
             exit={{ y: -400, scale: 0.2, opacity: 0, transition: { duration: 0.8, ease: 'anticipate' } }}
             className="w-32 h-44 relative preserve-3d"
           >
-            <div className="absolute inset-0 bg-[#222] border-2 border-[#444] rounded-xl flex items-center justify-center backface-hidden">
-              <Shield className="w-12 h-12 text-[#444]" />
+            <div className="absolute inset-0 bg-card border-2 border-strong rounded-xl flex items-center justify-center backface-hidden">
+              <Shield className="w-12 h-12 text-ghost" />
             </div>
             <div className={cn(
               'absolute inset-0 rounded-xl border-4 flex flex-col items-center justify-center gap-3 backface-hidden rotate-y-180',
