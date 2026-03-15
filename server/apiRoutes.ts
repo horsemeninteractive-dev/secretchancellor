@@ -21,6 +21,7 @@ import {
   removeFriend,
   getLeaderboard,
   getGlobalStats,
+  getMatchHistory,
 } from "./supabaseService.ts";
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -127,6 +128,38 @@ export function registerRoutes(
       if (!user) return res.status(404).json({ error: "User not found" });
       const { password: _, ...userWithoutPassword } = user;
       res.json({ user: userWithoutPassword });
+    } catch (_) {
+      res.status(401).json({ error: "Invalid token" });
+    }
+  });
+
+  // Mark tutorial as completed — adds 'tutorial-complete' to claimedRewards
+  app.post("/api/tutorial-complete", async (req: Request, res: Response) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ error: "No token" });
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { username: string };
+      const user = await getUser(decoded.username);
+      if (!user) return res.status(404).json({ error: "User not found" });
+      if (!user.claimedRewards.includes("tutorial-complete")) {
+        user.claimedRewards.push("tutorial-complete");
+        await saveUser(user);
+      }
+      const { password: _, ...safe } = user;
+      res.json({ user: safe });
+    } catch (_) {
+      res.status(401).json({ error: "Invalid token" });
+    }
+  });
+
+  // Match history — returns last 20 games for a user
+  app.get("/api/match-history/:userId", async (req: Request, res: Response) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ error: "No token" });
+    try {
+      jwt.verify(token, JWT_SECRET);
+      const history = await getMatchHistory(req.params.userId, 20);
+      res.json({ history });
     } catch (_) {
       res.status(401).json({ error: "Invalid token" });
     }

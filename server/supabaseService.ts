@@ -264,6 +264,74 @@ export async function saveUser(userData: any): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Match history
+// ---------------------------------------------------------------------------
+
+// In-memory fallback for match history (keyed by userId)
+const matchHistoryStore: Map<string, any[]> = new Map();
+
+export async function saveMatchResult(match: any): Promise<void> {
+  if (isConfigured) {
+    const { error } = await db.from("match_history").insert({
+      id:               match.id,
+      user_id:          match.userId,
+      played_at:        match.playedAt,
+      room_name:        match.roomName,
+      mode:             match.mode,
+      player_count:     match.playerCount,
+      role:             match.role,
+      won:              match.won,
+      win_reason:       match.winReason,
+      rounds:           match.rounds,
+      civil_directives: match.civilDirectives,
+      state_directives: match.stateDirectives,
+      agenda_id:        match.agendaId ?? null,
+      agenda_name:      match.agendaName ?? null,
+      agenda_completed: match.agendaCompleted,
+      xp_earned:        match.xpEarned,
+      ip_earned:        match.ipEarned,
+    });
+    if (error) console.error("Match history save error:", error.message);
+  } else {
+    const existing = matchHistoryStore.get(match.userId) ?? [];
+    existing.unshift(match);
+    matchHistoryStore.set(match.userId, existing.slice(0, 50));
+  }
+}
+
+export async function getMatchHistory(userId: string, limit = 20): Promise<any[]> {
+  if (isConfigured) {
+    const { data, error } = await db
+      .from("match_history")
+      .select("*")
+      .eq("user_id", userId)
+      .order("played_at", { ascending: false })
+      .limit(limit);
+    if (error || !data) return [];
+    return data.map(r => ({
+      id:               r.id,
+      userId:           r.user_id,
+      playedAt:         r.played_at,
+      roomName:         r.room_name,
+      mode:             r.mode,
+      playerCount:      r.player_count,
+      role:             r.role,
+      won:              r.won,
+      winReason:        r.win_reason,
+      rounds:           r.rounds,
+      civilDirectives:  r.civil_directives,
+      stateDirectives:  r.state_directives,
+      agendaId:         r.agenda_id,
+      agendaName:       r.agenda_name,
+      agendaCompleted:  r.agenda_completed,
+      xpEarned:         r.xp_earned,
+      ipEarned:         r.ip_earned,
+    }));
+  }
+  return (matchHistoryStore.get(userId) ?? []).slice(0, limit);
+}
+
+// ---------------------------------------------------------------------------
 // New-user factory — shared by register, Google OAuth, Discord OAuth
 // ---------------------------------------------------------------------------
 

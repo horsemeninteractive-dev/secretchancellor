@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageSquare, LogOut, BookOpen, Scale, Eye, Mic, MicOff, User as UserIcon } from 'lucide-react';
+import { MessageSquare, LogOut, BookOpen, Scale, Eye, Mic, MicOff, User as UserIcon, HelpCircle } from 'lucide-react';
 import { Tooltip } from '../Tooltip';
 import { GameState, Player, Role, PrivateInfo } from '../../types';
 import { OverseerIcon } from '../icons';
@@ -13,11 +13,12 @@ interface GameHeaderProps {
   user: { username: string; avatarUrl?: string; activeFrame?: string } | null;
   privateInfo: PrivateInfo | null;
   hasNewMessages: boolean;
-  tick: number; // forces re-render for timer
+  tick: number;
   onOpenChat: () => void;
   onOpenHistory: () => void;
   onOpenDossier: () => void;
   onOpenProfile: () => void;
+  onOpenReference: () => void;
   onLeaveRoom: () => void;
   playSound: (key: string) => void;
 }
@@ -25,7 +26,7 @@ interface GameHeaderProps {
 export const GameHeader = ({
   gameState, me, socketId, user, privateInfo,
   hasNewMessages, tick,
-  onOpenChat, onOpenHistory, onOpenDossier, onOpenProfile, onLeaveRoom,
+  onOpenChat, onOpenHistory, onOpenDossier, onOpenProfile, onOpenReference, onLeaveRoom,
   playSound,
 }: GameHeaderProps) => {
   const timerRemaining = gameState.actionTimerEnd
@@ -88,6 +89,18 @@ export const GameHeader = ({
               <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-yellow-500 rounded-full border border-[#1a1a1a] flex items-center justify-center">
                 <span className="text-[7px] font-bold text-black leading-none">{gameState.roundHistory.length}</span>
               </span>
+            </button>
+          </Tooltip>
+        )}
+
+        {/* Help / Reference */}
+        {gameState.phase !== 'Lobby' && gameState.phase !== 'GameOver' && (
+          <Tooltip content="Phase Reference">
+            <button
+              onClick={() => { playSound('click'); onOpenReference(); }}
+              className="p-[1vh] sm:p-[1.2vh] rounded-xl border border-[#333] bg-[#222] text-[#666] hover:text-blue-400 hover:border-blue-900/50 transition-all"
+            >
+              <HelpCircle className="w-[1.8vh] h-[1.8vh] sm:w-[2vh] sm:h-[2vh]" />
             </button>
           </Tooltip>
         )}

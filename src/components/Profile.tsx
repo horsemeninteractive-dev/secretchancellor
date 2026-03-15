@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Trophy, Coins, Shield, User as UserIcon, Check, ShoppingBag, ArrowLeft, Star, Heart, Zap, Flame, Scroll, Play, Pause, Calendar } from 'lucide-react';
-import { User, CosmeticItem, Policy } from '../types';
+import { X, Trophy, Coins, Shield, User as UserIcon, Check, ShoppingBag, ArrowLeft, Star, Heart, Zap, Flame, Scroll, Play, Pause, Calendar, Clock, Target, ChevronDown, ChevronUp } from 'lucide-react';
+import { User, CosmeticItem, Policy, MatchSummary } from '../types';
 import { FriendsList } from './FriendsList';
 import { Inventory } from './Inventory';
 import { cn, getProxiedUrl } from '../lib/utils';
@@ -43,12 +43,15 @@ interface ProfileProps {
 }
 
 export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, token, playSound, playMusic, stopMusic, settings, roomId, onJoinRoom, mode }) => {
-  const [activeTab, setActiveTab] = useState<'stats' | 'shop' | 'settings' | 'pass' | 'friends' | 'inventory'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'shop' | 'settings' | 'pass' | 'friends' | 'inventory' | 'history'>('stats');
   const [shopCategory, setShopCategory] = useState<'frame' | 'policy' | 'vote' | 'music' | 'sound' | 'background'>('frame');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [playingItemId, setPlayingItemId] = useState<string | null>(null);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [matchHistory, setMatchHistory] = useState<MatchSummary[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [expandedMatch, setExpandedMatch] = useState<string | null>(null);
 
   useEffect(() => {
     const loadVoices = () => {
@@ -167,6 +170,19 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
     }
   };
 
+  // Fetch match history when tab is opened
+  useEffect(() => {
+    if (activeTab !== 'history' || matchHistory.length > 0) return;
+    setHistoryLoading(true);
+    fetch(`/api/match-history/${user.id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.json())
+      .then(data => { if (data.history) setMatchHistory(data.history); })
+      .catch(() => {})
+      .finally(() => setHistoryLoading(false));
+  }, [activeTab]);
+
   const winRate = user.stats.gamesPlayed > 0 
     ? Math.round((user.stats.wins / user.stats.gamesPlayed) * 100) 
     : 0;
@@ -262,82 +278,53 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
         {/* Tabs */}
         <div className="grid grid-cols-3 border-b border-[#222]">
           <button 
-            onClick={() => {
-              playSound('click');
-              setActiveTab('stats');
-            }}
-            className={cn(
-              "py-4 text-xs font-mono uppercase tracking-widest transition-all relative border-r border-b border-[#222]",
-              activeTab === 'stats' ? "text-white" : "text-[#444] hover:text-[#666]"
-            )}
+            onClick={() => { playSound('click'); setActiveTab('stats'); }}
+            className={cn("py-4 text-xs font-mono uppercase tracking-widest transition-all relative border-r border-b border-[#222]", activeTab === 'stats' ? "text-white" : "text-[#444] hover:text-[#666]")}
           >
             Stats
             {activeTab === 'stats' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-500" />}
           </button>
           <button 
-            onClick={() => {
-              playSound('click');
-              setActiveTab('inventory');
-            }}
-            className={cn(
-              "py-4 text-xs font-mono uppercase tracking-widest transition-all relative border-r border-b border-[#222]",
-              activeTab === 'inventory' ? "text-white" : "text-[#444] hover:text-[#666]"
-            )}
+            onClick={() => { playSound('click'); setActiveTab('inventory'); }}
+            className={cn("py-4 text-xs font-mono uppercase tracking-widest transition-all relative border-r border-b border-[#222]", activeTab === 'inventory' ? "text-white" : "text-[#444] hover:text-[#666]")}
           >
             Inventory
             {activeTab === 'inventory' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-500" />}
           </button>
           <button 
-            onClick={() => {
-              playSound('click');
-              setActiveTab('friends');
-            }}
-            className={cn(
-              "py-4 text-xs font-mono uppercase tracking-widest transition-all relative border-b border-[#222]",
-              activeTab === 'friends' ? "text-white" : "text-[#444] hover:text-[#666]"
-            )}
+            onClick={() => { playSound('click'); setActiveTab('friends'); }}
+            className={cn("py-4 text-xs font-mono uppercase tracking-widest transition-all relative border-b border-[#222]", activeTab === 'friends' ? "text-white" : "text-[#444] hover:text-[#666]")}
           >
             Friends
             {activeTab === 'friends' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-500" />}
           </button>
           <button 
-            onClick={() => {
-              playSound('click');
-              setActiveTab('pass');
-            }}
-            className={cn(
-              "py-4 text-xs font-mono uppercase tracking-widest transition-all relative border-r border-b border-[#222]",
-              activeTab === 'pass' ? "text-white" : "text-[#444] hover:text-[#666]"
-            )}
+            onClick={() => { playSound('click'); setActiveTab('pass'); }}
+            className={cn("py-4 text-xs font-mono uppercase tracking-widest transition-all relative border-r border-b border-[#222]", activeTab === 'pass' ? "text-white" : "text-[#444] hover:text-[#666]")}
           >
             Pass
             {activeTab === 'pass' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-500" />}
           </button>
           <button 
-            onClick={() => {
-              playSound('click');
-              setActiveTab('shop');
-            }}
-            className={cn(
-              "py-4 text-xs font-mono uppercase tracking-widest transition-all relative border-r border-b border-[#222]",
-              activeTab === 'shop' ? "text-white" : "text-[#444] hover:text-[#666]"
-            )}
+            onClick={() => { playSound('click'); setActiveTab('shop'); }}
+            className={cn("py-4 text-xs font-mono uppercase tracking-widest transition-all relative border-r border-b border-[#222]", activeTab === 'shop' ? "text-white" : "text-[#444] hover:text-[#666]")}
           >
             Shop
             {activeTab === 'shop' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-500" />}
           </button>
           <button 
-            onClick={() => {
-              playSound('click');
-              setActiveTab('settings');
-            }}
-            className={cn(
-              "py-4 text-xs font-mono uppercase tracking-widest transition-all relative border-b border-[#222]",
-              activeTab === 'settings' ? "text-white" : "text-[#444] hover:text-[#666]"
-            )}
+            onClick={() => { playSound('click'); setActiveTab('settings'); }}
+            className={cn("py-4 text-xs font-mono uppercase tracking-widest transition-all relative border-b border-[#222]", activeTab === 'settings' ? "text-white" : "text-[#444] hover:text-[#666]")}
           >
             Settings
             {activeTab === 'settings' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-500" />}
+          </button>
+          <button 
+            onClick={() => { playSound('click'); setActiveTab('history'); }}
+            className={cn("py-4 text-xs font-mono uppercase tracking-widest transition-all relative col-span-3 border-b border-[#222]", activeTab === 'history' ? "text-white" : "text-[#444] hover:text-[#666]")}
+          >
+            Match History
+            {activeTab === 'history' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-500" />}
           </button>
         </div>
 
@@ -626,7 +613,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                 })}
               </div>
             </div>
-          ) : (
+          ) : activeTab === 'settings' ? (
             <div className="space-y-6 max-w-md mx-auto">
               <div className="flex items-center justify-between p-4 bg-[#141414] border border-[#222] rounded-2xl">
                 <span className="text-sm font-mono text-white">AI Voice Chat</span>
@@ -704,7 +691,146 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
                 <p className="text-[10px] font-mono text-[#444] uppercase">Adjusts the overall size of the interface</p>
               </div>
             </div>
-          )}
+          ) : activeTab === 'history' ? (
+            <div className="space-y-3">
+              {historyLoading ? (
+                <div className="flex items-center justify-center py-16 text-[#444] font-mono text-xs uppercase tracking-widest">
+                  Loading match history...
+                </div>
+              ) : matchHistory.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+                  <Clock className="w-10 h-10 text-[#333]" />
+                  <p className="text-[#444] font-mono text-xs uppercase tracking-widest">No matches recorded yet</p>
+                  <p className="text-[#333] text-xs italic">Your game history will appear here after your first game.</p>
+                </div>
+              ) : matchHistory.map((match) => {
+                const isExpanded = expandedMatch === match.id;
+                const date = new Date(match.playedAt);
+                const dateStr = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+                const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+                return (
+                  <div
+                    key={match.id}
+                    className={cn(
+                      'rounded-2xl border overflow-hidden transition-colors',
+                      match.won ? 'border-emerald-900/40 bg-emerald-900/5' : 'border-red-900/30 bg-red-900/5'
+                    )}
+                  >
+                    {/* Match summary row */}
+                    <button
+                      onClick={() => setExpandedMatch(isExpanded ? null : match.id)}
+                      className="w-full flex items-center gap-4 p-4 text-left"
+                    >
+                      {/* Win/loss indicator */}
+                      <div className={cn(
+                        'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-thematic text-xs uppercase tracking-widest',
+                        match.won ? 'bg-emerald-900/30 text-emerald-400 border border-emerald-700/40' : 'bg-red-900/30 text-red-400 border border-red-700/40'
+                      )}>
+                        {match.won ? 'W' : 'L'}
+                      </div>
+
+                      {/* Core info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={cn(
+                            'text-xs font-mono uppercase tracking-widest px-2 py-0.5 rounded border',
+                            match.role === 'Civil' ? 'text-blue-400 bg-blue-900/20 border-blue-900/40'
+                            : match.role === 'Overseer' ? 'text-red-500 bg-red-900/30 border-red-700/50 font-bold'
+                            : 'text-red-400 bg-red-900/20 border-red-900/40'
+                          )}>
+                            {match.role}
+                          </span>
+                          <span className={cn(
+                            'text-[10px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded border',
+                            match.mode === 'Ranked' ? 'text-yellow-500 bg-yellow-900/10 border-yellow-900/30' : 'text-blue-400 bg-blue-900/10 border-blue-900/30'
+                          )}>
+                            {match.mode}
+                          </span>
+                          <span className="text-[#555] text-xs font-mono">{match.playerCount}p · R{match.rounds}</span>
+                        </div>
+                        <div className="text-[#666] text-xs mt-0.5 truncate">
+                          {match.winReason || (match.won ? 'Victory' : 'Defeat')}
+                        </div>
+                      </div>
+
+                      {/* Rewards */}
+                      <div className="flex flex-col items-end gap-0.5 shrink-0">
+                        <span className="text-emerald-400 text-xs font-mono">+{match.xpEarned} XP</span>
+                        <span className="text-yellow-400 text-xs font-mono">+{match.ipEarned} IP</span>
+                      </div>
+
+                      {/* Expand chevron */}
+                      <div className="text-[#555] ml-1 shrink-0">
+                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </div>
+                    </button>
+
+                    {/* Expanded details */}
+                    <AnimatePresence initial={false}>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-4 pb-4 space-y-3 border-t border-white/5 pt-3">
+                            {/* Policy track */}
+                            <div className="flex gap-4">
+                              <div className="flex-1 bg-[#1a1a1a] rounded-xl p-3 border border-[#222]">
+                                <div className="text-[#555] text-[10px] font-mono uppercase tracking-widest mb-1">Civil Track</div>
+                                <div className="flex items-center gap-2">
+                                  <div className="flex gap-1">
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                      <div key={i} className={cn('w-5 h-5 rounded border', i < match.civilDirectives ? 'bg-blue-600 border-blue-500' : 'bg-[#222] border-[#333]')} />
+                                    ))}
+                                  </div>
+                                  <span className="text-blue-400 text-xs font-mono">{match.civilDirectives}/5</span>
+                                </div>
+                              </div>
+                              <div className="flex-1 bg-[#1a1a1a] rounded-xl p-3 border border-[#222]">
+                                <div className="text-[#555] text-[10px] font-mono uppercase tracking-widest mb-1">State Track</div>
+                                <div className="flex items-center gap-2">
+                                  <div className="flex gap-1">
+                                    {Array.from({ length: 6 }).map((_, i) => (
+                                      <div key={i} className={cn('w-4 h-5 rounded border', i < match.stateDirectives ? 'bg-red-700 border-red-600' : 'bg-[#222] border-[#333]')} />
+                                    ))}
+                                  </div>
+                                  <span className="text-red-400 text-xs font-mono">{match.stateDirectives}/6</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Personal agenda */}
+                            {match.agendaName && (
+                              <div className={cn(
+                                'rounded-xl p-3 border flex items-center gap-3',
+                                match.agendaCompleted ? 'bg-emerald-900/10 border-emerald-700/30' : 'bg-[#1a1a1a] border-[#222]'
+                              )}>
+                                <Target className={cn('w-4 h-4 shrink-0', match.agendaCompleted ? 'text-emerald-400' : 'text-[#555]')} />
+                                <div className="min-w-0">
+                                  <div className="text-[#555] text-[10px] font-mono uppercase tracking-widest">Personal Agenda</div>
+                                  <div className={cn('text-xs font-medium', match.agendaCompleted ? 'text-emerald-400' : 'text-[#888]')}>
+                                    {match.agendaName} — {match.agendaCompleted ? 'Completed' : 'Failed'}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Date/time */}
+                            <div className="text-[#444] text-[10px] font-mono text-right">
+                              {dateStr} at {timeStr}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
       </motion.div>
     </div>

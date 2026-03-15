@@ -25,8 +25,9 @@ import { DeclarationModal } from './game/modals/DeclarationModal';
 import { FriendRequestModal } from './game/modals/FriendRequestModal';
 import { PlayerProfileModal } from './game/modals/PlayerProfileModal';
 import { TitleAbilityModal } from './game/modals/TitleAbilityModal';
+import { GameReferencePanel } from './game/GameReferencePanel';
 
-const CLIENT_VERSION = 'v0.8.10';
+const CLIENT_VERSION = 'v0.9.4';
 
 interface GameRoomProps {
   gameState: GameState;
@@ -96,6 +97,7 @@ export const GameRoom = ({
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isDossierOpen, setIsDossierOpen] = useState(false);
+  const [isReferenceOpen, setIsReferenceOpen] = useState(false);
   const [chatText, setChatText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [lastSeenMessageCount, setLastSeenMessageCount] = useState(0);
@@ -560,6 +562,7 @@ export const GameRoom = ({
         onOpenChat={() => { playSound('click'); setIsChatOpen(true); }}
         onOpenHistory={() => { playSound('click'); setIsHistoryOpen(true); }}
         onOpenDossier={() => { playSound('click'); setIsDossierOpen(true); }}
+        onOpenReference={() => { playSound('click'); setIsReferenceOpen(true); }}
         onOpenProfile={onOpenProfile}
         onLeaveRoom={onLeaveRoom}
         playSound={playSound}
@@ -705,6 +708,12 @@ export const GameRoom = ({
           onClose={() => {}}
         />
       )}
+      <GameReferencePanel
+        isOpen={isReferenceOpen}
+        onClose={() => setIsReferenceOpen(false)}
+        gameState={gameState}
+        me={me}
+      />
     </div>
   );
 };

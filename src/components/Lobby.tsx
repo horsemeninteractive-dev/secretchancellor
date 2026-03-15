@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Users, MessageSquare, LogOut, User as UserIcon, Trophy, Coins, Settings, Zap } from 'lucide-react';
+import { Plus, Users, MessageSquare, LogOut, User as UserIcon, Trophy, Coins, Settings, Zap, BookOpen } from 'lucide-react';
 import { Tooltip } from './Tooltip';
 import { User, RoomInfo } from '../types';
 import { cn, getProxiedUrl } from '../lib/utils';
 import { getFrameStyles } from '../lib/cosmetics';
 import { LeaderboardModal } from './game/modals/LeaderboardModal';
+import { HowToPlayModal } from './HowToPlayModal';
 
 interface LobbyProps {
   user: User;
@@ -23,6 +24,7 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
   const [globalStats, setGlobalStats] = useState<{ civilWins: number; stateWins: number }>({ civilWins: 0, stateWins: 0 });
   const [isCreating, setIsCreating] = useState(false);
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+  const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
   const [maxPlayers, setMaxPlayers] = useState(5);
   const [actionTimer, setActionTimer] = useState(60);
@@ -95,7 +97,7 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
           <div className="min-w-0">
             <div className="flex items-baseline gap-2">
               <h1 className="text-responsive-sm sm:text-responsive-xl font-thematic text-white tracking-wide leading-none truncate">The Assembly</h1>
-              <span className="text-[8px] font-mono text-red-500/60 border border-red-900/40 rounded px-1 py-0.5 leading-none shrink-0">v0.9.3</span>
+              <span className="text-[8px] font-mono text-red-500/60 border border-red-900/40 rounded px-1 py-0.5 leading-none shrink-0">v0.9.4</span>
             </div>
             <p className="text-responsive-xs uppercase tracking-widest text-[#666] font-mono mt-0.5">Assembly Lobby</p>
           </div>
@@ -154,6 +156,18 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
               className="w-[4vh] h-[4vh] sm:w-[5vh] sm:h-[5vh] rounded-xl bg-[#222] border border-[#333] flex items-center justify-center hover:border-yellow-900/50 transition-colors"
             >
               <Trophy className="w-[2vh] h-[2vh] text-yellow-500" />
+            </button>
+          </Tooltip>
+
+          <Tooltip content="How to Play">
+            <button 
+              onClick={() => {
+                playSound('click');
+                setIsHowToPlayOpen(true);
+              }}
+              className="w-[4vh] h-[4vh] sm:w-[5vh] sm:h-[5vh] rounded-xl bg-[#222] border border-[#333] flex items-center justify-center hover:border-blue-900/50 transition-colors"
+            >
+              <BookOpen className="w-[2vh] h-[2vh] text-blue-400" />
             </button>
           </Tooltip>
 
@@ -340,6 +354,7 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
         {isLeaderboardOpen && (
           <LeaderboardModal user={user} onClose={() => setIsLeaderboardOpen(false)} />
         )}
+        <HowToPlayModal isOpen={isHowToPlayOpen} onClose={() => setIsHowToPlayOpen(false)} />
       </main>
 
       {/* Create Room Modal */}

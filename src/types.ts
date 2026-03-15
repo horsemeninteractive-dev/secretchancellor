@@ -78,6 +78,26 @@ export interface UserStats {
   agendasCompleted: number;
 }
 
+export interface MatchSummary {
+  id: string;
+  userId: string;
+  playedAt: string;          // ISO timestamp
+  roomName: string;
+  mode: GameMode;
+  playerCount: number;
+  role: Role;
+  won: boolean;
+  winReason: string;
+  rounds: number;
+  civilDirectives: number;
+  stateDirectives: number;
+  agendaId?: PersonalAgendaId;
+  agendaName?: string;
+  agendaCompleted: boolean;
+  xpEarned: number;
+  ipEarned: number;
+}
+
 export interface CosmeticItem {
   id: string;
   name: string;

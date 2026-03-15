@@ -51,13 +51,53 @@ export const ActionBar = ({ gameState, me, user, showDebug, onOpenLog, onPlayAga
     }
   };
 
+  const phaseHint = () => {
+    const isPresident = me?.isPresidentialCandidate || me?.isPresident;
+    const isChancellor = me?.isChancellorCandidate || me?.isChancellor;
+    switch (gameState.phase) {
+      case 'Nominate_Chancellor':
+        return isPresident
+          ? 'Tap a player on the board to nominate them as Chancellor.'
+          : 'Watch the nomination — it reveals who the President trusts.';
+      case 'Voting':
+        return me?.id === gameState.detainedPlayerId
+          ? 'You are detained and cannot vote this round.'
+          : 'Vote AYE to support this government or NAY to block it.';
+      case 'Legislative_President':
+        return isPresident
+          ? 'Discard one policy card. The other two go to the Chancellor.'
+          : 'The President is choosing which policy to pass to the Chancellor.';
+      case 'Legislative_Chancellor':
+        return isChancellor
+          ? 'Enact one policy. You may propose a Veto if 5+ State directives are enacted.'
+          : 'The Chancellor is choosing which policy to enact.';
+      case 'President_Declaration':
+      case 'Chancellor_Declaration':
+        return 'Declarations tell the table what was drawn and passed. They may be lies.';
+      case 'Executive_Action':
+        return isPresident
+          ? 'You must use your executive power before the next round begins.'
+          : 'The President must use their executive power.';
+      case 'Lobby':
+        return 'Press Ready Up when you\'re ready to start. The game begins when all players are ready.';
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="shrink-0 bg-[#1a1a1a] border-t border-[#222] flex flex-col">
       {/* Phase status */}
       <div className="px-[2vw] py-[1.5vh] bg-white/5 border-b border-[#222] flex justify-between items-center">
-        <div>
+        <div className="min-w-0 flex-1 mr-2">
           <div className="text-responsive-xs uppercase tracking-[0.2em] text-[#666] font-mono mb-1">Current Phase</div>
           <div className="text-responsive-sm font-serif italic text-white">{phaseLabel()}</div>
+          {/* Phase hints — shown for players with fewer than 5 games */}
+          {user && (user.stats?.gamesPlayed ?? 0) < 5 && phaseHint() && (
+            <div className="text-responsive-xs text-[#555] font-mono mt-1 leading-tight truncate">
+              {phaseHint()}
+            </div>
+          )}
         </div>
         <div className="flex gap-2">
           <Tooltip content={isVoiceActive ? "Mute Mic" : "Unmute Mic"}>

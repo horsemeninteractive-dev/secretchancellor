@@ -8,11 +8,12 @@ import { Profile } from './components/Profile';
 import { GameRoom } from './components/GameRoom';
 import { UpdateBanner } from './components/UpdateBanner';
 import { InviteModal } from './components/game/modals/InviteModal';
+import { TutorialModal } from './components/TutorialModal';
 import { MUSIC_TRACKS, SOUND_PACKS } from './lib/audio';
 import { discordSdk, setupDiscordSdk } from './lib/discord';
 import { cn, getProxiedUrl } from './lib/utils';
 
-const CLIENT_VERSION = 'v0.9.3';
+const CLIENT_VERSION = 'v0.9.4';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -28,6 +29,7 @@ export default function App() {
   const [isDiscord, setIsDiscord] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [pendingInvite, setPendingInvite] = useState<{ fromUsername: string; roomId: string } | null>(null);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -264,6 +266,30 @@ export default function App() {
     try { document.documentElement.requestFullscreen?.().catch(() => {}); } catch { /* ignore */ }
   };
 
+  // Trigger tutorial once the player has entered the assembly for the first time
+  useEffect(() => {
+    if (isInteracted && user && user.stats.gamesPlayed === 0 && !user.claimedRewards.includes('tutorial-complete')) {
+      setShowTutorial(true);
+    }
+  }, [isInteracted, user?.id]);
+
+  const handleTutorialComplete = async () => {
+    setShowTutorial(false);
+    // Mark tutorial complete on the server via claimedRewards
+    if (token) {
+      try {
+        await fetch('/api/tutorial-complete', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        });
+        // Refresh user to get updated claimedRewards
+        const res = await fetch('/api/me', { headers: { Authorization: `Bearer ${token}` } });
+        const data = await res.json();
+        if (data.user) setUser(data.user);
+      } catch { /* non-critical */ }
+    }
+  };
+
   const handleLogout = () => {
     setUser(null);
     setToken(null);
@@ -446,6 +472,11 @@ export default function App() {
           )}
         </>
       )}
+      <TutorialModal
+        isOpen={showTutorial}
+        onComplete={handleTutorialComplete}
+        onSkip={() => { setShowTutorial(false); handleTutorialComplete(); }}
+      />
     </div>
   );
 }

@@ -30,7 +30,7 @@ import {
   updateSuspicionFromNomination,
   updateSuspicionFromPolicyExpectation,
 } from "./suspicion.ts";
-import { getUserById, saveUser, incrementGlobalWin } from "./supabaseService.ts";
+import { getUserById, saveUser, saveMatchResult, incrementGlobalWin } from "./supabaseService.ts";
 import { calculateXpGain } from "../src/lib/xp.ts";
 import {
   assignPersonalAgendas,
@@ -1366,7 +1366,7 @@ export class GameEngine {
       const won = (winningSide === "Civil" && p.role === "Civil") ||
                   (winningSide === "State"  && (p.role === "State" || p.role === "Overseer"));
 
-      const xpGain = calculateXpGain({ win: won, kills: p.role === 'Overseer' ? p.stateEnactments || 0 : 0 });
+      const xpGain = calculateXpGain({ win: won, kills: p.role === "Overseer" ? p.stateEnactments || 0 : 0 });
       user.stats.xp += xpGain;
 
       if (won) {
@@ -1379,14 +1379,15 @@ export class GameEngine {
         user.stats.points += s.mode === "Ranked" ? 25 : 10;
       }
 
-      // Personal agenda reward — same XP value as a faction win, plus IP
+      // Personal agenda — evaluate once, used for both reward and match record
+      let agendaCompleted = false;
       if (p.personalAgenda) {
         const agendaDef = AGENDA_MAP.get(p.personalAgenda);
         if (agendaDef) {
-          const agendaStatus = agendaDef.evaluate(s, p.id);
-          if (agendaStatus === "completed") {
-            user.stats.xp     += 100; // equal to a faction win bonus
-            user.stats.points += s.mode === "Ranked" ? 40 : 20; // bonus IP
+          agendaCompleted = agendaDef.evaluate(s, p.id) === "completed";
+          if (agendaCompleted) {
+            user.stats.xp     += 100;
+            user.stats.points += s.mode === "Ranked" ? 40 : 20;
             user.stats.agendasCompleted++;
           }
         }
@@ -1401,6 +1402,32 @@ export class GameEngine {
       await saveUser(user);
       const { password: _, ...safe } = user;
       this.io.to(p.id).emit("userUpdate", safe);
+
+      // Save match history record
+      const baseIp   = won
+        ? (s.mode === "Ranked" ? 100 : 40)
+        : (s.mode === "Ranked" ? 25  : 10);
+      const xpEarned = xpGain + (agendaCompleted ? 100 : 0);
+      const ipEarned = baseIp + (agendaCompleted ? (s.mode === "Ranked" ? 40 : 20) : 0);
+      await saveMatchResult({
+        id:               randomUUID(),
+        userId:           p.userId,
+        playedAt:         new Date().toISOString(),
+        roomName:         s.roomId,
+        mode:             s.mode,
+        playerCount:      s.players.length,
+        role:             p.role,
+        won,
+        winReason:        s.winReason ?? "",
+        rounds:           s.round,
+        civilDirectives:  s.civilDirectives,
+        stateDirectives:  s.stateDirectives,
+        agendaId:         p.personalAgenda ?? null,
+        agendaName:       p.personalAgenda ? (AGENDA_MAP.get(p.personalAgenda)?.name ?? null) : null,
+        agendaCompleted,
+        xpEarned,
+        ipEarned,
+      });
     }
   }
 
