@@ -35,6 +35,7 @@ function mapSupabaseToUser(data: any): UserInternal {
   return {
     ...data,
     stats,
+    createdAt:         data.created_at,
     avatarUrl:         data.avatar_url,
     ownedCosmetics:    data.owned_cosmetics,
     activeFrame:       data.active_frame,
@@ -283,6 +284,7 @@ export function makeNewUser(overrides: Partial<any> = {}): any {
       elo:          1000,
       points:       0,
       xp:           0,
+      agendasCompleted: 0,
     },
     cabinetPoints: 0,
     claimedRewards: [],

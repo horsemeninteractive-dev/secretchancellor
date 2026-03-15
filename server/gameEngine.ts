@@ -1387,6 +1387,7 @@ export class GameEngine {
           if (agendaStatus === "completed") {
             user.stats.xp     += 100; // equal to a faction win bonus
             user.stats.points += s.mode === "Ranked" ? 40 : 20; // bonus IP
+            user.stats.agendasCompleted++;
           }
         }
       }

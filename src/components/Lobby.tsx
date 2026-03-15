@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Users, MessageSquare, LogOut, User as UserIcon, Trophy, Coins, Settings, Zap } from 'lucide-react';
+import { Tooltip } from './Tooltip';
 import { User, RoomInfo } from '../types';
 import { cn, getProxiedUrl } from '../lib/utils';
 import { getFrameStyles } from '../lib/cosmetics';
@@ -119,48 +120,54 @@ export const Lobby: React.FC<LobbyProps> = ({ user, onJoinRoom, onLogout, onOpen
         </div>
 
         <div className="flex items-center gap-[2vw] sm:gap-[3vw] flex-1 justify-end">
-          <button 
-            onClick={() => {
-              playSound('click');
-              onOpenProfile();
-            }}
-            className="flex items-center gap-3 group"
-          >
-            <div className="text-right hidden sm:block">
-              <div className="text-responsive-xs font-medium group-hover:text-red-500 transition-colors">{user.username}</div>
-              <div className="text-responsive-xs uppercase tracking-widest text-[#666] font-mono">View Profile</div>
-            </div>
-            <div className="w-[4vh] h-[4vh] sm:w-[5vh] sm:h-[5vh] rounded-xl bg-[#222] border border-[#333] flex items-center justify-center group-hover:border-red-900/50 transition-colors relative">
-              {user.avatarUrl ? (
-                <img src={getProxiedUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover rounded-xl" />
-              ) : (
-                <UserIcon className="w-[2vh] h-[2vh] text-[#666]" />
-              )}
-              {user.activeFrame && (
-                <div className={cn("absolute inset-0 rounded-xl pointer-events-none", getFrameStyles(user.activeFrame))} />
-              )}
-            </div>
-          </button>
+          <Tooltip content="My Profile">
+            <button 
+              onClick={() => {
+                playSound('click');
+                onOpenProfile();
+              }}
+              className="flex items-center gap-3 group"
+            >
+              <div className="text-right hidden sm:block">
+                <div className="text-responsive-xs font-medium group-hover:text-red-500 transition-colors">{user.username}</div>
+                <div className="text-responsive-xs uppercase tracking-widest text-[#666] font-mono">View Profile</div>
+              </div>
+              <div className="w-[4vh] h-[4vh] sm:w-[5vh] sm:h-[5vh] rounded-xl bg-[#222] border border-[#333] flex items-center justify-center group-hover:border-red-900/50 transition-colors relative">
+                {user.avatarUrl ? (
+                  <img src={getProxiedUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover rounded-xl" />
+                ) : (
+                  <UserIcon className="w-[2vh] h-[2vh] text-[#666]" />
+                )}
+                {user.activeFrame && (
+                  <div className={cn("absolute inset-0 rounded-xl pointer-events-none", getFrameStyles(user.activeFrame))} />
+                )}
+              </div>
+            </button>
+          </Tooltip>
 
-          <button 
-            onClick={() => {
-              playSound('click');
-              setIsLeaderboardOpen(true);
-            }}
-            className="w-[4vh] h-[4vh] sm:w-[5vh] sm:h-[5vh] rounded-xl bg-[#222] border border-[#333] flex items-center justify-center hover:border-yellow-900/50 transition-colors"
-          >
-            <Trophy className="w-[2vh] h-[2vh] text-yellow-500" />
-          </button>
+          <Tooltip content="Leaderboard">
+            <button 
+              onClick={() => {
+                playSound('click');
+                setIsLeaderboardOpen(true);
+              }}
+              className="w-[4vh] h-[4vh] sm:w-[5vh] sm:h-[5vh] rounded-xl bg-[#222] border border-[#333] flex items-center justify-center hover:border-yellow-900/50 transition-colors"
+            >
+              <Trophy className="w-[2vh] h-[2vh] text-yellow-500" />
+            </button>
+          </Tooltip>
 
-          <button 
-            onClick={() => {
-              playSound('click');
-              onLogout();
-            }}
-            className="p-[1vh] sm:p-[1.2vh] text-[#444] hover:text-red-500 transition-colors bg-[#141414] border border-[#222] rounded-xl"
-          >
-            <LogOut className="w-[2vh] h-[2vh]" />
-          </button>
+          <Tooltip content="Logout">
+            <button 
+              onClick={() => {
+                playSound('click');
+                onLogout();
+              }}
+              className="p-[1vh] sm:p-[1.2vh] text-[#444] hover:text-red-500 transition-colors bg-[#141414] border border-[#222] rounded-xl"
+            >
+              <LogOut className="w-[2vh] h-[2vh]" />
+            </button>
+          </Tooltip>
         </div>
       </header>
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Scroll, Scale, Eye, Mic, Video, VideoOff, MicOff } from 'lucide-react';
+import { Tooltip } from '../Tooltip';
 import { socket } from '../../socket';
 import { GameState, Player, User } from '../../types';
 import { getPolicyStyles, getVoteStyles } from '../../lib/cosmetics';
@@ -59,18 +60,22 @@ export const ActionBar = ({ gameState, me, user, showDebug, onOpenLog, onPlayAga
           <div className="text-responsive-sm font-serif italic text-white">{phaseLabel()}</div>
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={() => { playSound('click'); setIsVoiceActive(!isVoiceActive); }}
-            className={cn("p-[1vh] rounded-full transition-colors", isVoiceActive ? "bg-red-900/40 text-red-500" : "bg-[#222] text-[#666]")}
-          >
-            {isVoiceActive ? <Mic className="w-[2vh] h-[2vh]" /> : <MicOff className="w-[2vh] h-[2vh]" />}
-          </button>
-          <button
-            onClick={() => { playSound('click'); setIsVideoActive(!isVideoActive); }}
-            className={cn("p-[1vh] rounded-full transition-colors", isVideoActive ? "bg-red-900/40 text-red-500" : "bg-[#222] text-[#666]")}
-          >
-            {isVideoActive ? <Video className="w-[2vh] h-[2vh]" /> : <VideoOff className="w-[2vh] h-[2vh]" />}
-          </button>
+          <Tooltip content={isVoiceActive ? "Mute Mic" : "Unmute Mic"}>
+            <button
+              onClick={() => { playSound('click'); setIsVoiceActive(!isVoiceActive); }}
+              className={cn("p-[1vh] rounded-full transition-colors", isVoiceActive ? "bg-red-900/40 text-red-500" : "bg-[#222] text-[#666]")}
+            >
+              {isVoiceActive ? <Mic className="w-[2vh] h-[2vh]" /> : <MicOff className="w-[2vh] h-[2vh]" />}
+            </button>
+          </Tooltip>
+          <Tooltip content={isVideoActive ? "Stop Video" : "Start Video"}>
+            <button
+              onClick={() => { playSound('click'); setIsVideoActive(!isVideoActive); }}
+              className={cn("p-[1vh] rounded-full transition-colors", isVideoActive ? "bg-red-900/40 text-red-500" : "bg-[#222] text-[#666]")}
+            >
+              {isVideoActive ? <Video className="w-[2vh] h-[2vh]" /> : <VideoOff className="w-[2vh] h-[2vh]" />}
+            </button>
+          </Tooltip>
         </div>
       </div>
 

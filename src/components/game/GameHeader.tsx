@@ -1,5 +1,6 @@
 import React from 'react';
 import { MessageSquare, LogOut, BookOpen, Scale, Eye, Mic, MicOff, User as UserIcon } from 'lucide-react';
+import { Tooltip } from '../Tooltip';
 import { GameState, Player, Role, PrivateInfo } from '../../types';
 import { OverseerIcon } from '../icons';
 import { getFrameStyles } from '../../lib/cosmetics';
@@ -64,74 +65,84 @@ export const GameHeader = ({
 
       <div className="flex items-center gap-[1vw] sm:gap-[2vw]">
         {/* Chat */}
-        <button
-          onClick={() => { playSound('click'); onOpenChat(); }}
-          className="p-[1vh] sm:p-[1.2vh] rounded-xl border border-[#333] bg-[#222] text-[#666] hover:text-white transition-all relative"
-        >
-          <MessageSquare className="w-[1.8vh] h-[1.8vh] sm:w-[2vh] sm:h-[2vh]" />
-          {hasNewMessages && (
-            <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full border border-[#1a1a1a]" />
-          )}
-        </button>
+        <Tooltip content="Open Chat">
+          <button
+            onClick={() => { playSound('click'); onOpenChat(); }}
+            className="p-[1vh] sm:p-[1.2vh] rounded-xl border border-[#333] bg-[#222] text-[#666] hover:text-white transition-all relative"
+          >
+            <MessageSquare className="w-[1.8vh] h-[1.8vh] sm:w-[2vh] sm:h-[2vh]" />
+            {hasNewMessages && (
+              <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full border border-[#1a1a1a]" />
+            )}
+          </button>
+        </Tooltip>
 
         {/* History */}
         {gameState.roundHistory && gameState.roundHistory.length > 0 && (
-          <button
-            onClick={() => { playSound('click'); onOpenHistory(); }}
-            className="p-[1vh] sm:p-[1.2vh] rounded-xl border border-[#333] bg-[#222] text-[#666] hover:text-white transition-all relative"
-          >
-            <BookOpen className="w-[1.8vh] h-[1.8vh] sm:w-[2vh] sm:h-[2vh]" />
-            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-yellow-500 rounded-full border border-[#1a1a1a] flex items-center justify-center">
-              <span className="text-[7px] font-bold text-black leading-none">{gameState.roundHistory.length}</span>
-            </span>
-          </button>
+          <Tooltip content="Round History">
+            <button
+              onClick={() => { playSound('click'); onOpenHistory(); }}
+              className="p-[1vh] sm:p-[1.2vh] rounded-xl border border-[#333] bg-[#222] text-[#666] hover:text-white transition-all relative"
+            >
+              <BookOpen className="w-[1.8vh] h-[1.8vh] sm:w-[2vh] sm:h-[2vh]" />
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-yellow-500 rounded-full border border-[#1a1a1a] flex items-center justify-center">
+                <span className="text-[7px] font-bold text-black leading-none">{gameState.roundHistory.length}</span>
+              </span>
+            </button>
+          </Tooltip>
         )}
 
         {/* Dossier */}
         {gameState.phase !== 'Lobby' && (
-          <button
-            onClick={() => { playSound('click'); onOpenDossier(); }}
-            className={cn(
-              'p-[1vh] sm:p-[1.2vh] rounded-xl border transition-all',
-              privateInfo
-                ? privateInfo.role === 'Civil'
-                  ? 'border-blue-900/50 bg-blue-900/20'
-                  : 'border-red-900/50 bg-red-900/20'
-                : 'border-[#333] bg-[#222]'
-            )}
-          >
-            {privateInfo?.role === 'Civil' ? (
-              <Scale className="w-[1.8vh] h-[1.8vh] sm:w-[2vh] sm:h-[2vh] text-blue-400" />
-            ) : privateInfo?.role === 'Overseer' ? (
-              <OverseerIcon className="w-[1.8vh] h-[1.8vh] sm:w-[2vh] sm:h-[2vh] text-red-500" />
-            ) : (
-              <Eye className={cn('w-[1.8vh] h-[1.8vh] sm:w-[2vh] sm:h-[2vh]', privateInfo ? 'text-red-500' : 'text-[#666]')} />
-            )}
-          </button>
+          <Tooltip content="Your Dossier">
+            <button
+              onClick={() => { playSound('click'); onOpenDossier(); }}
+              className={cn(
+                'p-[1vh] sm:p-[1.2vh] rounded-xl border transition-all',
+                privateInfo
+                  ? privateInfo.role === 'Civil'
+                    ? 'border-blue-900/50 bg-blue-900/20'
+                    : 'border-red-900/50 bg-red-900/20'
+                  : 'border-[#333] bg-[#222]'
+              )}
+            >
+              {privateInfo?.role === 'Civil' ? (
+                <Scale className="w-[1.8vh] h-[1.8vh] sm:w-[2vh] sm:h-[2vh] text-blue-400" />
+              ) : privateInfo?.role === 'Overseer' ? (
+                <OverseerIcon className="w-[1.8vh] h-[1.8vh] sm:w-[2vh] sm:h-[2vh] text-red-500" />
+              ) : (
+                <Eye className={cn('w-[1.8vh] h-[1.8vh] sm:w-[2vh] sm:h-[2vh]', privateInfo ? 'text-red-500' : 'text-[#666]')} />
+              )}
+            </button>
+          </Tooltip>
         )}
 
         {/* Profile */}
-        <button
-          onClick={() => { playSound('click'); onOpenProfile(); }}
-          className="w-[4vh] h-[4vh] sm:w-[5vh] sm:h-[5vh] rounded-xl bg-[#222] border border-[#333] flex items-center justify-center hover:border-red-900/50 transition-colors relative shrink-0"
-        >
-          {user?.avatarUrl
-            ? <img src={getProxiedUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover rounded-xl" />
-            : <UserIcon className="w-[1.8vh] h-[1.8vh] sm:w-[2vh] sm:h-[2vh] text-[#666]" />}
-          {user?.activeFrame && (
-            <div className={cn('absolute inset-0 rounded-xl pointer-events-none', getFrameStyles(user.activeFrame))} />
-          )}
-        </button>
+        <Tooltip content="My Profile">
+          <button
+            onClick={() => { playSound('click'); onOpenProfile(); }}
+            className="w-[4vh] h-[4vh] sm:w-[5vh] sm:h-[5vh] rounded-xl bg-[#222] border border-[#333] flex items-center justify-center hover:border-red-900/50 transition-colors relative shrink-0"
+          >
+            {user?.avatarUrl
+              ? <img src={getProxiedUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover rounded-xl" />
+              : <UserIcon className="w-[1.8vh] h-[1.8vh] sm:w-[2vh] sm:h-[2vh] text-[#666]" />}
+            {user?.activeFrame && (
+              <div className={cn('absolute inset-0 rounded-xl pointer-events-none', getFrameStyles(user.activeFrame))} />
+            )}
+          </button>
+        </Tooltip>
 
         <div className="w-[1px] h-[2.5vh] sm:h-[3vh] bg-[#222] mx-0.5 sm:mx-1" />
 
         {/* Leave */}
-        <button
-          onClick={onLeaveRoom}
-          className="p-[1vh] sm:p-[1.2vh] text-[#444] hover:text-red-500 transition-colors bg-[#141414] border border-[#222] rounded-xl"
-        >
-          <LogOut className="w-[1.8vh] h-[1.8vh] sm:w-[2vh] sm:h-[2vh]" />
-        </button>
+        <Tooltip content="Leave Assembly">
+          <button
+            onClick={onLeaveRoom}
+            className="p-[1vh] sm:p-[1.2vh] text-[#444] hover:text-red-500 transition-colors bg-[#141414] border border-[#222] rounded-xl"
+          >
+            <LogOut className="w-[1.8vh] h-[1.8vh] sm:w-[2vh] sm:h-[2vh]" />
+          </button>
+        </Tooltip>
       </div>
     </header>
   );

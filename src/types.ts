@@ -75,6 +75,7 @@ export interface UserStats {
   elo: number;
   points: number;
   xp: number;
+  agendasCompleted: number;
 }
 
 export interface CosmeticItem {
@@ -90,6 +91,7 @@ export interface User {
   id: string;
   username: string;
   avatarUrl?: string;
+  createdAt?: string;
   stats: UserStats;
   ownedCosmetics: string[];
   activeFrame?: string;

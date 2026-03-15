@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Trophy, Coins, Shield, User as UserIcon, Check, ShoppingBag, ArrowLeft, Star, Heart, Zap, Flame, Scroll, Play, Pause } from 'lucide-react';
+import { X, Trophy, Coins, Shield, User as UserIcon, Check, ShoppingBag, ArrowLeft, Star, Heart, Zap, Flame, Scroll, Play, Pause, Calendar } from 'lucide-react';
 import { User, CosmeticItem, Policy } from '../types';
 import { FriendsList } from './FriendsList';
 import { Inventory } from './Inventory';
 import { cn, getProxiedUrl } from '../lib/utils';
 import { getPolicyStyles, getVoteStyles, getFrameStyles, getRarity } from '../lib/cosmetics';
 import { DEFAULT_ITEMS, PASS_ITEM_LEVELS } from '../constants';
-import { getLevelFromXp, getXpForNextLevel } from '../lib/xp';
+import { getLevelFromXp, getXpForNextLevel, getXpInCurrentLevel } from '../lib/xp';
 
 interface ProfileProps {
   user: User;
@@ -236,12 +236,12 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
               <div className="w-full max-w-sm">
                 <div className="flex justify-between text-xs text-gray-400 mb-1">
                   <span>XP</span>
-                  <span>{user.stats.xp} / {getXpForNextLevel(getLevelFromXp(user.stats.xp) + 1)}</span>
+                  <span>{getXpInCurrentLevel(user.stats.xp)} / {getXpForNextLevel(getLevelFromXp(user.stats.xp))}</span>
                 </div>
                 <div className="h-2 bg-[#222] rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-red-600" 
-                    style={{ width: `${(user.stats.xp / getXpForNextLevel(getLevelFromXp(user.stats.xp) + 1)) * 100}%` }} 
+                    style={{ width: `${Math.min(100, (getXpInCurrentLevel(user.stats.xp) / getXpForNextLevel(getLevelFromXp(user.stats.xp))) * 100)}%` }} 
                   />
                 </div>
               </div>
@@ -353,6 +353,10 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onUpdateUser, t
               <StatCard label="Overseer Games" value={user.stats.overseerGames} icon={<Shield className="w-4 h-4" />} />
               <StatCard label="Kills" value={user.stats.kills} icon={<Zap className="w-4 h-4 text-yellow-500" />} />
               <StatCard label="Deaths" value={user.stats.deaths} icon={<Heart className="w-4 h-4 text-red-500" />} />
+              <StatCard label="Agendas Completed" value={user.stats.agendasCompleted || 0} icon={<Scroll className="w-4 h-4 text-emerald-500" />} />
+              {user.createdAt && (
+                <StatCard label="Account Created" value={new Date(user.createdAt).toLocaleDateString()} icon={<Calendar className="w-4 h-4 text-blue-500" />} />
+              )}
             </div>
           ) : activeTab === 'friends' ? (
             <FriendsList user={user} token={token} playSound={playSound} roomId={roomId} onJoinRoom={onJoinRoom} mode={mode} />

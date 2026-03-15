@@ -1,5 +1,5 @@
 import React from 'react';
-import { Scale, Eye, Search, Zap, Target, Trophy } from 'lucide-react';
+import { Scale, Eye, Search, Zap, Target, Trophy, Layers, Trash2 } from 'lucide-react';
 import { GameState } from '../../types';
 import { cn } from '../../lib/utils';
 import { User as UserIcon } from 'lucide-react';
@@ -30,7 +30,7 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
   };
 
   return (
-    <div className="p-[1.5vh] grid grid-cols-2 gap-[1.5vh] bg-[#1a1a1a]/50 border-b border-[#222] shrink-0">
+    <div className="p-[1.5vh] grid grid-cols-[1fr_auto_1fr] gap-[1.5vh] bg-[#1a1a1a]/50 border-b border-[#222] shrink-0 items-start">
       {/* Civil Track */}
       <div className="space-y-[0.5vh]">
         <div className="flex items-center justify-between text-responsive-xs uppercase tracking-widest font-mono text-blue-400/70">
@@ -52,6 +52,25 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
               )}
             />
           ))}
+        </div>
+      </div>
+
+      {/* Deck / Discard Counter */}
+      <div className="flex flex-col items-center justify-center gap-[0.8vh] px-[1vh] border-x border-[#222]/50 h-[5vh] self-center">
+        <div className="flex flex-col items-center gap-0.5 group relative">
+          <Layers className="w-[1.2vh] h-[1.2vh] text-[#666]" />
+          <span className="text-[9px] font-mono text-white leading-none">{gameState.deck.length}</span>
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-[8px] font-mono text-white rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+            DECK
+          </div>
+        </div>
+        <div className="w-[1.5vh] h-px bg-[#222]" />
+        <div className="flex flex-col items-center gap-0.5 group relative">
+          <Trash2 className="w-[1.2vh] h-[1.2vh] text-[#666]" />
+          <span className="text-[9px] font-mono text-[#666] leading-none">{gameState.discard.length}</span>
+          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-1 bg-black text-[8px] font-mono text-white rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+            DISCARD
+          </div>
         </div>
       </div>
 
@@ -88,7 +107,7 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
                   </div>
                 )}
                 {slot && (
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-32 p-2 bg-[#1a1a1a] border border-[#333] rounded-lg opacity-0 group-hover:opacity-100 group-[.tooltip-open]:opacity-100 pointer-events-none transition-opacity z-50 shadow-2xl">
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-32 p-2 bg-[#1a1a1a] border border-[#333] rounded-lg opacity-0 group-hover:opacity-100 group-[.tooltip-open]:opacity-100 pointer-events-none transition-opacity z-50 shadow-2xl">
                     <div className="text-responsive-xs font-mono text-red-500 uppercase mb-1">{slot.power}</div>
                     <div className="text-[7px] text-[#888] leading-tight">{slot.description}</div>
                   </div>
@@ -101,7 +120,7 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
 
       {/* Spectators */}
       {gameState.spectators.length > 0 && (
-        <div className="col-span-2 h-[2.5vh] flex items-center gap-3 overflow-x-auto no-scrollbar">
+        <div className="col-span-3 h-[2.5vh] flex items-center gap-3 overflow-x-auto no-scrollbar">
           <div className="flex items-center gap-1.5 shrink-0">
             <Eye className="w-[1.2vh] h-[1.2vh] text-[#444]" />
             <span className="text-responsive-xs font-mono uppercase tracking-widest text-[#444]">
@@ -124,7 +143,7 @@ export const PolicyTracks = ({ gameState }: PolicyTracksProps) => {
       )}
 
       {/* Election Tracker */}
-      <div className="col-span-2 h-[3vh] flex items-center justify-center gap-3 bg-[#141414] -mx-4 -mb-4 px-4 border-t border-[#222]">
+      <div className="col-span-3 h-[3vh] flex items-center justify-center gap-3 bg-[#141414] -mx-4 -mb-4 px-4 border-t border-[#222]">
         <span className="text-responsive-xs uppercase tracking-[0.2em] text-[#444] font-mono">Election Tracker</span>
         <div className="flex gap-2">
           {[0, 1, 2, 3].map(i => (
