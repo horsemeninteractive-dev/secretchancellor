@@ -22,6 +22,8 @@ import {
   getLeaderboard,
   getGlobalStats,
   getMatchHistory,
+  getPendingFriendRequests,
+  searchUsers,
 } from "./supabaseService.ts";
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -410,6 +412,45 @@ export function registerRoutes(
         }
       }
       res.json({ statuses });
+    } catch (_) {
+      res.status(401).json({ error: "Invalid token" });
+    }
+  });
+
+  // Pending friend requests received by this user
+  app.get("/api/friends/pending", async (req: Request, res: Response) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ error: "No token" });
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { username: string };
+      const user = await getUser(decoded.username);
+      if (!user) return res.status(404).json({ error: "User not found" });
+      const pending = await getPendingFriendRequests(user.id);
+      res.json({ pending });
+    } catch (_) {
+      res.status(401).json({ error: "Invalid token" });
+    }
+  });
+
+
+  // Search users by username (for friend search)
+  app.get("/api/users/search", async (req: Request, res: Response) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    const query = req.query.q as string;
+    if (!token) return res.status(401).json({ error: "No token" });
+    if (!query || query.length < 2) return res.json({ users: [] });
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { username: string };
+      const currentUser = await getUser(decoded.username);
+      if (!currentUser) return res.status(404).json({ error: "User not found" });
+      const results = await searchUsers(query, currentUser.id);
+      // Attach isFriend status to each result
+      const withStatus = await Promise.all(results.map(async (u: any) => {
+        const friendStatus = await isFriend(currentUser.id, u.id);
+        const { password: _, ...safe } = u;
+        return { ...safe, isFriend: friendStatus };
+      }));
+      res.json({ users: withStatus });
     } catch (_) {
       res.status(401).json({ error: "Invalid token" });
     }

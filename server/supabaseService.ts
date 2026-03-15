@@ -246,6 +246,45 @@ export async function removeFriend(userId1: string, userId2: string): Promise<vo
   }
 }
 
+
+export async function searchUsers(query: string, currentUserId: string, limit = 10): Promise<any[]> {
+  if (!query.trim() || query.length < 2) return [];
+  if (isConfigured) {
+    const { data, error } = await db
+      .from("users")
+      .select("*")
+      .ilike("username", `%${query}%`)
+      .neq("id", currentUserId)
+      .limit(limit);
+    if (error || !data) return [];
+    return data.map(mapSupabaseToUser);
+  }
+  // In-memory fallback
+  return Array.from(users.values())
+    .filter(u => u.id !== currentUserId && u.username.toLowerCase().includes(query.toLowerCase()))
+    .slice(0, limit);
+}
+
+export async function getPendingFriendRequests(userId: string): Promise<any[]> {
+  if (isConfigured) {
+    // Requests where userId is the recipient (user_id_2) and status is pending
+    const { data, error } = await db
+      .from("friends")
+      .select("user_id_1")
+      .eq("user_id_2", userId)
+      .eq("status", "pending");
+    if (error || !data || data.length === 0) return [];
+    const senderIds = data.map((r: any) => r.user_id_1);
+    const { data: senders, error: sendersError } = await db
+      .from("users")
+      .select("*")
+      .in("id", senderIds);
+    if (sendersError) return [];
+    return senders.map(mapSupabaseToUser);
+  }
+  return [];
+}
+
 // ---------------------------------------------------------------------------
 // Write operations
 // ---------------------------------------------------------------------------

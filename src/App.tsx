@@ -8,12 +8,13 @@ import { Profile } from './components/Profile';
 import { GameRoom } from './components/GameRoom';
 import { UpdateBanner } from './components/UpdateBanner';
 import { InviteModal } from './components/game/modals/InviteModal';
+import { FriendRequestModal } from './components/game/modals/FriendRequestModal';
 import { TutorialModal } from './components/TutorialModal';
 import { MUSIC_TRACKS, SOUND_PACKS } from './lib/audio';
 import { discordSdk, setupDiscordSdk } from './lib/discord';
 import { cn, getProxiedUrl } from './lib/utils';
 
-const CLIENT_VERSION = 'v0.9.4';
+const CLIENT_VERSION = 'v0.9.5';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -30,6 +31,7 @@ export default function App() {
   const [isMobile, setIsMobile] = useState(false);
   const [pendingInvite, setPendingInvite] = useState<{ fromUsername: string; roomId: string } | null>(null);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [pendingFriendRequest, setPendingFriendRequest] = useState<{ fromUserId: string; fromUsername: string } | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -238,12 +240,27 @@ export default function App() {
     socket.on('friendInvite', (data: { fromUsername: string; roomId: string }) => {
       setPendingInvite(data);
     });
+    socket.on('friendRequestReceived', async (data: { fromUserId: string }) => {
+      try {
+        const res = await fetch(`/api/user/${data.fromUserId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        if (res.ok) {
+          const userData = await res.json();
+          if (userData?.user) {
+            setPendingFriendRequest({ fromUserId: data.fromUserId, fromUsername: userData.user.username });
+            playSound('notification');
+          }
+        }
+      } catch { /* non-critical */ }
+    });
     return () => {
       socket.off('gameStateUpdate');
       socket.off('privateInfo');
       socket.off('error');
       socket.off('userUpdate');
       socket.off('friendInvite');
+      socket.off('friendRequestReceived');
     };
   }, []);
 
@@ -382,6 +399,7 @@ export default function App() {
             onOpenProfile={() => setIsProfileOpen(true)}
             playSound={playSound}
             uiScaleSetting={uiScaleSetting}
+            token={token}
           />
           {isProfileOpen && (
             <Profile 
@@ -477,6 +495,17 @@ export default function App() {
         onComplete={handleTutorialComplete}
         onSkip={() => { setShowTutorial(false); handleTutorialComplete(); }}
       />
+      {pendingFriendRequest && (
+        <FriendRequestModal
+          fromUsername={pendingFriendRequest.fromUsername}
+          onAccept={() => {
+            socket.emit('acceptFriendRequest', pendingFriendRequest.fromUserId);
+            setPendingFriendRequest(null);
+            playSound('notification');
+          }}
+          onDeny={() => setPendingFriendRequest(null)}
+        />
+      )}
     </div>
   );
 }

@@ -22,12 +22,11 @@ import { InvestigationModal } from './game/modals/InvestigationModal';
 import { PolicyPeekModal } from './game/modals/PolicyPeekModal';
 import { DossierModal } from './game/modals/DossierModal';
 import { DeclarationModal } from './game/modals/DeclarationModal';
-import { FriendRequestModal } from './game/modals/FriendRequestModal';
 import { PlayerProfileModal } from './game/modals/PlayerProfileModal';
 import { TitleAbilityModal } from './game/modals/TitleAbilityModal';
 import { GameReferencePanel } from './game/GameReferencePanel';
 
-const CLIENT_VERSION = 'v0.9.4';
+const CLIENT_VERSION = 'v0.9.5';
 
 interface GameRoomProps {
   gameState: GameState;
@@ -165,7 +164,6 @@ export const GameRoom = ({
   const [peekTitle, setPeekTitle] = useState<string | undefined>(undefined);
   const [investigationResult, setInvestigationResult] = useState<{ targetName: string; role: Role } | null>(null);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
-  const [pendingRequest, setPendingRequest] = useState<{ fromUserId: string; fromUsername: string } | null>(null);
 
   useEffect(() => {
     socket.on('policyPeekResult', (policies: Policy[], title?: string) => {
@@ -173,23 +171,9 @@ export const GameRoom = ({
       setPeekTitle(title);
     });
     socket.on('investigationResult', (result) => setInvestigationResult(result));
-    socket.on('friendRequestReceived', async (data: { fromUserId: string }) => {
-      try {
-        const response = await fetch(`/api/user/${data.fromUserId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (response.ok) {
-          const userData = await response.json();
-          setPendingRequest({ fromUserId: data.fromUserId, fromUsername: userData.user.username });
-        }
-      } catch (err) {
-        console.error("Failed to fetch requester info", err);
-      }
-    });
     return () => {
       socket.off('policyPeekResult');
       socket.off('investigationResult');
-      socket.off('friendRequestReceived');
     };
   }, [token]);
 
@@ -655,16 +639,6 @@ export const GameRoom = ({
       />
 
       {/* Modals */}
-      {pendingRequest && (
-        <FriendRequestModal
-          fromUsername={pendingRequest.fromUsername}
-          onAccept={() => {
-            socket.emit('acceptFriendRequest', pendingRequest.fromUserId);
-            setPendingRequest(null);
-          }}
-          onDeny={() => setPendingRequest(null)}
-        />
-      )}
       {selectedPlayerId && (
         <PlayerProfileModal
           userId={selectedPlayerId}
